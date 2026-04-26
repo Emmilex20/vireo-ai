@@ -1,0 +1,7 @@
+
+> @vireon/types@0.0.1 typecheck C:\dev\vireon-ai-rebuild\packages\types
+> tsc --noEmit
+
+tsconfig.json(3,3): error TS5090: Non-relative paths are not allowed when 'baseUrl' is not set. Did you forget a leading './'?
+ ELIFECYCLE  Command failed with exit code 2.
+ WARN   Local package.json exists, but node_modules missing, did you mean to install?

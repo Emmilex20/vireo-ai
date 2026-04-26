@@ -1,0 +1,11 @@
+{
+  "name": "@vireon/worker",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "build": "echo \"Worker build later\"",
+    "lint": "echo \"Worker lint later\"",
+    "typecheck": "echo \"Worker typecheck later\""
+  }
+}

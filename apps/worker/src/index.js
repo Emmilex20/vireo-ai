@@ -1,0 +1,1 @@
+console.log("Vireon worker boot placeholder");
