@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@vireon/db": ["../../packages/db/src/index.ts"],
+      "@vireon/types": ["../../packages/types/src/index.ts"],
+      "@vireon/utils": ["../../packages/utils/src/index.ts"],
+      "@vireon/config/*": ["../../packages/config/*"],
+      "@vireon/ai": ["../../packages/ai/src/index.ts"],
+      "@vireon/ui": ["../../packages/ui/src/index.ts"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,4 @@
+
+> @vireon/web@0.0.1 typecheck C:\dev\vireon-ai-rebuild\apps\web
+> tsc --noEmit
+
