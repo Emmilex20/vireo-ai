@@ -1,89 +1,86 @@
-import type { ReactNode } from "react";
-import Link from "next/link";
-import { Images, Sparkles, Video } from "lucide-react";
+import {
+  CheckCircle2,
+  Clapperboard,
+  GalleryVerticalEnd,
+  Sparkles,
+  Users
+} from "lucide-react";
 
 export function LandingConversionSection() {
   return (
-    <section className="rounded-[2rem] border border-primary/20 bg-primary/10 p-6">
-      <div className="mx-auto max-w-3xl text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-black/20 px-3 py-1 text-xs text-primary">
-          <Sparkles className="size-3.5" />
-          Create with Vireon AI
+    <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,18,0.94),rgba(8,14,14,0.98))] p-6 shadow-[0_22px_70px_rgba(0,0,0,0.24)] sm:p-8">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-8">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
+            <Sparkles className="size-3.5" />
+            Built for creator workflows
+          </div>
+
+          <h2 className="mt-4 max-w-3xl font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Create polished visuals, evolve them into motion, and publish the
+            work that deserves to travel.
+          </h2>
+
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+            Vireon gives creators one focused system to generate images, turn
+            them into motion, publish the best work, and grow a public creative
+            identity without switching tools.
+          </p>
+
+          <div className="mt-6 grid gap-3">
+            <ProofLine text="Generate still visuals, short motion clips, and scene-based stories in one workspace." />
+            <ProofLine text="Reuse outputs naturally instead of restarting each workflow from scratch." />
+            <ProofLine text="Move from private creation to public discovery through gallery and creator pages." />
+          </div>
         </div>
 
-        <h2 className="mt-4 font-[family-name:var(--font-heading)] text-3xl font-bold text-white">
-          Generate images, animate them into videos, and build full AI scenes
-        </h2>
-
-        <p className="mt-3 text-sm leading-7 text-muted-foreground">
-          Vireon AI helps creators turn ideas into visual content using image generation,
-          image-to-video, public galleries, creator profiles, and multi-scene video projects.
-        </p>
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link
-            href="/studio"
-            className="rounded-full border border-primary/20 bg-primary px-5 py-2 text-sm text-primary-foreground transition hover:bg-primary/90"
-          >
-            Start creating
-          </Link>
-
-          <Link
-            href="/gallery"
-            className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm text-white transition hover:bg-white/10"
-          >
-            Explore gallery
-          </Link>
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <CapabilityCard
+            icon={<Clapperboard className="size-5 text-primary" />}
+            title="Motion ready"
+            text="Animate source images into cinematic clips without leaving the product."
+          />
+          <CapabilityCard
+            icon={<GalleryVerticalEnd className="size-5 text-primary" />}
+            title="Portfolio aware"
+            text="Publish finished outputs into a public gallery and creator profile."
+          />
+          <CapabilityCard
+            icon={<Users className="size-5 text-primary" />}
+            title="Growth loop"
+            text="Referrals, follows, and discovery features turn usage into momentum."
+          />
         </div>
-
-        <div className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
-          <a href="/gallery" className="text-white transition hover:text-primary">
-            AI Gallery
-          </a>
-          <a href="/creators" className="text-white transition hover:text-primary">
-            Creators
-          </a>
-          <a href="/pricing" className="text-white transition hover:text-primary">
-            Pricing
-          </a>
-        </div>
-      </div>
-
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
-        <Feature
-          icon={<Images className="size-5 text-primary" />}
-          title="AI images"
-          text="Generate polished images from prompts and save them to your library."
-        />
-        <Feature
-          icon={<Video className="size-5 text-primary" />}
-          title="Image-to-video"
-          text="Animate your best images into cinematic video clips."
-        />
-        <Feature
-          icon={<Sparkles className="size-5 text-primary" />}
-          title="Multi-scene projects"
-          text="Build longer videos scene by scene and export one final video."
-        />
       </div>
     </section>
   );
 }
 
-function Feature({
+function ProofLine({ text }: { text: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.04] px-4 py-4">
+      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+      <p className="text-sm leading-6 text-slate-200">{text}</p>
+    </div>
+  );
+}
+
+function CapabilityCard({
   icon,
   title,
   text
 }: {
-  icon: ReactNode;
+  icon: React.ReactNode;
   title: string;
   text: string;
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
-      {icon}
-      <p className="mt-3 text-sm font-semibold text-white">{title}</p>
-      <p className="mt-2 text-xs leading-5 text-muted-foreground">{text}</p>
-    </div>
+    <article className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+      <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
+        {icon}
+      </div>
+      <h3 className="mt-4 text-base font-semibold text-white">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
+    </article>
   );
 }

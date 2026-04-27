@@ -10,19 +10,19 @@ export function SectionHeading({
   action
 }: SectionHeadingProps) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
-      <div>
-        <h2 className="font-heading text-xl font-bold tracking-tight text-white sm:text-2xl">
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="max-w-2xl">
+        <h2 className="font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
           {title}
         </h2>
         {description ? (
-          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+          <p className="mt-2 text-sm leading-7 text-muted-foreground sm:text-base">
             {description}
           </p>
         ) : null}
       </div>
 
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {action ? <div className="shrink-0 self-start sm:self-auto">{action}</div> : null}
     </div>
   );
 }
