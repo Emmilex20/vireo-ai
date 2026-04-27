@@ -10,7 +10,7 @@ export function StudioSectionTitle({
   action
 }: StudioSectionTitleProps) {
   return (
-    <div className="mb-4 flex items-start justify-between gap-4">
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <div>
         <h2 className="font-(family-name:--font-heading) text-lg font-semibold text-white sm:text-xl">
           {title}
@@ -20,7 +20,7 @@ export function StudioSectionTitle({
         ) : null}
       </div>
 
-      {action ? <div>{action}</div> : null}
+      {action ? <div className="sm:shrink-0">{action}</div> : null}
     </div>
   );
 }

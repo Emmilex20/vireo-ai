@@ -31,14 +31,14 @@ function StatusPill({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition",
+        "flex min-h-20 flex-col items-start justify-center gap-2 rounded-2xl border px-3 py-3 text-left text-xs transition sm:min-h-0 sm:flex-row sm:items-center sm:justify-start sm:rounded-full sm:px-3 sm:py-1.5",
         active
           ? "border-primary/20 bg-primary/10 text-primary"
           : "border-white/10 bg-white/5 text-muted-foreground"
       )}
     >
       {icon}
-      <span>{label}</span>
+      <span className="leading-4">{label}</span>
     </div>
   );
 }
@@ -62,7 +62,7 @@ export function VideoStudioStatusBar({
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
           <StatusPill
             icon={<CircleDot className="size-3.5" />}
             label={hasPrompt ? "Video prompt ready" : "No prompt yet"}
@@ -97,16 +97,16 @@ export function VideoStudioStatusBar({
         </div>
       </div>
 
-      <div className="mt-3 rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-xs text-slate-300">
-        <div className="flex items-center gap-2">
+      <div className="mt-3 rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-xs leading-5 text-slate-300">
+        <div className="flex items-start gap-2">
           {lastAction ? (
             <>
-              <CheckCircle2 className="size-3.5 text-primary" />
+              <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-primary" />
               <span>{lastAction}</span>
             </>
           ) : (
             <>
-              <Clock3 className="size-3.5 text-muted-foreground" />
+              <Clock3 className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
               <span>No recent video studio action yet.</span>
             </>
           )}

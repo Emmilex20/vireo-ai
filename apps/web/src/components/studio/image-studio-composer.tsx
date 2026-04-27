@@ -519,7 +519,7 @@ export function ImageStudioComposer() {
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+    <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:gap-6">
       <div className="space-y-6">
         <StudioStatusBar
           hasPrompt={prompt.trim().length >= 5}
@@ -535,18 +535,18 @@ export function ImageStudioComposer() {
             title="Create image"
             subtitle="Describe what you want to generate with premium creative control."
             action={
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
                 <button
                   type="button"
                   onClick={handleClearPrompt}
-                  className="text-xs text-muted-foreground transition hover:text-white"
+                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
                   Clear
                 </button>
                 <button
                   type="button"
                   onClick={handleResetSession}
-                  className="inline-flex items-center gap-1 text-xs text-muted-foreground transition hover:text-white"
+                  className="inline-flex items-center justify-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
                   <RotateCcw className="size-3" />
                   Reset session
@@ -679,7 +679,7 @@ export function ImageStudioComposer() {
       </div>
 
       <div className="space-y-6">
-        <div className="sticky top-24 space-y-6">
+        <div className="space-y-4 xl:sticky xl:top-24 xl:space-y-6">
           <StudioCard className="overflow-hidden !p-0">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div>
@@ -691,7 +691,7 @@ export function ImageStudioComposer() {
                 </p>
               </div>
 
-              <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
+              <div className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary sm:px-3 sm:text-xs">
                 Image
               </div>
             </div>

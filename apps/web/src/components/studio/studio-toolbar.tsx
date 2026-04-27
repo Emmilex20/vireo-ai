@@ -55,16 +55,16 @@ export function StudioToolbar({ mode, onChangeMode }: StudioToolbarProps) {
               {config.title}
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+            <p className="mt-3 max-w-2xl text-base leading-8 text-slate-300 sm:text-sm sm:leading-7">
               {config.subtitle}
             </p>
 
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mt-3 text-sm text-muted-foreground sm:text-xs">
               {config.helper}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-2">
             <ModeButton
               label="Image"
               icon={<ImageIcon className="size-4" />}
@@ -82,12 +82,12 @@ export function StudioToolbar({ mode, onChangeMode }: StudioToolbarProps) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-6">
-        <div className="text-xs text-muted-foreground">
+      <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6">
+        <div className="text-sm leading-6 text-muted-foreground sm:text-xs">
           Shared creator workspace for premium AI image and video production.
         </div>
 
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-white">
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-white">
           <span className="size-2 rounded-full bg-primary" />
           Active mode: {mode === "image" ? "Image" : "Video"}
         </div>

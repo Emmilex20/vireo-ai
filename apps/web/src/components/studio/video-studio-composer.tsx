@@ -489,7 +489,7 @@ export function VideoStudioComposer() {
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+    <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:gap-6">
       <div className="space-y-6">
         <VideoStudioStatusBar
           hasPrompt={prompt.trim().length >= 5}
@@ -683,16 +683,18 @@ export function VideoStudioComposer() {
       </div>
 
       <div className="space-y-6">
-        <div className="sticky top-24 space-y-6">
+        <div className="space-y-4 xl:sticky xl:top-24 xl:space-y-6">
           <StudioCard className="p-0 overflow-hidden">
-            <div className="border-b border-white/10 p-5 flex justify-between">
+            <div className="flex justify-between border-b border-white/10 p-5">
               <div>
                 <p className="text-sm text-white">Video preview</p>
                 <p className="text-xs text-muted-foreground">
                   Your generated scene will appear here
                 </p>
               </div>
-              <span className="text-xs text-primary">Video</span>
+              <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary sm:px-3 sm:text-xs">
+                Video
+              </span>
             </div>
 
             <div className="p-5">

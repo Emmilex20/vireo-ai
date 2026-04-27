@@ -189,17 +189,40 @@ export function AppShell({ children }: AppShellProps) {
 
       <div className="lg:pl-72">
         <header className="sticky top-0 z-30 border-b border-white/10 bg-black/25 backdrop-blur-xl">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div>
-              <h1 className="font-(family-name:--font-heading) text-lg font-semibold text-white">
-                {activeItem.title}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                {activeItem.description}
-              </p>
-            </div>
+          <div className="px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex items-start justify-between gap-3 lg:h-16 lg:items-center">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] text-primary lg:hidden">
+                  <ActiveIcon className="size-3.5" />
+                  Active tool
+                </div>
+                <h1 className="mt-2 font-(family-name:--font-heading) text-lg font-semibold text-white lg:mt-0">
+                  {activeItem.title}
+                </h1>
+                <p className="max-w-[16rem] text-xs text-muted-foreground sm:max-w-none">
+                  {activeItem.description}
+                </p>
+              </div>
 
-            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 lg:hidden">
+                <div className="hidden sm:block" data-tour="credits">
+                  <CreditsBadge />
+                </div>
+                <div className="hidden sm:block">
+                  <NotificationNavBadge />
+                </div>
+                <div className="rounded-full border border-white/10 bg-white/5 p-1">
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "h-8 w-8 sm:h-9 sm:w-9"
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="hidden items-center gap-3 lg:flex">
               <Link
                 data-tour="gallery"
                 href="/app/gallery"
@@ -252,6 +275,29 @@ export function AppShell({ children }: AppShellProps) {
                   }}
                 />
               </div>
+              </div>
+            </div>
+
+            <div className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeItem.href === item.href;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs transition ${
+                      isActive
+                        ? "border-primary/20 bg-primary/10 text-primary"
+                        : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <Icon className="size-3.5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </header>
