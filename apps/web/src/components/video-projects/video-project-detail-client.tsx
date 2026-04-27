@@ -350,8 +350,8 @@ export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
         return;
       }
 
-      alert("Final video published to gallery.");
-      window.location.href = "/gallery";
+      alert("Final video published to explore.");
+      window.location.href = "/explore";
     } finally {
       setPublishingExport(false);
     }

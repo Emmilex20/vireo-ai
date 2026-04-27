@@ -93,8 +93,8 @@ export default async function PublicAssetPage({ params }: Props) {
       />
 
       <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-        <a href="/gallery" className="text-sm text-primary">
-          {"<- Back to gallery"}
+        <a href="/explore" className="text-sm text-primary">
+          {"<- Back to explore"}
         </a>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">

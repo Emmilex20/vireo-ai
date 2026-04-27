@@ -1,9 +1,5 @@
-import { InternalExploreClient } from "@/components/explore/internal-explore-client";
+import { redirect } from "next/navigation";
 
-export default function AppExplorePage() {
-  return (
-    <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-      <InternalExploreClient />
-    </main>
-  );
+export default function LegacyAppExplorePage() {
+  redirect("/app/gallery");
 }
