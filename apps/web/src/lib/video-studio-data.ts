@@ -1,6 +1,8 @@
 export const videoDurations = [
   { label: "5s", value: "5" },
   { label: "10s", value: "10" },
+  { label: "15s", value: "15" },
+  { label: "20s", value: "20" },
 ] as const;
 
 export const videoAspectRatios = [

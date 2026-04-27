@@ -12,8 +12,10 @@ import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
-
-const VIDEO_COST = 40;
+import {
+  getVideoGenerationCost,
+  isSupportedVideoDuration,
+} from "@/lib/video-generation-config";
 
 export const maxDuration = 300;
 
@@ -78,6 +80,17 @@ export async function POST(req: Request) {
       );
     }
 
+    const normalizedDuration = duration ?? 5;
+
+    if (!isSupportedVideoDuration(normalizedDuration)) {
+      return NextResponse.json(
+        { error: "Supported video durations are 5, 10, 15, and 20 seconds." },
+        { status: 400 }
+      );
+    }
+
+    const videoCost = getVideoGenerationCost(normalizedDuration);
+
     const safety = checkPromptSafety(prompt, negativePrompt);
 
     if (!safety.allowed) {
@@ -103,7 +116,7 @@ export async function POST(req: Request) {
     const providerJob = await provider.createVideoJob({
       prompt,
       negativePrompt,
-      duration,
+      duration: normalizedDuration,
       aspectRatio,
       motionIntensity,
       cameraMove,
@@ -120,10 +133,10 @@ export async function POST(req: Request) {
       negativePrompt,
       sourceImageUrl: imageUrl,
       sourceAssetId,
-      credits: VIDEO_COST,
+      credits: videoCost,
       providerName: provider.name,
       providerJobId: providerJob.providerJobId,
-      duration,
+      duration: normalizedDuration,
       aspectRatio,
       motionIntensity,
       cameraMove,
@@ -136,7 +149,7 @@ export async function POST(req: Request) {
     try {
       const [wallet] = await deductCredits({
         userId,
-        amount: VIDEO_COST,
+        amount: videoCost,
         description: "Video generation",
         generationJobId: job.id,
       });
@@ -183,7 +196,7 @@ export async function POST(req: Request) {
           providerJobId: finalJob.providerJobId,
           inlineProcessed: true,
           meta: {
-            duration: duration ?? 5,
+            duration: normalizedDuration,
             aspectRatio: aspectRatio ?? "16:9",
             motionIntensity: motionIntensity ?? "medium",
             cameraMove: cameraMove ?? "Slow Push In",
@@ -191,6 +204,7 @@ export async function POST(req: Request) {
             motionGuidance: motionGuidance ?? 6,
             shotType: shotType ?? "Wide Shot",
             fps: fps ?? 24,
+            credits: videoCost,
           },
         });
       }
@@ -211,7 +225,7 @@ export async function POST(req: Request) {
       providerName: job.providerName,
       providerJobId: job.providerJobId,
       meta: {
-        duration: duration ?? 5,
+        duration: normalizedDuration,
         aspectRatio: aspectRatio ?? "16:9",
         motionIntensity: motionIntensity ?? "medium",
         cameraMove: cameraMove ?? "Slow Push In",
@@ -219,6 +233,7 @@ export async function POST(req: Request) {
         motionGuidance: motionGuidance ?? 6,
         shotType: shotType ?? "Wide Shot",
         fps: fps ?? 24,
+        credits: videoCost,
       },
     });
   } catch (error: unknown) {

@@ -13,6 +13,7 @@ import {
   Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getVideoGenerationCost } from "@/lib/video-generation-config";
 import { PromptTemplatesPanel } from "@/components/prompts/prompt-templates-panel";
 import { StudioSectionTitle } from "@/components/shared/studio-section-title";
 import { PromptQuickActions } from "./prompt-quick-actions";
@@ -83,6 +84,7 @@ export function VideoStudioComposer() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [lastUsedSetup, setLastUsedSetup] = useState<VideoGenerationSetup | null>(null);
   const [takeCount, setTakeCount] = useState(0);
+  const videoCost = useMemo(() => getVideoGenerationCost(Number(duration)), [duration]);
 
   const canGenerate = useMemo(() => prompt.trim().length >= 5 && !loading, [prompt, loading]);
   const canGenerateAnotherTake = useMemo(
@@ -794,7 +796,7 @@ export function VideoStudioComposer() {
                       Motion guide: {motionGuidance}
                     </span>
                     <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
-                      Cost: 40 credits
+                      Cost: {videoCost} credits
                     </span>
                     {imageUrl ? (
                       <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">
