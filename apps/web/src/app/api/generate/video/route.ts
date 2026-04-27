@@ -89,7 +89,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const videoCost = getVideoGenerationCost(normalizedDuration);
+    const videoCost = getVideoGenerationCost({
+      duration: normalizedDuration,
+      styleStrength,
+      motionGuidance,
+      fps,
+    });
 
     const safety = checkPromptSafety(prompt, negativePrompt);
 

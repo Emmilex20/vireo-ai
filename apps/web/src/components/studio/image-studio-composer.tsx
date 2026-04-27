@@ -12,6 +12,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getImageGenerationCost } from "@/lib/image-generation-config";
 import { StudioSectionTitle } from "@/components/shared/studio-section-title";
 import { AdvancedImageSettings } from "./advanced-image-settings";
 import { AspectRatioSelector } from "./aspect-ratio-selector";
@@ -104,6 +105,17 @@ export function ImageStudioComposer() {
 
     return seed.trim() && Number.isFinite(value) ? value : null;
   }, [seed]);
+
+  const imageCost = useMemo(
+    () =>
+      getImageGenerationCost({
+        qualityMode,
+        seed: parsedSeed,
+        steps,
+        guidance,
+      }),
+    [guidance, parsedSeed, qualityMode, steps]
+  );
 
   const hasPersistedSession = useMemo(() => {
     if (!sessionHydrated) return false;
@@ -777,7 +789,7 @@ export function ImageStudioComposer() {
                       </span>
                     ) : null}
                     <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
-                      Cost: 5 credits
+                      Cost: {imageCost} credits
                     </span>
                     {activeDraftId ? (
                       <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">

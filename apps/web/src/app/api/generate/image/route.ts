@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
+import { getImageGenerationCost } from "@/lib/image-generation-config";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
@@ -12,8 +13,6 @@ import {
   failImageJob,
   logBlockedPrompt
 } from "@vireon/db";
-
-const IMAGE_COST = 5;
 
 export const maxDuration = 180;
 
@@ -93,6 +92,12 @@ export async function POST(req: Request) {
 
     const provider = getImageProvider();
     const workersMode = await isWorkersMode();
+    const imageCost = getImageGenerationCost({
+      qualityMode,
+      seed,
+      steps,
+      guidance,
+    });
 
     const providerJob = await provider.createImageJob({
       prompt,
@@ -110,7 +115,7 @@ export async function POST(req: Request) {
       userId,
       prompt,
       negativePrompt,
-      credits: IMAGE_COST,
+      credits: imageCost,
       providerName: provider.name,
       providerJobId: providerJob.providerJobId,
       style,
@@ -125,7 +130,7 @@ export async function POST(req: Request) {
     try {
       const [wallet] = await deductCredits({
         userId,
-        amount: IMAGE_COST,
+        amount: imageCost,
         description: "Image generation",
         generationJobId: job.id,
       });
@@ -176,6 +181,7 @@ export async function POST(req: Request) {
             seed: seed ?? null,
             steps: steps ?? 30,
             guidance: guidance ?? 7.5,
+            credits: imageCost,
           },
         });
       }
@@ -203,6 +209,7 @@ export async function POST(req: Request) {
         seed: seed ?? null,
         steps: steps ?? 30,
         guidance: guidance ?? 7.5,
+        credits: imageCost,
       },
     });
   } catch (error: unknown) {

@@ -84,7 +84,16 @@ export function VideoStudioComposer() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [lastUsedSetup, setLastUsedSetup] = useState<VideoGenerationSetup | null>(null);
   const [takeCount, setTakeCount] = useState(0);
-  const videoCost = useMemo(() => getVideoGenerationCost(Number(duration)), [duration]);
+  const videoCost = useMemo(
+    () =>
+      getVideoGenerationCost({
+        duration: Number(duration),
+        styleStrength,
+        motionGuidance,
+        fps: Number(fps),
+      }),
+    [duration, fps, motionGuidance, styleStrength]
+  );
 
   const canGenerate = useMemo(() => prompt.trim().length >= 5 && !loading, [prompt, loading]);
   const canGenerateAnotherTake = useMemo(
