@@ -42,11 +42,19 @@ const navItems = [
     icon: FolderOpen
   },
   {
-    href: "/app/explore",
-    label: "Explore",
-    title: "Explore",
-    description: "Discover ideas and creator inspiration",
-    activeDescription: "Browse community inspiration",
+    href: "/video-projects",
+    label: "Video projects",
+    title: "Video projects",
+    description: "Build longer AI videos scene by scene",
+    activeDescription: "Multi-scene story workspace",
+    icon: Video
+  },
+  {
+    href: "/app/gallery",
+    label: "Gallery",
+    title: "Gallery",
+    description: "Browse public creations and your creator feed",
+    activeDescription: "Public creations and followed creators",
     icon: Compass
   },
   {
@@ -168,16 +176,6 @@ export function AppShell({ children }: AppShellProps) {
             })}
           </nav>
 
-          <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-4">
-            <div className="flex items-center gap-2 text-sm text-white">
-              <Video className="size-4 text-primary" />
-              Video Studio
-            </div>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              The next major workspace module is coming in later batches.
-            </p>
-          </div>
-
           <div className="mt-auto rounded-3xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-primary/80">
               Credit-controlled
@@ -204,7 +202,7 @@ export function AppShell({ children }: AppShellProps) {
             <div className="flex items-center gap-3">
               <Link
                 data-tour="gallery"
-                href="/gallery"
+                href="/app/gallery"
                 className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
               >
                 Gallery
