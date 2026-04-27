@@ -54,9 +54,17 @@ export function CreatorProfileClient({ username }: { username: string }) {
   const [following, setFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [followers, setFollowers] = useState<CreatorRow[]>([]);
   const [followingList, setFollowingList] = useState<CreatorRow[]>([]);
   const [followModal, setFollowModal] = useState<"followers" | "following" | null>(null);
+
+  function goToAuth(mode: "sign-in" | "sign-up") {
+    const redirectPath = `${window.location.pathname}${window.location.search}`;
+    window.location.href = `/${mode}?redirect_url=${encodeURIComponent(
+      redirectPath
+    )}`;
+  }
 
   useEffect(() => {
     async function loadFollowLists() {
@@ -141,6 +149,11 @@ export function CreatorProfileClient({ username }: { username: string }) {
       });
 
       const data = await res.json();
+
+      if (res.status === 401) {
+        setShowAuthPrompt(true);
+        return;
+      }
 
       if (!res.ok) {
         alert(data.error || "Failed to follow creator");
@@ -269,6 +282,34 @@ export function CreatorProfileClient({ username }: { username: string }) {
             username={creator.username || username}
             displayName={creator.displayName}
           />
+
+          {showAuthPrompt ? (
+            <div className="mt-5 rounded-[1.5rem] border border-primary/20 bg-primary/10 p-4">
+              <p className="text-sm font-semibold text-white">
+                Sign up to follow this creator
+              </p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Create an account to follow creators, build your feed, and come
+                back to the work that caught your eye.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => goToAuth("sign-up")}
+                  className="rounded-full border border-primary/25 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+                >
+                  Sign up
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goToAuth("sign-in")}
+                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+                >
+                  Sign in
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-5 rounded-[1.5rem] border border-primary/20 bg-primary/10 p-4">
             <p className="text-sm font-semibold text-white">

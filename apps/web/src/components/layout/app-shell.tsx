@@ -27,7 +27,7 @@ type AppShellProps = {
 const navItems = [
   {
     href: "/studio",
-    label: "Create Image",
+    label: "Create Image/Video",
     title: "Image Studio",
     description: "Build visual ideas with premium prompt controls",
     activeDescription: "Prompt to image workflow",

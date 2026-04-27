@@ -25,6 +25,7 @@ export function DiscoverCreatorsClient() {
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   useEffect(() => {
     async function loadCreators() {
@@ -80,6 +81,13 @@ export function DiscoverCreatorsClient() {
       .slice(0, 3);
   }, [creators]);
 
+  function goToAuth(mode: "sign-in" | "sign-up") {
+    const redirectPath = `${window.location.pathname}${window.location.search}`;
+    window.location.href = `/${mode}?redirect_url=${encodeURIComponent(
+      redirectPath
+    )}`;
+  }
+
   async function handleFollow(creatorId: string) {
     setUpdatingId(creatorId);
 
@@ -93,6 +101,11 @@ export function DiscoverCreatorsClient() {
       });
 
       const data = await res.json();
+
+      if (res.status === 401) {
+        setShowAuthPrompt(true);
+        return;
+      }
 
       if (!res.ok) {
         alert(data.error || "Failed to update follow state");
@@ -187,6 +200,34 @@ export function DiscoverCreatorsClient() {
             onClick={() => setSortMode("assets")}
           />
         </div>
+
+        {showAuthPrompt ? (
+          <div className="mt-5 rounded-[1.5rem] border border-primary/20 bg-primary/10 p-4">
+            <p className="text-sm font-semibold text-white">
+              Create an account to follow creators
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Sign up to build your following feed, save favorite creators, and
+              keep up with new public work.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => goToAuth("sign-up")}
+                className="rounded-full border border-primary/25 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+              >
+                Sign up
+              </button>
+              <button
+                type="button"
+                onClick={() => goToAuth("sign-in")}
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+              >
+                Sign in
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         {featuredCreators.length > 0 ? (
           <div className="mt-8">
