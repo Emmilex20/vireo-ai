@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { MessageCircle } from "lucide-react"
+import { MessageCircle, Play } from "lucide-react"
 import { ExploreFeedTabs } from "./explore-feed-tabs"
 import { LikeButton } from "./like-button"
 import { PostDetailSheet } from "./post-detail-sheet"
@@ -20,6 +20,7 @@ type ExplorePost = {
     title?: string | null
     prompt?: string | null
     fileUrl: string
+    mediaType?: "image" | "video"
   }
   user: {
     id: string
@@ -75,6 +76,12 @@ export function InternalExploreClient() {
     )
   }
 
+  function mediaTypeOf(post: ExplorePost) {
+    if (post.asset.mediaType === "video") return "video"
+
+    return post.asset.fileUrl.toLowerCase().endsWith(".mp4") ? "video" : "image"
+  }
+
   if (loading) {
     return (
       <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
@@ -100,10 +107,10 @@ export function InternalExploreClient() {
     <>
       <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
         <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold text-white">
-          Explore
+          Gallery
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Discover publicly published creations from the Vireon AI platform.
+          Browse public creations, trending work, and posts from creators you follow.
         </p>
 
         <ExploreFeedTabs activeTab={activeTab} onChange={handleTabChange} />
@@ -134,13 +141,27 @@ export function InternalExploreClient() {
                   className="block w-full text-left"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-black/20">
-                    <Image
-                      src={post.asset.fileUrl}
-                      alt={post.asset.title || "Published image"}
-                      fill
-                      sizes="(min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw"
-                      className="object-cover transition duration-300 hover:scale-[1.02]"
-                    />
+                    {mediaTypeOf(post) === "video" ? (
+                      <>
+                        <video
+                          src={post.asset.fileUrl}
+                          muted
+                          playsInline
+                          className="h-full w-full object-cover transition duration-300 hover:scale-[1.02]"
+                        />
+                        <div className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white backdrop-blur-md">
+                          <Play className="size-4 fill-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <Image
+                        src={post.asset.fileUrl}
+                        alt={post.asset.title || "Published image"}
+                        fill
+                        sizes="(min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw"
+                        className="object-cover transition duration-300 hover:scale-[1.02]"
+                      />
+                    )}
                   </div>
                 </button>
 

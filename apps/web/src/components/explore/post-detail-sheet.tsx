@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useEffect, useState } from "react"
-import { MessageCircle, X } from "lucide-react"
+import { MessageCircle, Play, X } from "lucide-react"
 import { CommentComposer } from "./comment-composer"
 import { CommentList } from "./comment-list"
 import { LikeButton } from "./like-button"
@@ -19,6 +19,7 @@ type ExplorePost = {
     title?: string | null
     prompt?: string | null
     fileUrl: string
+    mediaType?: "image" | "video"
   }
   user: {
     id: string
@@ -84,6 +85,12 @@ export function PostDetailSheet({
     onCommentAdded?.(post.id)
   }
 
+  function mediaTypeOf() {
+    if (post.asset.mediaType === "video") return "video"
+
+    return post.asset.fileUrl.toLowerCase().endsWith(".mp4") ? "video" : "image"
+  }
+
   if (!open) return null
 
   return (
@@ -113,13 +120,27 @@ export function PostDetailSheet({
         <div className="grid gap-6 p-5">
           <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5">
             <div className="relative aspect-[4/3] overflow-hidden bg-black/20">
-              <Image
-                src={post.asset.fileUrl}
-                alt={post.asset.title || "Published image"}
-                fill
-                sizes="(min-width: 768px) 48rem, 100vw"
-                className="object-cover"
-              />
+              {mediaTypeOf() === "video" ? (
+                <>
+                  <video
+                    src={post.asset.fileUrl}
+                    controls
+                    playsInline
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white backdrop-blur-md">
+                    <Play className="size-4 fill-white" />
+                  </div>
+                </>
+              ) : (
+                <Image
+                  src={post.asset.fileUrl}
+                  alt={post.asset.title || "Published image"}
+                  fill
+                  sizes="(min-width: 768px) 48rem, 100vw"
+                  className="object-cover"
+                />
+              )}
             </div>
 
             <div className="p-5">
