@@ -61,6 +61,7 @@ function hasActiveScenes(project: VideoProject | null) {
 
 export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
   const [project, setProject] = useState<VideoProject | null>(null);
+  const [exportsEnabled, setExportsEnabled] = useState(true);
   const [newSceneTitle, setNewSceneTitle] = useState("");
   const [newScenePrompt, setNewScenePrompt] = useState("");
   const [creatingScene, setCreatingScene] = useState(false);
@@ -73,6 +74,20 @@ export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
   useEffect(() => {
     void reloadProject();
   }, [projectId]);
+
+  useEffect(() => {
+    async function loadBackgroundMode() {
+      try {
+        const res = await fetch("/api/background-mode");
+        const data = await res.json();
+        setExportsEnabled(data.exportsEnabled !== false);
+      } catch {
+        setExportsEnabled(true);
+      }
+    }
+
+    void loadBackgroundMode();
+  }, []);
 
   async function reloadProject() {
     try {
@@ -385,7 +400,11 @@ export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
         <button
           type="button"
           onClick={handleExportProject}
-          disabled={exporting || project.scenes.every((scene) => !scene.videoUrl)}
+          disabled={
+            exporting ||
+            !exportsEnabled ||
+            project.scenes.every((scene) => !scene.videoUrl)
+          }
           className="mt-5 rounded-full border border-primary/20 bg-primary/10 px-5 py-2 text-sm text-primary transition hover:bg-primary/15 disabled:opacity-50"
         >
           {exporting
@@ -424,6 +443,13 @@ export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
           <p className="mt-3 text-xs text-primary">
             Your final video export is running. This page will refresh
             automatically.
+          </p>
+        ) : null}
+
+        {!exportsEnabled ? (
+          <p className="mt-3 text-xs text-amber-400">
+            Final export is disabled while the app is running in inline beta
+            mode. An admin can switch to worker mode later.
           </p>
         ) : null}
 

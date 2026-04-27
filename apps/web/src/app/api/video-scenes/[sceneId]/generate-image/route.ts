@@ -3,7 +3,11 @@ import { auth } from "@clerk/nextjs/server";
 import { deductCredits, updateVideoSceneMedia } from "@vireon/db";
 import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
+import { processVideoScene } from "@/lib/generation/process-video-scene";
 import { enqueueSceneGeneration } from "@/lib/queue/scene-queue";
+import { isWorkersMode } from "@/lib/runtime/background-mode";
+
+export const maxDuration = 180;
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Failed to queue scene image generation";
@@ -21,6 +25,7 @@ export async function POST(
     }
 
     const { sceneId } = await params;
+    const workersMode = await isWorkersMode();
 
     const [wallet] = await deductCredits({
       userId,
@@ -37,14 +42,22 @@ export async function POST(
     await updateVideoSceneMedia({
       userId,
       sceneId,
-      status: "queued_image",
+      status: workersMode ? "queued_image" : "generating_image",
       failureReason: null
     });
 
-    await enqueueSceneGeneration({
-      sceneId,
-      kind: "image"
-    });
+    if (workersMode) {
+      await enqueueSceneGeneration({
+        sceneId,
+        kind: "image"
+      });
+    } else {
+      await processVideoScene({
+        userId,
+        sceneId,
+        kind: "image"
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

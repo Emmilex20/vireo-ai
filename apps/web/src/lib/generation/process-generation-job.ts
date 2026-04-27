@@ -29,6 +29,15 @@ export type ProcessableGenerationJob = {
   seed?: number | null;
   steps?: number | null;
   guidance?: number | null;
+  duration?: number | null;
+  motionIntensity?: string | null;
+  cameraMove?: string | null;
+  styleStrength?: string | null;
+  motionGuidance?: number | null;
+  shotType?: string | null;
+  fps?: number | null;
+  sourceImageUrl?: string | null;
+  sourceAssetId?: string | null;
 };
 
 type ProcessedGenerationJob =

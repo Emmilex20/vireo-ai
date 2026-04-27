@@ -9,6 +9,7 @@ import {
 import { PROJECT_EXPORT_COSTS } from "@/lib/billing/project-export-costs";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import { enqueueProjectExport } from "@/lib/queue/project-export-queue";
+import { isWorkersMode } from "@/lib/runtime/background-mode";
 
 export async function POST(
   _req: Request,
@@ -21,6 +22,17 @@ export async function POST(
   }
 
   const { projectId } = await params;
+  const workersMode = await isWorkersMode();
+
+  if (!workersMode) {
+    return NextResponse.json(
+      {
+        error:
+          "Final project export is disabled in inline beta mode. Switch background mode to workers in admin when workers are available."
+      },
+      { status: 409 }
+    );
+  }
 
   const project = await getVideoProjectById({ userId, projectId });
 

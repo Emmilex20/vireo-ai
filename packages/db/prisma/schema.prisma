@@ -195,6 +195,13 @@ model SubscriptionCancelFeedback {
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 }
 
+model AppRuntimeConfig {
+  id             String   @id @default("default")
+  backgroundMode String   @default("inline")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model PaymentAuditLog {
   id         String   @id @default(cuid())
   reference  String?

@@ -416,6 +416,31 @@ export function VideoStudioComposer() {
 
       const jobId = data.jobId;
 
+      if (data.status === "completed") {
+        setVideoUrl(data.outputUrl);
+        setLoading(false);
+        window.dispatchEvent(new Event("vireon:credits-updated"));
+        setLastAction(
+          isTake
+            ? `Take ${takeCount + 1} completed successfully.`
+            : "Video generation completed successfully."
+        );
+        return;
+      }
+
+      if (data.status === "failed") {
+        setLoading(false);
+        window.dispatchEvent(new Event("vireon:credits-updated"));
+        setLastAction(
+          data.failureReason ||
+            (isTake
+              ? "Another take failed. You can retry with the same setup."
+              : "Video generation failed. You can retry with the same setup.")
+        );
+        alert(data.failureReason || "Video generation failed");
+        return;
+      }
+
       const interval = setInterval(async () => {
         const statusRes = await fetch(`/api/generate/status/${jobId}`);
         const statusData = await statusRes.json();

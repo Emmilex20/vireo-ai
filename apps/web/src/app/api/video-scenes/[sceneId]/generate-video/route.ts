@@ -7,7 +7,11 @@ import {
 } from "@vireon/db";
 import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
+import { processVideoScene } from "@/lib/generation/process-video-scene";
 import { enqueueSceneGeneration } from "@/lib/queue/scene-queue";
+import { isWorkersMode } from "@/lib/runtime/background-mode";
+
+export const maxDuration = 300;
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Failed to queue scene video generation";
@@ -25,6 +29,7 @@ export async function POST(
     }
 
     const { sceneId } = await params;
+    const workersMode = await isWorkersMode();
 
     const scene = await getVideoSceneForUser({ userId, sceneId });
 
@@ -54,14 +59,22 @@ export async function POST(
     await updateVideoSceneMedia({
       userId,
       sceneId,
-      status: "queued_video",
+      status: workersMode ? "queued_video" : "generating_video",
       failureReason: null
     });
 
-    await enqueueSceneGeneration({
-      sceneId,
-      kind: "video"
-    });
+    if (workersMode) {
+      await enqueueSceneGeneration({
+        sceneId,
+        kind: "video"
+      });
+    } else {
+      await processVideoScene({
+        userId,
+        sceneId,
+        kind: "video"
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

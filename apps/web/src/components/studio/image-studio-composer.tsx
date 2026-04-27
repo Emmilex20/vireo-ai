@@ -280,6 +280,30 @@ export function ImageStudioComposer() {
 
       setLastUsedSetup(setup);
       setVariationCount(nextVariationCount);
+
+      if (data.status === "completed") {
+        setImage(data.outputUrl);
+        setLoading(false);
+        window.dispatchEvent(new Event("vireon:credits-updated"));
+        setLastAction(
+          isVariation
+            ? `Variation ${nextVariationCount} completed successfully.`
+            : "Image generation completed successfully."
+        );
+        return;
+      }
+
+      if (data.status === "failed") {
+        setLoading(false);
+        window.dispatchEvent(new Event("vireon:credits-updated"));
+        setLastAction(
+          data.failureReason ||
+            "Image generation failed. You can retry with the same setup."
+        );
+        window.alert(data.failureReason || "Image generation failed");
+        return;
+      }
+
       setLastAction(
         isVariation
           ? `Generated variation ${nextVariationCount}.`

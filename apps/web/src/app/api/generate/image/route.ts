@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
+import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
 import { enqueueGenerationJob } from "@/lib/queue/generation-queue";
+import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
@@ -13,6 +15,8 @@ import {
 } from "@vireon/db";
 
 const IMAGE_COST = 5;
+
+export const maxDuration = 180;
 
 export async function POST(req: Request) {
   try {
@@ -89,6 +93,7 @@ export async function POST(req: Request) {
     }
 
     const provider = getImageProvider();
+    const workersMode = await isWorkersMode();
 
     const providerJob = await provider.createImageJob({
       prompt,
@@ -131,7 +136,47 @@ export async function POST(req: Request) {
         balance: wallet.balance
       });
 
-      await enqueueGenerationJob(job.id);
+      if (workersMode) {
+        await enqueueGenerationJob(job.id);
+      } else {
+        const finalJob = await runGenerationJobInline({
+          id: job.id,
+          userId: job.userId,
+          type: job.type,
+          status: job.status,
+          providerName: job.providerName,
+          providerJobId: job.providerJobId,
+          prompt: job.prompt,
+          negativePrompt: job.negativePrompt,
+          style: job.style,
+          aspectRatio: job.aspectRatio,
+          qualityMode: job.qualityMode,
+          promptBoost: job.promptBoost,
+          seed: job.seed,
+          steps: job.steps,
+          guidance: job.guidance
+        });
+
+        return NextResponse.json({
+          success: true,
+          jobId: finalJob.id,
+          status: finalJob.status,
+          outputUrl: finalJob.outputUrl ?? null,
+          failureReason: finalJob.failureReason ?? null,
+          providerName: finalJob.providerName,
+          providerJobId: finalJob.providerJobId,
+          inlineProcessed: true,
+          meta: {
+            style: style ?? "Cinematic",
+            aspectRatio: aspectRatio ?? "4:3",
+            qualityMode: qualityMode ?? "high",
+            promptBoost: promptBoost ?? true,
+            seed: seed ?? null,
+            steps: steps ?? 30,
+            guidance: guidance ?? 7.5,
+          },
+        });
+      }
     } catch (error) {
       await failImageJob(
         job.id,

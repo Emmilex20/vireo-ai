@@ -156,6 +156,11 @@ export function AdminDashboardClient() {
             description="Check provider environment readiness before enabling real generation."
           />
           <AdminLink
+            href="/admin/background-mode"
+            title="Background mode"
+            description="Switch between inline beta mode and full worker mode when you are ready."
+          />
+          <AdminLink
             href="/admin/subscriptions"
             title="Subscriptions"
             description="Monitor active subscribers, renewals, cancellations, and recurring credit grants."

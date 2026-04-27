@@ -8,11 +8,15 @@ import {
 } from "@vireon/db";
 import { getVideoProvider } from "@/lib/ai/providers/registry";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
+import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
 import { enqueueGenerationJob } from "@/lib/queue/generation-queue";
+import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
 
 const VIDEO_COST = 40;
+
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   try {
@@ -95,6 +99,7 @@ export async function POST(req: Request) {
     }
 
     const provider = getVideoProvider();
+    const workersMode = await isWorkersMode();
 
     const providerJob = await provider.createVideoJob({
       prompt,
@@ -142,7 +147,51 @@ export async function POST(req: Request) {
         balance: wallet.balance
       });
 
-      await enqueueGenerationJob(job.id);
+      if (workersMode) {
+        await enqueueGenerationJob(job.id);
+      } else {
+        const finalJob = await runGenerationJobInline({
+          id: job.id,
+          userId: job.userId,
+          type: job.type,
+          status: job.status,
+          providerName: job.providerName,
+          providerJobId: job.providerJobId,
+          prompt: job.prompt,
+          negativePrompt: job.negativePrompt,
+          aspectRatio: job.aspectRatio,
+          sourceImageUrl: job.sourceImageUrl,
+          sourceAssetId: job.sourceAssetId,
+          duration: job.duration,
+          motionIntensity: job.motionIntensity,
+          cameraMove: job.cameraMove,
+          styleStrength: job.styleStrength,
+          motionGuidance: job.motionGuidance,
+          shotType: job.shotType,
+          fps: job.fps
+        });
+
+        return NextResponse.json({
+          success: true,
+          jobId: finalJob.id,
+          status: finalJob.status,
+          outputUrl: finalJob.outputUrl ?? null,
+          failureReason: finalJob.failureReason ?? null,
+          providerName: finalJob.providerName,
+          providerJobId: finalJob.providerJobId,
+          inlineProcessed: true,
+          meta: {
+            duration: duration ?? 5,
+            aspectRatio: aspectRatio ?? "16:9",
+            motionIntensity: motionIntensity ?? "medium",
+            cameraMove: cameraMove ?? "Slow Push In",
+            styleStrength: styleStrength ?? "medium",
+            motionGuidance: motionGuidance ?? 6,
+            shotType: shotType ?? "Wide Shot",
+            fps: fps ?? 24,
+          },
+        });
+      }
     } catch (error) {
       await failVideoJob(
         job.id,

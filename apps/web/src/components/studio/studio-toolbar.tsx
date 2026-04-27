@@ -42,7 +42,7 @@ export function StudioToolbar({ mode, onChangeMode }: StudioToolbarProps) {
   const config = studioModeConfig[mode];
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5">
+    <div className="overflow-hidden rounded-4xl border border-white/10 bg-white/5">
       <div className="border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.14),transparent_28%),linear-gradient(135deg,#0b1220,#111827,#0f172a)] p-5 sm:p-6">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
           <div className="max-w-3xl">
@@ -51,7 +51,7 @@ export function StudioToolbar({ mode, onChangeMode }: StudioToolbarProps) {
               <span>{config.badge}</span>
             </div>
 
-            <h1 className="mt-4 font-[family-name:var(--font-heading)] text-2xl font-bold text-white sm:text-3xl">
+            <h1 className="mt-4 font-heading text-2xl font-bold text-white sm:text-3xl">
               {config.title}
             </h1>
 
