@@ -2,6 +2,13 @@ import Link from "next/link";
 import { Search, Sparkles } from "lucide-react";
 import { HeaderAuth } from "./header-auth";
 
+const navLinks = [
+  { href: "/explore", label: "Explore" },
+  { href: "/creators", label: "Creators" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/templates", label: "Templates" },
+];
+
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(5,10,11,0.82)] backdrop-blur-xl">
@@ -21,7 +28,19 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <div className="hidden max-w-md flex-1 md:block">
+        <nav className="hidden items-center gap-2 lg:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-full px-4 py-2 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="hidden max-w-sm flex-1 xl:block">
           <div className="flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-muted-foreground">
             <Search className="size-4" />
             <span>Search creators, prompts, visuals...</span>

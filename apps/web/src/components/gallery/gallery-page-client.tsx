@@ -148,12 +148,15 @@ export function GalleryPageClient() {
         }}
       />
 
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+      <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(14,22,28,0.98),rgba(10,16,24,0.94))] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)]">
         <div className="flex flex-col gap-5 lg:flex-row lg:justify-between lg:items-end">
-          <div>
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
+              Public showcase
+            </div>
             <h1 className="text-3xl font-bold text-white">Explore Vireon creations</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Discover what others are creating with Vireon AI.
+            <p className="mt-3 text-sm leading-7 text-slate-300">
+              Discover the images, motion clips, and published experiments creators are sharing with Vireon AI.
             </p>
           </div>
 
@@ -182,7 +185,7 @@ export function GalleryPageClient() {
           />
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2">
+        <div className="mt-4 flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
           <Search className="size-4 text-muted-foreground" />
           <input
             value={query}
@@ -200,13 +203,13 @@ export function GalleryPageClient() {
           <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredAssets.map((asset) =>
               mediaTypeOf(asset) === "video" ? (
-                <div key={asset.id}>
+                <div key={asset.id} className="space-y-3">
                   <VideoAssetCard {...asset} detailHref={`/a/${asset.id}`} />
                   {asset.creator?.username ? (
                     <a
                       href={`/u/${asset.creator.username}`}
                       onClick={(event) => event.stopPropagation()}
-                      className="mt-3 flex items-center gap-3 rounded-[1rem] border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
+                      className="flex items-center gap-3 rounded-[1rem] border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
                     >
                       <div className="flex size-9 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
                         {asset.creator.avatarUrl ? (
@@ -234,7 +237,7 @@ export function GalleryPageClient() {
                       </div>
                     </a>
                   ) : null}
-                  <div className="mt-3 flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={(event) => {
@@ -266,18 +269,18 @@ export function GalleryPageClient() {
                     </button>
 
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-muted-foreground">
-                      Comments {asset._count?.comments ?? 0}
+                      {asset._count?.comments ?? 0} comments
                     </span>
                   </div>
                 </div>
               ) : (
-                <div key={asset.id}>
+                <div key={asset.id} className="space-y-3">
                   <AssetCard {...asset} detailHref={`/a/${asset.id}`} />
                   {asset.creator?.username ? (
                     <a
                       href={`/u/${asset.creator.username}`}
                       onClick={(event) => event.stopPropagation()}
-                      className="mt-3 flex items-center gap-3 rounded-[1rem] border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
+                      className="flex items-center gap-3 rounded-[1rem] border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
                     >
                       <div className="flex size-9 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
                         {asset.creator.avatarUrl ? (
@@ -305,7 +308,7 @@ export function GalleryPageClient() {
                       </div>
                     </a>
                   ) : null}
-                  <div className="mt-3 flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={(event) => {
@@ -337,7 +340,7 @@ export function GalleryPageClient() {
                     </button>
 
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-muted-foreground">
-                      Comments {asset._count?.comments ?? 0}
+                      {asset._count?.comments ?? 0} comments
                     </span>
                   </div>
                 </div>

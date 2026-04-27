@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { ImageToVideoWorkflowCard } from "@/components/dashboard/image-to-video-workflow-card";
 import { RecentImageToVideoPanel } from "@/components/dashboard/recent-image-to-video-panel";
 import { LandingConversionSection } from "@/components/home/landing-conversion-section";
-import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { PageShell } from "@/components/layout/page-shell";
-import { SiteHeader } from "@/components/layout/site-header";
+import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 import { ExploreFeed } from "@/components/marketing/explore-feed";
 import { HomeHero } from "@/components/marketing/home-hero";
 import { QuickTools } from "@/components/marketing/quick-tools";
@@ -29,9 +28,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <>
-      <SiteHeader />
-
+    <PublicSiteFrame showMobileDock>
       <PageShell className="relative overflow-hidden py-5 pb-28 sm:py-8 md:pb-8">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_45%),radial-gradient(circle_at_15%_22%,rgba(20,184,166,0.1),transparent_28%)]" />
         <div className="pointer-events-none absolute right-0 top-[28rem] h-[24rem] w-[24rem] rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.09),transparent_62%)] blur-3xl" />
@@ -45,8 +42,6 @@ export default function HomePage() {
           <ExploreFeed />
         </div>
       </PageShell>
-
-      <MobileBottomNav />
-    </>
+    </PublicSiteFrame>
   );
 }

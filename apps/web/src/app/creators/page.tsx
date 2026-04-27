@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DiscoverCreatorsClient } from "@/components/creators/discover-creators-client";
+import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 
 export const metadata: Metadata = {
   title: "Discover AI Creators | Vireon AI",
@@ -14,5 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default function CreatorsPage() {
-  return <DiscoverCreatorsClient />;
+  return (
+    <PublicSiteFrame>
+      <DiscoverCreatorsClient />
+    </PublicSiteFrame>
+  );
 }

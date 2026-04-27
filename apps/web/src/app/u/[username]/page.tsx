@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CreatorProfileClient } from "@/components/creators/creator-profile-client";
+import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.com";
 
@@ -63,32 +64,34 @@ export default async function CreatorPage({ params }: Props) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Person",
-            name: creator?.displayName || username,
-            alternateName: `@${username}`,
-            url: `${APP_URL}/u/${username}`,
-            image: creator?.avatarUrl,
-            description:
-              creator?.bio ||
-              "AI creator on Vireon AI creating images and videos.",
-            interactionStatistic: [
-              {
-                "@type": "InteractionCounter",
-                interactionType: "https://schema.org/FollowAction",
-                userInteractionCount: creator?._count?.followers || 0
-              }
-            ]
-          })
-        }}
-      />
+    <PublicSiteFrame>
+      <main className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              name: creator?.displayName || username,
+              alternateName: `@${username}`,
+              url: `${APP_URL}/u/${username}`,
+              image: creator?.avatarUrl,
+              description:
+                creator?.bio ||
+                "AI creator on Vireon AI creating images and videos.",
+              interactionStatistic: [
+                {
+                  "@type": "InteractionCounter",
+                  interactionType: "https://schema.org/FollowAction",
+                  userInteractionCount: creator?._count?.followers || 0
+                }
+              ]
+            })
+          }}
+        />
 
-      <CreatorProfileClient username={username} />
-    </main>
+        <CreatorProfileClient username={username} />
+      </main>
+    </PublicSiteFrame>
   );
 }

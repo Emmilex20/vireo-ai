@@ -106,15 +106,15 @@ export function VideoAssetCard({
   }
 
   return (
-    <article className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+    <article className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0c1116] shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
       {sourceImageUrl ? (
-        <span className="absolute left-3 top-3 z-10 rounded-full border border-primary/20 bg-black/60 px-3 py-1 text-xs text-primary backdrop-blur">
+        <span className="absolute left-4 top-4 z-20 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur">
           Image-to-video
         </span>
       ) : null}
 
       <div
-        className="relative aspect-4/3 overflow-hidden bg-black/30"
+        className="group relative aspect-[4/3] overflow-hidden bg-black/30"
         onMouseEnter={startPreview}
         onMouseLeave={stopPreview}
       >
@@ -144,16 +144,22 @@ export function VideoAssetCard({
             void videoRef.current.play().catch(() => undefined);
           }}
           onClick={togglePreview}
-          className="relative z-0 h-full w-full object-cover"
+          className="relative z-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
         />
 
-        <span className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-xs text-white backdrop-blur">
-          Video
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_24%),linear-gradient(180deg,rgba(9,14,22,0.06),rgba(9,14,22,0.12)_35%,rgba(9,14,22,0.58)_72%,rgba(9,14,22,0.84)_100%)]" />
+
+        <span className="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-xs text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur">
+          {previewActive ? "Playing" : "Video"}
         </span>
+
+        <div className="absolute bottom-4 left-4 z-20 rounded-full border border-white/10 bg-black/50 px-3 py-1 text-xs text-slate-200 backdrop-blur">
+          {previewActive ? "Motion preview active" : "Hover or tap to preview"}
+        </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-heading text-base font-semibold text-white">
+      <div className="p-5">
+        <h3 className="font-heading text-lg font-semibold text-white">
           {detailHref ? (
             <a href={detailHref} className="transition hover:text-primary">
               {title || "Generated video"}
@@ -163,17 +169,17 @@ export function VideoAssetCard({
           )}
         </h3>
 
-        <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-300">
           {prompt || "No prompt stored"}
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+        <div className="mt-5 flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-slate-300">
             {new Date(createdAt).toLocaleDateString()}
           </span>
 
-          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
-            Video
+          <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">
+            Motion clip
           </span>
 
           {published ? (
@@ -187,8 +193,8 @@ export function VideoAssetCard({
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <span className="text-xs text-muted-foreground">
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <span className="text-xs text-slate-400">
             {published ? "Ready to share" : "Ready to publish"}
           </span>
 

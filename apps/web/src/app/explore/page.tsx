@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GalleryPageClient } from "@/components/gallery/gallery-page-client";
+import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 
 export const metadata: Metadata = {
   title: "Explore | Vireon AI",
@@ -20,5 +21,9 @@ export const metadata: Metadata = {
 };
 
 export default function PublicExplorePage() {
-  return <GalleryPageClient />;
+  return (
+    <PublicSiteFrame>
+      <GalleryPageClient />
+    </PublicSiteFrame>
+  );
 }
