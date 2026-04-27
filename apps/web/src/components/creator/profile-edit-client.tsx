@@ -25,6 +25,7 @@ type ProfileResponse = {
 export function ProfileEditClient() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [origin, setOrigin] = useState("")
 
   const [username, setUsername] = useState("")
   const [fullName, setFullName] = useState("")
@@ -36,7 +37,14 @@ export function ProfileEditClient() {
   const [following, setFollowing] = useState(0)
   const [posts, setPosts] = useState(0)
 
+  const publicProfileUrl =
+    username.trim().length > 0 && origin
+      ? `${origin}/u/${username.trim()}`
+      : null
+
   useEffect(() => {
+    setOrigin(window.location.origin)
+
     async function loadProfile() {
       try {
         const res = await fetch("/api/me/profile")
@@ -93,6 +101,16 @@ export function ProfileEditClient() {
     } finally {
       setSaving(false)
     }
+  }
+
+  async function copyPublicProfileLink() {
+    if (!publicProfileUrl) {
+      alert("Add a username first to create your public profile link")
+      return
+    }
+
+    await navigator.clipboard.writeText(publicProfileUrl)
+    alert("Public profile link copied")
   }
 
   if (loading) {
@@ -158,6 +176,42 @@ export function ProfileEditClient() {
             <li>Write a short bio that explains your creative style.</li>
             <li>Add a website if you want people to see your portfolio.</li>
           </ul>
+        </div>
+
+        <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+          <p className="text-sm font-medium text-white">Public profile link</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Share your public creator page so people can view your work and follow
+            you.
+          </p>
+
+          <div className="mt-4 rounded-[1rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white">
+            {publicProfileUrl ?? "Set a username to generate your public profile link."}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href={publicProfileUrl ?? undefined}
+              target="_blank"
+              rel="noreferrer"
+              aria-disabled={!publicProfileUrl}
+              className={`rounded-full px-4 py-2 text-sm transition ${
+                publicProfileUrl
+                  ? "border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                  : "pointer-events-none border border-white/5 bg-white/5 text-slate-500"
+              }`}
+            >
+              Open public profile
+            </a>
+
+            <button
+              type="button"
+              onClick={copyPublicProfileLink}
+              className="rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm text-primary transition hover:bg-primary/15"
+            >
+              Copy link
+            </button>
+          </div>
         </div>
 
         <div className="mt-6">
