@@ -54,5 +54,5 @@ export async function getLikedPostIds(userId: string) {
     select: { postId: true },
   })
 
-  return likes.map((like) => like.postId)
+  return likes.map((like: (typeof likes)[number]) => like.postId)
 }

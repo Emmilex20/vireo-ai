@@ -41,7 +41,7 @@ export async function getFollowingIds(userId: string) {
     select: { followingId: true },
   })
 
-  return rows.map((row) => row.followingId)
+  return rows.map((row: (typeof rows)[number]) => row.followingId)
 }
 
 export async function getCreatorProfileById(

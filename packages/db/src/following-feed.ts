@@ -6,7 +6,9 @@ export async function getFollowingFeed(userId: string) {
     select: { followingId: true },
   })
 
-  const followingIds = follows.map((follow) => follow.followingId)
+  const followingIds = follows.map(
+    (follow: (typeof follows)[number]) => follow.followingId
+  )
 
   if (followingIds.length === 0) {
     return []

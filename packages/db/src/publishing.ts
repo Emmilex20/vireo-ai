@@ -63,7 +63,9 @@ export async function getFollowingExploreFeed(userId: string) {
     },
   })
 
-  const followingIds = followedCreators.map((item) => item.followingId)
+  const followingIds = followedCreators.map(
+    (item: (typeof followedCreators)[number]) => item.followingId
+  )
 
   if (followingIds.length === 0) {
     return []
