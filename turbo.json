@@ -7,7 +7,36 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**"]
+      "outputs": [".next/**", "dist/**"],
+      "env": [
+        "ADMIN_USER_IDS",
+        "AI_IMAGE_PROVIDER",
+        "AI_VIDEO_PROVIDER",
+        "CLERK_SECRET_KEY",
+        "CLOUDINARY_API_KEY",
+        "CLOUDINARY_API_SECRET",
+        "CLOUDINARY_CLOUD_NAME",
+        "DATABASE_URL",
+        "EMAIL_FROM",
+        "GENERATION_MAX_PROCESSING_MINUTES",
+        "PAYSTACK_PLAN_CREATOR",
+        "PAYSTACK_PLAN_PRO",
+        "PAYSTACK_PLAN_STARTER",
+        "PAYSTACK_SECRET_KEY",
+        "REDIS_URL",
+        "REPLICATE_API_TOKEN",
+        "REPLICATE_IMAGE_MODEL",
+        "REPLICATE_VIDEO_MODEL",
+        "RESEND_API_KEY",
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "UPSTASH_REDIS_REST_URL",
+        "WORKER_CONCURRENCY",
+        "WORKER_RETRY_DELAY_MS"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]

@@ -36,7 +36,7 @@ export async function getCreatorFollowLists(userId: string) {
   ])
 
   return {
-    followers: followers.map((item) => item.follower),
-    following: following.map((item) => item.following),
+    followers: followers.map((item: (typeof followers)[number]) => item.follower),
+    following: following.map((item: (typeof following)[number]) => item.following),
   }
 }
