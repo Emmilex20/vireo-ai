@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { adminUnpublishAsset, getAdminPublicAssets } from "@vireon/db";
 
+type AdminPublicAsset = Awaited<ReturnType<typeof getAdminPublicAssets>>[number];
+
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || "")
   .split(",")
   .map((id) => id.trim())
@@ -17,7 +19,7 @@ export async function GET() {
   const assets = await getAdminPublicAssets();
 
   return NextResponse.json({
-    assets: assets.map((asset) => ({
+    assets: assets.map((asset: AdminPublicAsset) => ({
       ...asset,
       mediaType: asset.mediaType === "video" ? "video" : "image",
       creator: asset.user,
