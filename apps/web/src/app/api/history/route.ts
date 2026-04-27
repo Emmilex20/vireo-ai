@@ -24,7 +24,7 @@ export async function GET() {
   const history = await getUserGenerationHistory(userId);
 
   return NextResponse.json({
-    history: history.map((item) => {
+    history: history.map((item: HistoryItem) => {
       const historyItem = item as HistoryItem;
 
       return {
