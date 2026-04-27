@@ -3,6 +3,17 @@ import { db } from "@vireon/db";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.com";
 
+type SitemapCreator = {
+  username: string | null;
+  updatedAt: Date;
+};
+
+type SitemapAsset = {
+  id: string;
+  updatedAt: Date;
+  createdAt: Date;
+};
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const creators = await db.user.findMany({
     where: {
@@ -57,15 +68,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const creatorPages: MetadataRoute.Sitemap = creators
-    .filter((creator) => creator.username)
-    .map((creator) => ({
+    .filter((creator: SitemapCreator) => Boolean(creator.username))
+    .map((creator: SitemapCreator) => ({
       url: `${APP_URL}/u/${creator.username}`,
       lastModified: creator.updatedAt ?? new Date(),
       changeFrequency: "daily" as const,
       priority: 0.7
     }));
 
-  const assetPages: MetadataRoute.Sitemap = assets.map((asset) => ({
+  const assetPages: MetadataRoute.Sitemap = assets.map((asset: SitemapAsset) => ({
     url: `${APP_URL}/a/${asset.id}`,
     lastModified: asset.updatedAt ?? asset.createdAt ?? new Date(),
     changeFrequency: "weekly",
