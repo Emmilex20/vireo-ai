@@ -51,10 +51,27 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const config = await setAppBackgroundMode(mode);
+  try {
+    const config = await setAppBackgroundMode(mode);
 
-  return NextResponse.json({
-    success: true,
-    config
-  });
+    return NextResponse.json({
+      success: true,
+      config
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.startsWith("RUNTIME_CONFIG_MIGRATION_REQUIRED")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Background mode settings are not ready in the production database yet. Apply the latest Prisma migrations first."
+        },
+        { status: 503 }
+      );
+    }
+
+    throw error;
+  }
 }

@@ -8,7 +8,6 @@ import {
 } from "@vireon/db";
 import { PROJECT_EXPORT_COSTS } from "@/lib/billing/project-export-costs";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
-import { enqueueProjectExport } from "@/lib/queue/project-export-queue";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 
 type VideoProject = NonNullable<Awaited<ReturnType<typeof getVideoProjectById>>>;
@@ -93,6 +92,9 @@ export async function POST(
     creditsUsed: PROJECT_EXPORT_COSTS.combinedVideo
   });
 
+  const { enqueueProjectExport } = await import(
+    "@/lib/queue/project-export-queue"
+  );
   await enqueueProjectExport(projectId, exportAttemptId);
 
   return NextResponse.json({

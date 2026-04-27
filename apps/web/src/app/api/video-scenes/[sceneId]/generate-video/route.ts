@@ -8,7 +8,6 @@ import {
 import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import { processVideoScene } from "@/lib/generation/process-video-scene";
-import { enqueueSceneGeneration } from "@/lib/queue/scene-queue";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 
 export const maxDuration = 300;
@@ -64,6 +63,9 @@ export async function POST(
     });
 
     if (workersMode) {
+      const { enqueueSceneGeneration } = await import(
+        "@/lib/queue/scene-queue"
+      );
       await enqueueSceneGeneration({
         sceneId,
         kind: "video"

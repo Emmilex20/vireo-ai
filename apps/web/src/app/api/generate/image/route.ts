@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
-import { enqueueGenerationJob } from "@/lib/queue/generation-queue";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
@@ -137,6 +136,9 @@ export async function POST(req: Request) {
       });
 
       if (workersMode) {
+        const { enqueueGenerationJob } = await import(
+          "@/lib/queue/generation-queue"
+        );
         await enqueueGenerationJob(job.id);
       } else {
         const finalJob = await runGenerationJobInline({
