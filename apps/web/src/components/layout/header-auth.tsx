@@ -61,14 +61,14 @@ export function HeaderAuth() {
         <SignInButton mode="modal">
           <Button
             variant="ghost"
-            className="rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
+            className="h-10 rounded-full border border-white/10 bg-white/5 px-3 text-white hover:bg-white/10 sm:px-4"
           >
             Sign In
           </Button>
         </SignInButton>
 
         <SignUpButton mode="modal">
-          <Button className="rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90">
+          <Button className="h-10 rounded-full bg-primary px-3 text-primary-foreground hover:bg-primary/90 sm:px-5">
             Get Started
           </Button>
         </SignUpButton>
@@ -87,22 +87,23 @@ export function HeaderAuth() {
       <Button
         size="icon"
         variant="ghost"
-        className="rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
+        className="hidden size-10 rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10 sm:inline-flex"
       >
         <Bell className="size-4" />
       </Button>
 
       <Link href="/studio">
-        <Button className="rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90">
-          Go to Studio
+        <Button className="h-10 rounded-full bg-primary px-3 text-primary-foreground hover:bg-primary/90 sm:px-5">
+          <span className="sm:hidden">Create</span>
+          <span className="hidden sm:inline">Go to Studio</span>
         </Button>
       </Link>
 
-      <div className="rounded-full border border-white/10 bg-white/5 p-1">
+      <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-1">
         <UserButton
           appearance={{
             elements: {
-              avatarBox: "h-9 w-9"
+              avatarBox: "h-8 w-8 sm:h-9 sm:w-9"
             }
           }}
         />

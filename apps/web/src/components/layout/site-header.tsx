@@ -4,19 +4,19 @@ import { HeaderAuth } from "./header-auth";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/30 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex size-9 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-primary/25">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(5,10,11,0.82)] backdrop-blur-xl">
+      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:h-16 lg:px-8 lg:py-0">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary ring-1 ring-primary/25">
             <Sparkles className="size-4" />
           </div>
 
-          <div className="flex flex-col leading-none">
-            <span className="font-(family-name:--font-heading) text-lg font-bold tracking-tight">
+          <div className="min-w-0 flex-col leading-none">
+            <span className="block truncate font-(family-name:--font-heading) text-xl font-bold tracking-tight text-white sm:text-lg">
               Vireon AI
             </span>
-            <span className="text-[10px] text-muted-foreground">
-              Create beyond imagination
+            <span className="mt-1 block truncate text-[11px] text-slate-400">
+              Premium AI creator studio
             </span>
           </div>
         </Link>
@@ -28,7 +28,7 @@ export function SiteHeader() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="shrink-0">
           <HeaderAuth />
         </div>
       </div>
