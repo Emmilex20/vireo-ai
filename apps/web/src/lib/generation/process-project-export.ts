@@ -15,6 +15,11 @@ import {
 import { sendExportReadyEmailNotification } from "@/lib/email/notifications";
 import { uploadRemoteAssetToCloudinary } from "@/lib/storage/cloudinary";
 
+type ExportProjectScene = {
+  order: number;
+  videoUrl?: string | null;
+};
+
 const streamPipeline = promisify(pipeline);
 
 async function downloadFile(url: string, filepath: string) {
@@ -70,7 +75,9 @@ export async function processProjectExport(
     };
   }
 
-  const scenesWithVideos = project.scenes.filter((scene) => scene.videoUrl);
+  const scenesWithVideos = project.scenes.filter(
+    (scene: ExportProjectScene) => scene.videoUrl
+  );
 
   if (scenesWithVideos.length === 0) {
     await updateVideoProjectExportAttempt({
