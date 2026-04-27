@@ -133,7 +133,7 @@ export function AppShell({ children }: AppShellProps) {
               />
             </div>
             <div>
-              <div className="font-(family-name:--font-heading) text-lg font-bold text-white">
+              <div className="font-heading text-lg font-bold text-white">
                 Vireon AI
               </div>
               <div className="text-xs text-muted-foreground">Creator Studio</div>
@@ -211,7 +211,7 @@ export function AppShell({ children }: AppShellProps) {
                     />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-(family-name:--font-heading) text-base font-bold text-white">
+                    <div className="font-heading text-base font-bold text-white">
                       Vireon AI
                     </div>
                     <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] text-primary">
@@ -220,7 +220,7 @@ export function AppShell({ children }: AppShellProps) {
                     </div>
                   </div>
                 </div>
-                <h1 className="mt-3 font-(family-name:--font-heading) text-lg font-semibold text-white lg:mt-0">
+                <h1 className="mt-3 font-heading text-lg font-semibold text-white lg:mt-0">
                   {activeItem.title}
                 </h1>
                 <p className="max-w-[16rem] text-xs text-muted-foreground sm:max-w-none">
