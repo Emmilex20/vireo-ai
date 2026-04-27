@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { getFollowingFeed } from "@vireon/db"
 
+type FollowingAsset = Awaited<ReturnType<typeof getFollowingFeed>>[number];
+
 export async function GET() {
   const { userId } = await auth()
 
@@ -12,7 +14,7 @@ export async function GET() {
   const assets = await getFollowingFeed(userId)
 
   return NextResponse.json({
-    assets: assets.map((asset) => ({
+    assets: assets.map((asset: FollowingAsset) => ({
       ...asset,
       mediaType: asset.mediaType === "video" ? "video" : "image",
       sourceImageUrl: asset.generationJob?.sourceImageUrl ?? null,

@@ -8,6 +8,8 @@ import {
 } from "@vireon/db";
 import { deleteCloudinaryAsset } from "@/lib/storage/cloudinary";
 
+type UserAsset = Awaited<ReturnType<typeof getUserAssets>>[number];
+
 type AssetWithMediaType = {
   mediaType?: string | null;
   generationJob?: {
@@ -32,7 +34,7 @@ export async function GET() {
 
   const assets = await getUserAssets(userId);
 
-  const enrichedAssets = assets.map((assetRaw) => {
+  const enrichedAssets = assets.map((assetRaw: UserAsset) => {
     const asset = assetRaw as typeof assetRaw & AssetWithMediaType;
     const generationJob = asset.generationJob;
 

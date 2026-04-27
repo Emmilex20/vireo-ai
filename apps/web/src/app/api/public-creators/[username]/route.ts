@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { getPublicCreatorProfile } from "@vireon/db"
 
+type PublicCreator = Awaited<ReturnType<typeof getPublicCreatorProfile>>;
+type PublicCreatorAsset = PublicCreator["assets"][number];
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ username: string }> }
@@ -14,7 +17,7 @@ export async function GET(
     return NextResponse.json({
       creator: {
         ...creator,
-        assets: creator.assets.map((asset) => ({
+        assets: creator.assets.map((asset: PublicCreatorAsset) => ({
           ...asset,
           mediaType: asset.mediaType === "video" ? "video" : "image",
           sourceImageUrl: asset.generationJob?.sourceImageUrl ?? null,
