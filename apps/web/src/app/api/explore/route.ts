@@ -5,6 +5,7 @@ import {
   getLikedPostIds,
   getPublicExploreFeed,
 } from "@vireon/db"
+import { inferMediaType } from "@/lib/media/infer-media-type"
 
 type ExplorePost =
   | Awaited<ReturnType<typeof getFollowingExploreFeed>>[number]
@@ -29,6 +30,10 @@ export async function GET(req: Request) {
 
   const enrichedPosts = posts.map((post: ExplorePost) => ({
     ...post,
+    asset: {
+      ...post.asset,
+      mediaType: inferMediaType(post.asset),
+    },
     likedByCurrentUser: likedPostIds.includes(post.id),
   }))
 
