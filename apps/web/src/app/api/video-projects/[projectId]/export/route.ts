@@ -11,6 +11,9 @@ import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import { enqueueProjectExport } from "@/lib/queue/project-export-queue";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 
+type VideoProject = NonNullable<Awaited<ReturnType<typeof getVideoProjectById>>>;
+type VideoProjectScene = VideoProject["scenes"][number];
+
 export async function POST(
   _req: Request,
   { params }: { params: Promise<{ projectId: string }> }
@@ -40,7 +43,9 @@ export async function POST(
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  const completedScenes = project.scenes.filter((scene) => scene.videoUrl);
+  const completedScenes = project.scenes.filter(
+    (scene: VideoProjectScene) => scene.videoUrl
+  );
   const exportAttemptId = `export_${projectId}_${Date.now()}`;
 
   if (completedScenes.length === 0) {
