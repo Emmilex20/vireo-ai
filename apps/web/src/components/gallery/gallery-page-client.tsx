@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AssetCard } from "@/components/assets/asset-card";
 import { VideoAssetCard } from "@/components/assets/video-asset-card";
+import { inferMediaType } from "@/lib/media/infer-media-type";
 
 type MediaFilter = "all" | "image" | "video";
 
@@ -50,8 +51,13 @@ export function GalleryPageClient() {
     void loadAssets();
   }, []);
 
-  function mediaTypeOf(item: { mediaType?: "image" | "video" }) {
-    return item.mediaType === "video" ? "video" : "image";
+  function mediaTypeOf(
+    item: Pick<PublicAsset, "mediaType" | "fileUrl"> & {
+      mimeType?: string | null;
+      type?: string | null;
+    }
+  ) {
+    return inferMediaType(item);
   }
 
   function matchesSearch(item: PublicAsset) {
@@ -134,10 +140,10 @@ export function GalleryPageClient() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            name: "Vireon AI Gallery",
+            name: "Vireon AI Explore",
             description:
               "A public gallery of AI-generated images and videos created with Vireon AI.",
-            url: "https://your-domain.com/gallery"
+            url: "https://your-domain.com/explore"
           })
         }}
       />
@@ -145,9 +151,7 @@ export function GalleryPageClient() {
       <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:justify-between lg:items-end">
           <div>
-            <h1 className="text-3xl font-bold text-white">
-              Explore Vireon creations
-            </h1>
+            <h1 className="text-3xl font-bold text-white">Explore Vireon creations</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Discover what others are creating with Vireon AI.
             </p>

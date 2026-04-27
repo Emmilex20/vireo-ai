@@ -6,6 +6,7 @@ import {
   getUserAssets,
   updateAssetPublishStatus,
 } from "@vireon/db";
+import { inferMediaType } from "@/lib/media/infer-media-type";
 import { deleteCloudinaryAsset } from "@/lib/storage/cloudinary";
 
 type UserAsset = Awaited<ReturnType<typeof getUserAssets>>[number];
@@ -40,7 +41,7 @@ export async function GET() {
 
     return {
       ...asset,
-      mediaType: asset.mediaType === "video" ? "video" : "image",
+      mediaType: inferMediaType(asset),
       sourceImageUrl: generationJob?.sourceImageUrl ?? null,
       sourceAssetId: generationJob?.sourceAssetId ?? null
     };
@@ -87,7 +88,7 @@ export async function DELETE(req: Request) {
     ) {
       const result = await deleteCloudinaryAsset({
         publicId: generationJob.storagePublicId,
-        resourceType: asset.mediaType === "video" ? "video" : "image",
+        resourceType: inferMediaType(asset),
       });
 
       if (!result.deleted) {

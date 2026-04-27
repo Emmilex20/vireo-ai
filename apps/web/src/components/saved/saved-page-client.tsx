@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AssetCard } from "@/components/assets/asset-card";
 import { AssetDetailModal } from "@/components/assets/asset-detail-modal";
 import { VideoAssetCard } from "@/components/assets/video-asset-card";
+import { inferMediaType } from "@/lib/media/infer-media-type";
 
 type MediaFilter = "all" | "image" | "video";
 
@@ -48,7 +49,7 @@ export function SavedPageClient() {
   }, []);
 
   function mediaTypeOf(asset: SavedAsset) {
-    return asset.mediaType === "video" ? "video" : "image";
+    return inferMediaType(asset);
   }
 
   function matchesSearch(asset: SavedAsset) {

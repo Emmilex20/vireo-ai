@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AssetCard } from "@/components/assets/asset-card";
 import { AssetDetailModal } from "@/components/assets/asset-detail-modal";
 import { VideoAssetCard } from "@/components/assets/video-asset-card";
+import { inferMediaType } from "@/lib/media/infer-media-type";
 
 type MediaFilter = "all" | "image" | "video";
 
@@ -54,7 +55,7 @@ export function FollowingFeedClient() {
   }, []);
 
   function mediaTypeOf(asset: FeedAsset) {
-    return asset.mediaType === "video" ? "video" : "image";
+    return inferMediaType(asset);
   }
 
   function matchesSearch(asset: FeedAsset) {
@@ -196,10 +197,10 @@ export function FollowingFeedClient() {
             </p>
             {!query.trim() ? (
               <a
-                href="/gallery"
+                href="/explore"
                 className="mt-5 inline-flex rounded-full border border-primary/20 bg-primary/10 px-5 py-2 text-sm text-primary transition hover:bg-primary/15"
               >
-                Explore gallery
+                Explore creations
               </a>
             ) : null}
           </div>
@@ -208,7 +209,7 @@ export function FollowingFeedClient() {
             {filteredAssets.map((asset) => (
               <div key={asset.id}>
                 <div onClick={() => openAsset(asset)} className="cursor-pointer">
-                  {asset.mediaType === "video" ? (
+                  {mediaTypeOf(asset) === "video" ? (
                     <VideoAssetCard
                       id={asset.id}
                       title={asset.title}

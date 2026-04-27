@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { getPublicCreatorProfile } from "@vireon/db"
+import { inferMediaType } from "@/lib/media/infer-media-type"
 
 type PublicCreator = Awaited<ReturnType<typeof getPublicCreatorProfile>>;
 type PublicCreatorAsset = PublicCreator["assets"][number];
@@ -19,7 +20,7 @@ export async function GET(
         ...creator,
         assets: creator.assets.map((asset: PublicCreatorAsset) => ({
           ...asset,
-          mediaType: asset.mediaType === "video" ? "video" : "image",
+          mediaType: inferMediaType(asset),
           sourceImageUrl: asset.generationJob?.sourceImageUrl ?? null,
         })),
       },

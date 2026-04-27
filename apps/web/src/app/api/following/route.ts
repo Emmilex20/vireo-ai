@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { getFollowingFeed } from "@vireon/db"
+import { inferMediaType } from "@/lib/media/infer-media-type"
 
 type FollowingAsset = Awaited<ReturnType<typeof getFollowingFeed>>[number];
 
@@ -16,7 +17,7 @@ export async function GET() {
   return NextResponse.json({
     assets: assets.map((asset: FollowingAsset) => ({
       ...asset,
-      mediaType: asset.mediaType === "video" ? "video" : "image",
+      mediaType: inferMediaType(asset),
       sourceImageUrl: asset.generationJob?.sourceImageUrl ?? null,
       likedByMe: Boolean(asset.likes?.length),
       savedByMe: Boolean(asset.saves?.length),

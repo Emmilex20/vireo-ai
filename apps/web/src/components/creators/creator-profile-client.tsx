@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AssetCard } from "@/components/assets/asset-card";
 import { AssetDetailModal } from "@/components/assets/asset-detail-modal";
 import { VideoAssetCard } from "@/components/assets/video-asset-card";
+import { inferMediaType } from "@/lib/media/infer-media-type";
 import { CreatorShareActions } from "./creator-share-actions";
 import { FollowListModal } from "./follow-list-modal";
 
@@ -88,7 +89,7 @@ export function CreatorProfileClient({ username }: { username: string }) {
   }, [username]);
 
   function mediaTypeOf(asset: PublicAsset) {
-    return asset.mediaType === "video" ? "video" : "image";
+    return inferMediaType(asset);
   }
 
   function matchesSearch(asset: PublicAsset) {
