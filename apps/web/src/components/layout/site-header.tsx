@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import { HeaderAuth } from "./header-auth";
 
 const navLinks = [
@@ -14,8 +15,15 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(5,10,11,0.82)] backdrop-blur-xl">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:h-16 lg:px-8 lg:py-0">
         <Link href="/" className="flex min-w-0 items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary ring-1 ring-primary/25">
-            <Sparkles className="size-4" />
+          <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
+            <Image
+              src="/logo.png"
+              alt="Vireon AI"
+              width={40}
+              height={40}
+              className="size-full object-cover"
+              priority
+            />
           </div>
 
           <div className="min-w-0 flex-col leading-none">

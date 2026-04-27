@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 
 const productLinks = [
   { href: "/", label: "Home" },
@@ -28,8 +28,14 @@ export function PublicSiteFooter() {
         <div className="grid gap-12 lg:grid-cols-[1.25fr_0.75fr_0.75fr_0.9fr]">
           <div className="max-w-md">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/12 text-primary ring-1 ring-primary/25">
-                <Sparkles className="size-4" />
+              <div className="flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
+                <Image
+                  src="/logo.png"
+                  alt="Vireon AI"
+                  width={40}
+                  height={40}
+                  className="size-full object-cover"
+                />
               </div>
               <div>
                 <p className="font-[family-name:var(--font-heading)] text-xl font-bold text-white">
@@ -54,7 +60,7 @@ export function PublicSiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Vireon AI. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Vireon AI. All rights reserved.</p>
           <p>Built for creators who want faster visual workflows with more polish.</p>
         </div>
       </div>

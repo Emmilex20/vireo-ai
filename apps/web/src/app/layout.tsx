@@ -6,11 +6,59 @@ import { inter, jakarta } from "@/lib/fonts";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://vireon.ai"),
+  applicationName: APP_NAME,
   title: {
     default: APP_NAME,
     template: `%s | ${APP_NAME}`
   },
-  description: APP_DESCRIPTION
+  description: APP_DESCRIPTION,
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" }
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    other: [
+      {
+        rel: "android-chrome",
+        url: "/android-chrome-192x192.png",
+        sizes: "192x192"
+      },
+      {
+        rel: "android-chrome",
+        url: "/android-chrome-512x512.png",
+        sizes: "512x512"
+      }
+    ]
+  },
+  appleWebApp: {
+    title: APP_NAME,
+    capable: true,
+    statusBarStyle: "black-translucent"
+  },
+  openGraph: {
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    siteName: APP_NAME,
+    type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 1200,
+        alt: APP_NAME
+      }
+    ]
+  },
+  twitter: {
+    card: "summary",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    images: ["/logo.png"]
+  }
 };
 
 export default function RootLayout({

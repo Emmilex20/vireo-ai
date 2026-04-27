@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -11,7 +12,6 @@ import {
   History,
   ImageIcon,
   Plus,
-  Sparkles,
   UserRound,
   Video
 } from "lucide-react";
@@ -122,8 +122,15 @@ export function AppShell({ children }: AppShellProps) {
             className="flex items-center gap-3"
             data-tour="studio"
           >
-            <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-primary/20">
-              <Sparkles className="size-4" />
+            <div className="flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
+              <Image
+                src="/logo.png"
+                alt="Vireon AI"
+                width={40}
+                height={40}
+                className="size-full object-cover"
+                priority
+              />
             </div>
             <div>
               <div className="font-(family-name:--font-heading) text-lg font-bold text-white">
@@ -192,11 +199,28 @@ export function AppShell({ children }: AppShellProps) {
           <div className="px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-start justify-between gap-3 lg:h-16 lg:items-center">
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] text-primary lg:hidden">
-                  <ActiveIcon className="size-3.5" />
-                  Active tool
+                <div className="flex items-center gap-3 lg:hidden">
+                  <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
+                    <Image
+                      src="/logo.png"
+                      alt="Vireon AI"
+                      width={40}
+                      height={40}
+                      className="size-full object-cover"
+                      priority
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-(family-name:--font-heading) text-base font-bold text-white">
+                      Vireon AI
+                    </div>
+                    <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] text-primary">
+                      <ActiveIcon className="size-3.5" />
+                      Active tool
+                    </div>
+                  </div>
                 </div>
-                <h1 className="mt-2 font-(family-name:--font-heading) text-lg font-semibold text-white lg:mt-0">
+                <h1 className="mt-3 font-(family-name:--font-heading) text-lg font-semibold text-white lg:mt-0">
                   {activeItem.title}
                 </h1>
                 <p className="max-w-[16rem] text-xs text-muted-foreground sm:max-w-none">
