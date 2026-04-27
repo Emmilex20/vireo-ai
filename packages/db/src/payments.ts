@@ -1,5 +1,10 @@
 import { db } from "./index"
 
+type PaymentCreditTransactionClient = Pick<
+  typeof db,
+  "creditWallet" | "payment" | "creditTransaction" | "creditLedger"
+>
+
 export async function grantCreditsForPayment(params: {
   userId: string
   reference: string
@@ -18,7 +23,7 @@ export async function grantCreditsForPayment(params: {
     return { credited: false, reason: "ALREADY_CREDITED" }
   }
 
-  return db.$transaction(async (tx) => {
+  return db.$transaction(async (tx: PaymentCreditTransactionClient) => {
     const wallet = await tx.creditWallet.upsert({
       where: { userId: params.userId },
       update: {},

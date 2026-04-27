@@ -1,5 +1,10 @@
 import { db } from "./index";
 
+type AdminModerationTransactionClient = Pick<
+  typeof db,
+  "asset" | "moderationAuditLog"
+>;
+
 export async function getAdminPublicAssets() {
   return db.asset.findMany({
     where: {
@@ -35,7 +40,7 @@ export async function adminUnpublishAsset(params: {
   adminId: string;
   note?: string;
 }) {
-  return db.$transaction(async (tx) => {
+  return db.$transaction(async (tx: AdminModerationTransactionClient) => {
     const asset = await tx.asset.update({
       where: { id: params.assetId },
       data: { isPublic: false },

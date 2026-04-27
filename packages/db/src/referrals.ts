@@ -2,6 +2,11 @@ import { db } from "./index"
 
 const REFERRAL_REWARD_CREDITS = 20
 
+type ReferralRewardTransactionClient = Pick<
+  typeof db,
+  "creditLedger" | "creditWallet" | "creditTransaction"
+>
+
 function generateCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
 }
@@ -61,7 +66,7 @@ export async function rewardReferral(userId: string) {
 
   if (alreadyRewarded) return
 
-  await db.$transaction(async (tx) => {
+  await db.$transaction(async (tx: ReferralRewardTransactionClient) => {
     const duplicate = await tx.creditLedger.findFirst({
       where: {
         userId: user.referredBy!.id,

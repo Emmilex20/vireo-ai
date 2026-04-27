@@ -1,5 +1,10 @@
 import { db } from "./index"
 
+type SubscriptionRenewalTransactionClient = Pick<
+  typeof db,
+  "creditWallet" | "creditTransaction" | "subscriptionRenewal" | "creditLedger"
+>
+
 export async function grantSubscriptionRenewalCredits(params: {
   userId: string
   subscriptionId?: string | null
@@ -19,7 +24,7 @@ export async function grantSubscriptionRenewalCredits(params: {
     }
   }
 
-  await db.$transaction(async (tx) => {
+  await db.$transaction(async (tx: SubscriptionRenewalTransactionClient) => {
     const wallet = await tx.creditWallet.upsert({
       where: { userId: params.userId },
       update: {

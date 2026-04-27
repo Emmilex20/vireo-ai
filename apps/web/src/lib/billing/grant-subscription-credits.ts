@@ -1,5 +1,9 @@
 import { db } from "@vireon/db";
-import type { Prisma } from "@prisma/client";
+
+type SubscriptionCreditTransactionClient = Pick<
+  typeof db,
+  "creditWallet" | "creditTransaction" | "creditLedger" | "subscription"
+>;
 
 function getNextPeriodEnd(currentPeriodEnd: Date, now: Date) {
   const nextPeriodEnd = new Date(currentPeriodEnd);
@@ -24,7 +28,7 @@ export async function grantSubscriptionCredits() {
     if (sub.currentPeriodEnd <= now) {
       const nextPeriodEnd = getNextPeriodEnd(sub.currentPeriodEnd, now);
 
-      await db.$transaction(async (tx: Prisma.TransactionClient) => {
+      await db.$transaction(async (tx: SubscriptionCreditTransactionClient) => {
         const wallet = await tx.creditWallet.upsert({
           where: { userId: sub.userId },
           update: {

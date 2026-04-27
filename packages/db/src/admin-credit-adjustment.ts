@@ -3,6 +3,11 @@ import { db } from "./index";
 const TRANSACTION_TIMEOUT_MESSAGE =
   "Transaction API error: Unable to start a transaction in the given time.";
 
+type AdminCreditAdjustmentTransactionClient = Pick<
+  typeof db,
+  "user" | "creditWallet" | "creditTransaction" | "creditLedger"
+>;
+
 export async function adminAdjustUserCredits(params: {
   adminId: string;
   userId: string;
@@ -21,7 +26,7 @@ export async function adminAdjustUserCredits(params: {
 
   const runAdjustment = () =>
     db.$transaction(
-      async (tx) => {
+      async (tx: AdminCreditAdjustmentTransactionClient) => {
         const user = await tx.user.findUnique({
           where: { id: params.userId },
           select: { id: true },
