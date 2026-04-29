@@ -84,6 +84,7 @@ model CreditTransaction {
 model GenerationJob {
   id                String   @id @default(cuid())
   userId            String
+  modelId           String?
   type              String
   status            String
   providerName      String?
@@ -383,6 +384,7 @@ model Notification {
 model PromptDraft {
   id              String   @id @default(cuid())
   userId          String
+  modelId         String?
   type            String   @default("image")
   title           String
   prompt          String

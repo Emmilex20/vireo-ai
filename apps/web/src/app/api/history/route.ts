@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getUserGenerationHistory } from "@vireon/db";
 
 type HistoryItem = Awaited<ReturnType<typeof getUserGenerationHistory>>[number] & {
+  modelId?: string | null;
   duration?: number | null;
   motionIntensity?: string | null;
   cameraMove?: string | null;
@@ -30,6 +31,7 @@ export async function GET() {
       return {
         ...historyItem,
         mediaType: historyItem.type === "video" ? "video" : "image",
+        modelId: historyItem.modelId ?? null,
 
         // image fields
         style: historyItem.type === "image" ? historyItem.style : null,
@@ -51,7 +53,9 @@ export async function GET() {
         shotType: historyItem.type === "video" ? historyItem.shotType : null,
         fps: historyItem.type === "video" ? historyItem.fps : null,
         sourceImageUrl:
-          historyItem.type === "video" ? historyItem.sourceImageUrl : null,
+          historyItem.type === "video" || historyItem.type === "image"
+            ? historyItem.sourceImageUrl
+            : null,
         sourceAssetId:
           historyItem.type === "video" ? historyItem.sourceAssetId : null,
         failureReason: historyItem.failureReason,

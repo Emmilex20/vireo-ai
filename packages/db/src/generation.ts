@@ -3,10 +3,19 @@ import { createAssetFromCompletedJob } from "./assets"
 import { rewardReferral } from "./referrals"
 import { refundFailedGenerationJob } from "./refunds"
 
+function isUnknownModelIdArgumentError(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.includes("Unknown argument `modelId`")
+  )
+}
+
 export async function createImageJob(params: {
   userId: string
   prompt: string
   negativePrompt?: string
+  modelId?: string
+  sourceImageUrl?: string
   credits: number
   providerName?: string
   providerJobId?: string
@@ -18,25 +27,38 @@ export async function createImageJob(params: {
   steps?: number
   guidance?: number
 }) {
-  return db.generationJob.create({
-    data: {
-      userId: params.userId,
-      type: "image",
-      status: "processing",
-      providerName: params.providerName ?? null,
-      providerJobId: params.providerJobId ?? null,
-      prompt: params.prompt,
-      negativePrompt: params.negativePrompt,
-      creditsUsed: params.credits,
-      style: params.style ?? null,
-      aspectRatio: params.aspectRatio ?? null,
-      qualityMode: params.qualityMode ?? null,
-      promptBoost: params.promptBoost ?? true,
-      seed: params.seed ?? null,
-      steps: params.steps ?? null,
-      guidance: params.guidance ?? null,
-    },
-  })
+  const data = {
+    userId: params.userId,
+    modelId: params.modelId ?? null,
+    type: "image",
+    status: "processing",
+    providerName: params.providerName ?? null,
+    providerJobId: params.providerJobId ?? null,
+    prompt: params.prompt,
+    negativePrompt: params.negativePrompt,
+    sourceImageUrl: params.sourceImageUrl ?? null,
+    creditsUsed: params.credits,
+    style: params.style ?? null,
+    aspectRatio: params.aspectRatio ?? null,
+    qualityMode: params.qualityMode ?? null,
+    promptBoost: params.promptBoost ?? true,
+    seed: params.seed ?? null,
+    steps: params.steps ?? null,
+    guidance: params.guidance ?? null,
+  }
+
+  try {
+    return await db.generationJob.create({ data })
+  } catch (error) {
+    if (!isUnknownModelIdArgumentError(error)) {
+      throw error
+    }
+
+    const { modelId: _modelId, ...legacyData } = data
+    return db.generationJob.create({
+      data: legacyData,
+    })
+  }
 }
 
 export async function createVideoJob(params: {

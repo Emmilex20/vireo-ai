@@ -13,6 +13,8 @@ export type ProviderJobStatus = {
 export type ImageGenerationInput = {
   prompt: string;
   negativePrompt?: string;
+  modelId?: string;
+  referenceImageUrl?: string;
   style?: string;
   aspectRatio?: string;
   qualityMode?: string;

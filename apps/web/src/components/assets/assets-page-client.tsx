@@ -27,6 +27,7 @@ type Asset = {
 type HistoryItem = {
   id: string;
   mediaType?: "image" | "video";
+  modelId?: string | null;
   prompt?: string | null;
   negativePrompt?: string | null;
   failureReason?: string | null;
@@ -54,6 +55,8 @@ type HistoryItem = {
 
 type ReuseImageItem = {
   id: string;
+  modelId?: string | null;
+  sourceImageUrl?: string | null;
   prompt?: string | null;
   negativePrompt?: string | null;
   style?: string | null;
@@ -182,6 +185,8 @@ export function AssetsPageClient() {
     const payload = {
       prompt: item.prompt ?? "",
       negativePrompt: item.negativePrompt ?? "",
+      modelId: item.modelId ?? "black-forest-labs/flux-schnell",
+      referenceImageUrl: item.sourceImageUrl ?? "",
       style: item.style ?? "Cinematic",
       aspectRatio: item.aspectRatio ?? "4:3",
       qualityMode: item.qualityMode ?? "high",
@@ -484,6 +489,7 @@ export function AssetsPageClient() {
                   key={item.id}
                   id={item.id}
                   mediaType={mediaTypeOf(item)}
+                  modelId={item.modelId}
                   prompt={item.prompt}
                   negativePrompt={item.negativePrompt}
                   failureReason={item.failureReason}

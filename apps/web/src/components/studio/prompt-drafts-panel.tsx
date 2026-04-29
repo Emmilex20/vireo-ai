@@ -1,9 +1,11 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { resolveReplicateImageModel, type ReplicateImageModelId } from "@/lib/ai/providers/replicate-image-models";
 
 type PromptDraft = {
   id: string;
+  modelId?: ReplicateImageModelId | null;
   title: string;
   prompt: string;
   negativePrompt?: string | null;
@@ -114,6 +116,12 @@ export function PromptDraftsPanel({
                   {draft.qualityMode ? (
                     <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
                       {draft.qualityMode}
+                    </span>
+                  ) : null}
+
+                  {draft.modelId ? (
+                    <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-primary">
+                      {resolveReplicateImageModel(draft.modelId).label}
                     </span>
                   ) : null}
                 </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
+import { resolveReplicateImageModel } from "@/lib/ai/providers/replicate-image-models";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
 import { getImageGenerationCost } from "@/lib/image-generation-config";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
@@ -45,6 +46,8 @@ export async function POST(req: Request) {
     const {
       prompt,
       negativePrompt,
+      modelId,
+      referenceImageUrl,
       style,
       aspectRatio,
       qualityMode,
@@ -55,6 +58,8 @@ export async function POST(req: Request) {
     }: {
       prompt?: string;
       negativePrompt?: string;
+      modelId?: string;
+      referenceImageUrl?: string;
       style?: string;
       aspectRatio?: string;
       qualityMode?: "standard" | "high" | "ultra";
@@ -92,7 +97,19 @@ export async function POST(req: Request) {
 
     const provider = getImageProvider();
     const workersMode = await isWorkersMode();
+    const selectedModel = resolveReplicateImageModel(modelId);
+
+    if (referenceImageUrl && !selectedModel.supports.referenceImage) {
+      return NextResponse.json(
+        {
+          error: `${selectedModel.label} does not support reference image uploads.`,
+        },
+        { status: 400 }
+      );
+    }
+
     const imageCost = getImageGenerationCost({
+      modelId: selectedModel.id,
       qualityMode,
       seed,
       steps,
@@ -102,6 +119,8 @@ export async function POST(req: Request) {
     const providerJob = await provider.createImageJob({
       prompt,
       negativePrompt,
+      modelId,
+      referenceImageUrl,
       style,
       aspectRatio,
       qualityMode,
@@ -115,6 +134,8 @@ export async function POST(req: Request) {
       userId,
       prompt,
       negativePrompt,
+      modelId: selectedModel.id,
+      sourceImageUrl: referenceImageUrl,
       credits: imageCost,
       providerName: provider.name,
       providerJobId: providerJob.providerJobId,
@@ -155,6 +176,7 @@ export async function POST(req: Request) {
           providerJobId: job.providerJobId,
           prompt: job.prompt,
           negativePrompt: job.negativePrompt,
+          sourceImageUrl: job.sourceImageUrl,
           style: job.style,
           aspectRatio: job.aspectRatio,
           qualityMode: job.qualityMode,
@@ -174,6 +196,8 @@ export async function POST(req: Request) {
           providerJobId: finalJob.providerJobId,
           inlineProcessed: true,
           meta: {
+            modelId: modelId ?? process.env.REPLICATE_IMAGE_MODEL ?? null,
+            referenceImageUrl: referenceImageUrl ?? null,
             style: style ?? "Cinematic",
             aspectRatio: aspectRatio ?? "4:3",
             qualityMode: qualityMode ?? "high",
@@ -202,6 +226,8 @@ export async function POST(req: Request) {
       providerName: job.providerName,
       providerJobId: job.providerJobId,
       meta: {
+        modelId: modelId ?? process.env.REPLICATE_IMAGE_MODEL ?? null,
+        referenceImageUrl: referenceImageUrl ?? null,
         style: style ?? "Cinematic",
         aspectRatio: aspectRatio ?? "4:3",
         qualityMode: qualityMode ?? "high",
@@ -250,7 +276,15 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      { error: "Failed to create image job" },
+      {
+        error: "Failed to create image job",
+        ...(process.env.NODE_ENV !== "production"
+          ? {
+              debug:
+                error instanceof Error ? error.message : String(error),
+            }
+          : {}),
+      },
       { status: 500 }
     );
   }

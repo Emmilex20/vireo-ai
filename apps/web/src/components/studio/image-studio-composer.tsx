@@ -2,21 +2,29 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
+  Loader2,
   ImagePlus,
   RefreshCcw,
   RotateCcw,
   Settings2,
   Sparkles,
   Wand2,
+  Upload,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  listReplicateImageModels,
+  type ReplicateImageModelId,
+} from "@/lib/ai/providers/replicate-image-models";
 import { getImageGenerationCost } from "@/lib/image-generation-config";
 import { StudioSectionTitle } from "@/components/shared/studio-section-title";
 import { AdvancedImageSettings } from "./advanced-image-settings";
 import { AspectRatioSelector } from "./aspect-ratio-selector";
 import { ControlGroup } from "./control-group";
+import { ImageModelSelector } from "./image-model-selector";
 import { PromptTemplatesPanel } from "@/components/prompts/prompt-templates-panel";
 import { PromptDraftsPanel } from "./prompt-drafts-panel";
 import { PromptQuickActions } from "./prompt-quick-actions";
@@ -34,6 +42,7 @@ import type { QualityMode, StudioGenerationSetup } from "./types";
 
 type PromptDraft = {
   id: string;
+  modelId?: ReplicateImageModelId | null;
   title: string;
   prompt: string;
   negativePrompt?: string | null;
@@ -50,6 +59,8 @@ type PromptDraft = {
 type ReusePayload = {
   prompt: string;
   negativePrompt: string;
+  modelId?: ReplicateImageModelId;
+  referenceImageUrl?: string;
   style: string;
   aspectRatio: string;
   qualityMode: QualityMode;
@@ -59,9 +70,17 @@ type ReusePayload = {
   guidance: number;
 };
 
+const imageModels = listReplicateImageModels();
+const defaultModelId = "black-forest-labs/flux-schnell" as const;
+
 export function ImageStudioComposer() {
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
+  const [selectedModelId, setSelectedModelId] =
+    useState<ReplicateImageModelId>(defaultModelId);
+  const [referenceImageUrl, setReferenceImageUrl] = useState("");
+  const [referenceImageName, setReferenceImageName] = useState("");
+  const [uploadingReferenceImage, setUploadingReferenceImage] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState("Cinematic");
   const [selectedAspectRatio, setSelectedAspectRatio] = useState("4:3");
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -106,15 +125,26 @@ export function ImageStudioComposer() {
     return seed.trim() && Number.isFinite(value) ? value : null;
   }, [seed]);
 
+  const selectedModel = useMemo(
+    () => imageModels.find((model) => model.id === selectedModelId) ?? imageModels[0],
+    [selectedModelId]
+  );
+
+  const supportsReferenceImage = selectedModel.supports.referenceImage;
+  const supportsSeed = selectedModel.supports.seed;
+  const supportsSteps = selectedModel.supports.steps;
+  const supportsGuidance = selectedModel.supports.guidance;
+
   const imageCost = useMemo(
     () =>
       getImageGenerationCost({
+        modelId: selectedModelId,
         qualityMode,
         seed: parsedSeed,
         steps,
         guidance,
       }),
-    [guidance, parsedSeed, qualityMode, steps]
+    [guidance, parsedSeed, qualityMode, selectedModelId, steps]
   );
 
   const hasPersistedSession = useMemo(() => {
@@ -123,6 +153,8 @@ export function ImageStudioComposer() {
     return hasMeaningfulStudioState({
       prompt,
       negativePrompt,
+      modelId: selectedModelId,
+      referenceImageUrl,
       style: selectedStyle,
       aspectRatio: selectedAspectRatio,
       qualityMode,
@@ -136,6 +168,8 @@ export function ImageStudioComposer() {
     sessionHydrated,
     prompt,
     negativePrompt,
+    selectedModelId,
+    referenceImageUrl,
     selectedStyle,
     selectedAspectRatio,
     qualityMode,
@@ -171,6 +205,9 @@ export function ImageStudioComposer() {
 
           setPrompt(payload.prompt ?? "");
           setNegativePrompt(payload.negativePrompt ?? "");
+          setSelectedModelId(payload.modelId ?? defaultModelId);
+          setReferenceImageUrl(payload.referenceImageUrl ?? "");
+          setReferenceImageName(payload.referenceImageUrl ? "History reference image" : "");
           setSelectedStyle(payload.style ?? "Cinematic");
           setSelectedAspectRatio(payload.aspectRatio ?? "4:3");
           setQualityMode(payload.qualityMode ?? "high");
@@ -190,6 +227,13 @@ export function ImageStudioComposer() {
 
         setPrompt(persisted.prompt ?? "");
         setNegativePrompt(persisted.negativePrompt ?? "");
+        setSelectedModelId(
+          (persisted.modelId as ReplicateImageModelId | undefined) ?? defaultModelId
+        );
+        setReferenceImageUrl(persisted.referenceImageUrl ?? "");
+        setReferenceImageName(
+          persisted.referenceImageUrl ? "Saved reference image" : ""
+        );
         setSelectedStyle(persisted.style ?? "Cinematic");
         setSelectedAspectRatio(persisted.aspectRatio ?? "4:3");
         setQualityMode(persisted.qualityMode ?? "high");
@@ -215,6 +259,8 @@ export function ImageStudioComposer() {
     const snapshot = {
       prompt,
       negativePrompt,
+      modelId: selectedModelId,
+      referenceImageUrl,
       style: selectedStyle,
       aspectRatio: selectedAspectRatio,
       qualityMode,
@@ -230,6 +276,8 @@ export function ImageStudioComposer() {
     sessionHydrated,
     prompt,
     negativePrompt,
+    selectedModelId,
+    referenceImageUrl,
     selectedStyle,
     selectedAspectRatio,
     qualityMode,
@@ -244,6 +292,8 @@ export function ImageStudioComposer() {
     return {
       prompt,
       negativePrompt,
+      modelId: selectedModelId,
+      referenceImageUrl,
       style: selectedStyle,
       aspectRatio: selectedAspectRatio,
       qualityMode,
@@ -267,6 +317,8 @@ export function ImageStudioComposer() {
         body: JSON.stringify({
           prompt: setup.prompt,
           negativePrompt: setup.negativePrompt,
+          modelId: setup.modelId,
+          referenceImageUrl: setup.referenceImageUrl || undefined,
           style: setup.style,
           aspectRatio: setup.aspectRatio,
           qualityMode: setup.qualityMode,
@@ -404,9 +456,53 @@ export function ImageStudioComposer() {
     setLastAction("Cleared the current prompt fields.");
   }
 
+  async function handleReferenceImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingReferenceImage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/uploads/image-reference", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        window.alert(data.error || "Failed to upload reference image");
+        return;
+      }
+
+      setReferenceImageUrl(data.url);
+      setReferenceImageName(data.originalFilename ?? file.name);
+      setActiveDraftId(null);
+      setLastAction("Attached a reference image for guided generation.");
+    } catch {
+      window.alert("Failed to upload reference image");
+    } finally {
+      setUploadingReferenceImage(false);
+      event.target.value = "";
+    }
+  }
+
+  function handleRemoveReferenceImage() {
+    setReferenceImageUrl("");
+    setReferenceImageName("");
+    setActiveDraftId(null);
+    setLastAction("Removed the reference image.");
+  }
+
   function handleResetSession() {
     setPrompt("");
     setNegativePrompt("");
+    setSelectedModelId(defaultModelId);
+    setReferenceImageUrl("");
+    setReferenceImageName("");
     setSelectedStyle("Cinematic");
     setSelectedAspectRatio("4:3");
     setQualityMode("high");
@@ -445,6 +541,7 @@ export function ImageStudioComposer() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          modelId: selectedModelId,
           title: draftTitle,
           prompt,
           negativePrompt,
@@ -516,6 +613,9 @@ export function ImageStudioComposer() {
   function handleLoadDraft(draft: PromptDraft) {
     setPrompt(draft.prompt);
     setNegativePrompt(draft.negativePrompt ?? "");
+    setSelectedModelId(draft.modelId ?? defaultModelId);
+    setReferenceImageUrl("");
+    setReferenceImageName("");
     setSelectedStyle(draft.style || "Cinematic");
     setSelectedAspectRatio(draft.aspectRatio || "4:3");
     setQualityMode((draft.qualityMode as QualityMode) || "high");
@@ -528,6 +628,34 @@ export function ImageStudioComposer() {
     setDraftTitle(draft.title);
     setSelectedSuggestion(null);
     setLastAction(`Loaded draft "${draft.title}".`);
+  }
+
+  function handleModelChange(modelId: ReplicateImageModelId) {
+    const nextModel = imageModels.find((model) => model.id === modelId);
+    if (!nextModel) return;
+
+    setSelectedModelId(modelId);
+    setSelectedAspectRatio(nextModel.defaultAspectRatio);
+    setActiveDraftId(null);
+
+    if (!nextModel.supports.referenceImage) {
+      setReferenceImageUrl("");
+      setReferenceImageName("");
+    }
+
+    if (!nextModel.supports.seed) {
+      setSeed("");
+    }
+
+    if (!nextModel.supports.steps) {
+      setSteps(30);
+    }
+
+    if (!nextModel.supports.guidance) {
+      setGuidance(7.5);
+    }
+
+    setLastAction(`Switched image model to ${nextModel.label}.`);
   }
 
   return (
@@ -569,6 +697,35 @@ export function ImageStudioComposer() {
 
           <div className="space-y-5">
             <ControlGroup
+              title="Image model"
+              subtitle="Choose the generation engine first. Each model has its own defaults, strengths, and control surface."
+            >
+              <ImageModelSelector
+                value={selectedModelId}
+                onChange={handleModelChange}
+              />
+
+              <div className="mt-4 rounded-[1.25rem] border border-primary/20 bg-primary/10 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold text-white">
+                    {selectedModel.label}
+                  </p>
+                  <span className="rounded-full border border-primary/20 bg-black/20 px-2.5 py-1 text-[11px] text-primary">
+                    Default ratio {selectedModel.defaultAspectRatio}
+                  </span>
+                  <span className="rounded-full border border-primary/20 bg-black/20 px-2.5 py-1 text-[11px] text-primary">
+                    {supportsReferenceImage
+                      ? "Reference image ready"
+                      : "Prompt only"}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  {selectedModel.description}
+                </p>
+              </div>
+            </ControlGroup>
+
+            <ControlGroup
               title="Prompt editor"
               subtitle="Write the core instruction and define what the model should avoid."
             >
@@ -607,6 +764,11 @@ export function ImageStudioComposer() {
                     placeholder="What should the model avoid?"
                     className="min-h-40 w-full rounded-[1.25rem] border border-white/10 bg-black/30 px-4 py-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
                   />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {selectedModel.supports.negativePrompt
+                      ? "This model accepts a dedicated negative prompt."
+                      : "For this model, avoid instructions are folded into the main prompt pipeline for you."}
+                  </p>
                 </div>
               </div>
             </ControlGroup>
@@ -637,7 +799,7 @@ export function ImageStudioComposer() {
 
               <ControlGroup
                 title="Output format"
-                subtitle="Set the canvas ratio for the final image."
+                subtitle={`Set the canvas ratio for the final image. ${selectedModel.label} defaults to ${selectedModel.defaultAspectRatio}.`}
               >
                 <AspectRatioSelector
                   value={selectedAspectRatio}
@@ -647,6 +809,79 @@ export function ImageStudioComposer() {
                   }}
                 />
               </ControlGroup>
+
+              <ControlGroup
+                title="Reference image"
+                subtitle={
+                  supportsReferenceImage
+                    ? "Upload an optional guide image when you want the model to borrow composition, mood, or visual structure."
+                    : `${selectedModel.label} does not use reference-image guidance.`
+                }
+              >
+                {supportsReferenceImage ? (
+                  <div className="space-y-4">
+                    <label className="flex cursor-pointer flex-col items-center justify-center rounded-[1.25rem] border border-dashed border-white/10 bg-black/20 px-5 py-6 text-center transition hover:border-primary/25 hover:bg-white/5">
+                      <div className="flex size-12 items-center justify-center rounded-2xl bg-white/10 text-white">
+                        {uploadingReferenceImage ? (
+                          <Loader2 className="size-5 animate-spin" />
+                        ) : (
+                          <Upload className="size-5" />
+                        )}
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-white">
+                        {uploadingReferenceImage
+                          ? "Uploading reference image..."
+                          : "Upload a reference image"}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        PNG, JPG, or WEBP up to 10MB. The uploaded image is used
+                        only to guide this generation setup.
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(event) =>
+                          void handleReferenceImageUpload(event)
+                        }
+                      />
+                    </label>
+
+                    {referenceImageUrl ? (
+                      <div className="overflow-hidden rounded-[1.25rem] border border-primary/20 bg-black/20">
+                        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+                          <div>
+                            <p className="text-sm font-medium text-white">
+                              Reference image attached
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {referenceImageName || "Uploaded reference image"}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveReferenceImage}
+                            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white transition hover:bg-white/10"
+                          >
+                            <X className="size-3" />
+                            Remove
+                          </button>
+                        </div>
+                        <img
+                          src={referenceImageUrl}
+                          alt="Reference image"
+                          className="max-h-72 w-full object-cover"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">
+                    Choose a model like Seedream 4.5 or Ideogram v3 Quality if
+                    you want to guide generation with an uploaded image.
+                  </div>
+                )}
+              </ControlGroup>
             </div>
           </div>
         </StudioCard>
@@ -654,6 +889,9 @@ export function ImageStudioComposer() {
         <AdvancedImageSettings
           open={advancedOpen}
           onToggleOpen={() => setAdvancedOpen((prev) => !prev)}
+          supportsSeed={supportsSeed}
+          supportsSteps={supportsSteps}
+          supportsGuidance={supportsGuidance}
           qualityMode={qualityMode}
           onQualityModeChange={(value) => {
             setQualityMode(value);
@@ -746,6 +984,16 @@ export function ImageStudioComposer() {
                     <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
                       <div className="flex items-center gap-2 text-sm text-white">
                         <Sparkles className="size-4 text-primary" />
+                        Selected model
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {selectedModel.label}
+                      </p>
+                    </div>
+
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center gap-2 text-sm text-white">
+                        <Sparkles className="size-4 text-primary" />
                         Selected style
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
@@ -765,6 +1013,9 @@ export function ImageStudioComposer() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                      Model: {selectedModel.label}
+                    </span>
                     <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
                       Style: {selectedStyle}
                     </span>
@@ -786,6 +1037,11 @@ export function ImageStudioComposer() {
                     {seed.trim() ? (
                       <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
                         Seed: {seed}
+                      </span>
+                    ) : null}
+                    {referenceImageUrl ? (
+                      <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">
+                        Reference image attached
                       </span>
                     ) : null}
                     <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">

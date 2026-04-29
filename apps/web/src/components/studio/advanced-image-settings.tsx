@@ -7,6 +7,9 @@ type QualityMode = "standard" | "high" | "ultra";
 type AdvancedImageSettingsProps = {
   open: boolean;
   onToggleOpen: () => void;
+  supportsSeed: boolean;
+  supportsSteps: boolean;
+  supportsGuidance: boolean;
   qualityMode: QualityMode;
   onQualityModeChange: (value: QualityMode) => void;
   promptBoost: boolean;
@@ -44,6 +47,9 @@ const qualityModes: Array<{
 export function AdvancedImageSettings({
   open,
   onToggleOpen,
+  supportsSeed,
+  supportsSteps,
+  supportsGuidance,
   qualityMode,
   onQualityModeChange,
   promptBoost,
@@ -132,61 +138,86 @@ export function AdvancedImageSettings({
             </button>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-white">
-                Seed
-              </label>
-              <input
-                value={seed}
-                onChange={(e) => onSeedChange(e.target.value)}
-                placeholder="Optional fixed seed"
-                inputMode="numeric"
-                className="w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
-              />
-              <p className="mt-2 text-xs text-muted-foreground">
-                Use a fixed seed when you want more reproducible generations.
-              </p>
-            </div>
+          {supportsSeed || supportsSteps || supportsGuidance ? (
+            <>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {supportsSeed ? (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-white">
+                      Seed
+                    </label>
+                    <input
+                      value={seed}
+                      onChange={(e) => onSeedChange(e.target.value)}
+                      placeholder="Optional fixed seed"
+                      inputMode="numeric"
+                      className="w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Use a fixed seed when you want more reproducible generations.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-[1rem] border border-white/10 bg-black/20 p-4 text-xs leading-5 text-muted-foreground">
+                    This model does not support a fixed seed. It decides image
+                    randomness internally.
+                  </div>
+                )}
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-white">
-                Steps: {steps}
-              </label>
-              <input
-                type="range"
-                min={10}
-                max={50}
-                step={1}
-                value={steps}
-                onChange={(e) => onStepsChange(Number(e.target.value))}
-                className="w-full"
-              />
-              <p className="mt-2 text-xs text-muted-foreground">
-                Higher steps can improve detail, but usually increase generation
-                time.
-              </p>
-            </div>
-          </div>
+                {supportsSteps ? (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-white">
+                      Steps: {steps}
+                    </label>
+                    <input
+                      type="range"
+                      min={10}
+                      max={50}
+                      step={1}
+                      value={steps}
+                      onChange={(e) => onStepsChange(Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Higher steps can improve detail, but usually increase generation
+                      time.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-[1rem] border border-white/10 bg-black/20 p-4 text-xs leading-5 text-muted-foreground">
+                    This model uses its own built-in step schedule and does not
+                    expose a manual steps control.
+                  </div>
+                )}
+              </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-white">
-              Guidance: {guidance.toFixed(1)}
-            </label>
-            <input
-              type="range"
-              min={1}
-              max={20}
-              step={0.5}
-              value={guidance}
-              onChange={(e) => onGuidanceChange(Number(e.target.value))}
-              className="w-full"
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Higher guidance pushes the model to follow the prompt more
-              aggressively.
-            </p>
-          </div>
+              {supportsGuidance ? (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    Guidance: {guidance.toFixed(1)}
+                  </label>
+                  <input
+                    type="range"
+                    min={1}
+                    max={20}
+                    step={0.5}
+                    value={guidance}
+                    onChange={(e) => onGuidanceChange(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Higher guidance pushes the model to follow the prompt more
+                    aggressively.
+                  </p>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">
+              This model uses a more opinionated generation pipeline, so seed,
+              steps, and guidance are handled automatically for you.
+            </div>
+          )}
         </div>
       ) : null}
     </div>

@@ -6,7 +6,9 @@ export function hasMeaningfulStudioState(
   return Boolean(
     state.prompt.trim() ||
       state.negativePrompt.trim() ||
+      state.referenceImageUrl.trim() ||
       state.draftTitle?.trim() ||
+      state.modelId !== "black-forest-labs/flux-schnell" ||
       state.style !== "Cinematic" ||
       state.aspectRatio !== "4:3" ||
       state.qualityMode !== "high" ||

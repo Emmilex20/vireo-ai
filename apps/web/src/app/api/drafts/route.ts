@@ -35,6 +35,7 @@ export async function POST(req: Request) {
 
     const draft = await createPromptDraft({
       userId,
+      modelId: body.modelId,
       type: body.type ?? "image",
       title: body.title,
       prompt: body.prompt,

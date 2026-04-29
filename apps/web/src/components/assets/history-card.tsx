@@ -1,8 +1,11 @@
 "use client";
 
+import { resolveReplicateImageModel } from "@/lib/ai/providers/replicate-image-models";
+
 type HistoryCardProps = {
   id: string;
   mediaType?: "image" | "video";
+  modelId?: string | null;
   prompt?: string | null;
   negativePrompt?: string | null;
   failureReason?: string | null;
@@ -37,6 +40,8 @@ type HistoryCardProps = {
     aspectRatio?: string | null;
     qualityMode?: string | null;
     promptBoost?: boolean;
+    modelId?: string | null;
+    sourceImageUrl?: string | null;
     seed?: number | null;
     steps?: number | null;
     guidance?: number | null;
@@ -62,6 +67,7 @@ type HistoryCardProps = {
 export function HistoryCard({
   id,
   mediaType = "image",
+  modelId,
   prompt,
   negativePrompt,
   failureReason,
@@ -168,6 +174,12 @@ export function HistoryCard({
           </span>
         ) : null}
 
+        {mediaType === "image" && modelId ? (
+          <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">
+            {resolveReplicateImageModel(modelId).label}
+          </span>
+        ) : null}
+
         {mediaType === "image" ? (
           <>
             {style ? (
@@ -255,6 +267,8 @@ export function HistoryCard({
                 aspectRatio,
                 qualityMode,
                 promptBoost,
+                modelId,
+                sourceImageUrl,
                 seed,
                 steps,
                 guidance,

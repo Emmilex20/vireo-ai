@@ -100,6 +100,7 @@ export async function processGenerationJob(
         const fallbackJob = await fallbackProvider.createImageJob({
           prompt: job.prompt ?? "",
           negativePrompt: job.negativePrompt ?? undefined,
+          referenceImageUrl: job.sourceImageUrl ?? undefined,
           style: job.style ?? undefined,
           aspectRatio: job.aspectRatio ?? undefined,
           qualityMode: job.qualityMode ?? undefined,
