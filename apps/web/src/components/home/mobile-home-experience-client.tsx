@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -212,7 +213,7 @@ export function MobileHomeExperienceClient({
             <Link
               key={`${card.id}-${index}`}
               href={card.href}
-              className="group relative block h-[16.5rem] w-[88vw] max-w-[22rem] flex-none overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#12161f]"
+              className="group relative block h-66 w-[88vw] max-w-88 flex-none overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#12161f]"
             >
               {card.mediaUrl ? (
                 card.mediaType === "video" ? (
@@ -225,10 +226,12 @@ export function MobileHomeExperienceClient({
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (
-                  <img
+                  <Image
                     src={card.mediaUrl}
                     alt={card.title}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    fill
+                    sizes="88vw"
+                    className="object-cover"
                   />
                 )
               ) : (
@@ -280,7 +283,7 @@ export function MobileHomeExperienceClient({
               href={card.href}
               className="group flex items-center gap-4 rounded-[1.8rem] border border-primary/70 bg-[#0d1110] p-4 shadow-[0_14px_40px_rgba(0,0,0,0.22)]"
             >
-              <div className="size-24 shrink-0 overflow-hidden rounded-[1.35rem] bg-white/5">
+              <div className="relative size-24 shrink-0 overflow-hidden rounded-[1.35rem] bg-white/5">
                 {card.mediaUrl ? (
                   card.mediaType === "video" ? (
                     <video
@@ -292,10 +295,12 @@ export function MobileHomeExperienceClient({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <img
+                    <Image
                       src={card.mediaUrl}
                       alt={card.title}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="96px"
+                      className="object-cover"
                     />
                   )
                 ) : (
@@ -345,10 +350,12 @@ export function MobileHomeExperienceClient({
                     className="h-56 w-full object-cover"
                   />
                 ) : (
-                  <img
+                  <Image
                     src={featuredModelCard.mediaUrl}
                     alt={featuredModelCard.title}
-                    className="h-56 w-full object-cover"
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
                   />
                 )
               ) : (
@@ -408,12 +415,12 @@ export function MobileHomeExperienceClient({
             <Link
               key={card.id}
               href={card.href}
-              className={`overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#17181c] shadow-[0_14px_36px_rgba(0,0,0,0.22)] ${
+              className={`overflow-hidden rounded-3xl border border-white/10 bg-[#17181c] shadow-[0_14px_36px_rgba(0,0,0,0.22)] ${
                 index % 5 === 4 ? "col-span-2" : ""
               }`}
             >
               <div
-                className={`overflow-hidden ${
+                className={`relative overflow-hidden ${
                   index % 5 === 4 ? "h-64" : "h-36"
                 }`}
               >
@@ -428,10 +435,12 @@ export function MobileHomeExperienceClient({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <img
+                    <Image
                       src={card.mediaUrl}
                       alt={card.title}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes={index % 5 === 4 ? "100vw" : "50vw"}
+                      className="object-cover"
                     />
                   )
                 ) : (

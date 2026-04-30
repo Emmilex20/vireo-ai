@@ -13,7 +13,7 @@ export function PublicSiteFrame({
   return (
     <>
       <SiteHeader />
-      <div className="relative min-h-[calc(100vh-4rem)]">{children}</div>
+      <div className="relative min-h-[calc(100vh-4rem)] pt-16">{children}</div>
       <PublicSiteFooter />
       {showMobileDock ? <MobileBottomNav /> : null}
     </>

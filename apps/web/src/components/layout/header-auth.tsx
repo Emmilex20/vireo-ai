@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
+import { Coins } from "lucide-react";
 import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
@@ -79,31 +79,25 @@ export function HeaderAuth() {
   return (
     <div className="flex items-center gap-2 sm:gap-3">
       {credits !== null && (
-        <div className="flex items-center rounded-full border border-primary/25 bg-primary/10 px-3 py-2 text-xs font-medium text-primary sm:border-white/10 sm:bg-white/5 sm:px-4 sm:py-1 sm:text-white">
-          {credits} credits
+        <div className="inline-flex h-10 items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 text-xs font-medium text-primary shadow-[0_10px_30px_rgba(16,185,129,0.12)]">
+          <Coins className="size-3.5" />
+          <span>{credits}</span>
         </div>
       )}
 
-      <Button
-        size="icon"
-        variant="ghost"
-        className="hidden size-10 rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10 sm:inline-flex"
-      >
-        <Bell className="size-4" />
-      </Button>
-
-      <Link href="/studio">
-        <Button className="h-10 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 sm:px-5">
-          <span className="sm:hidden">Studio</span>
-          <span className="hidden sm:inline">Go to Studio</span>
+      <Link href="/pricing">
+        <Button className="h-10 rounded-full border border-primary/30 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-[0_12px_30px_rgba(16,185,129,0.22)] hover:bg-primary/90 sm:px-5">
+          <span className="sm:hidden">Upgrade</span>
+          <span className="hidden sm:inline">Upgrade</span>
         </Button>
       </Link>
 
-      <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-1">
+      <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#1a1d21] shadow-[0_12px_24px_rgba(0,0,0,0.22)] sm:size-11">
         <UserButton
           appearance={{
             elements: {
-              avatarBox: "h-8 w-8 sm:h-9 sm:w-9"
+              avatarBox: "h-8 w-8 sm:h-9 sm:w-9",
+              userButtonTrigger: "h-full w-full rounded-full p-0"
             }
           }}
         />
