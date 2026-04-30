@@ -13,6 +13,10 @@ import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
 import {
+  isReplicateVideoModelId,
+  resolveReplicateVideoModel,
+} from "@/lib/ai/providers/replicate-video-models";
+import {
   getVideoGenerationCost,
   isSupportedVideoDuration,
 } from "@/lib/video-generation-config";
@@ -48,6 +52,14 @@ export async function POST(req: Request) {
     const {
       prompt,
       negativePrompt,
+      modelId,
+      resolution,
+      draft,
+      saveAudio,
+      promptUpsampling,
+      disableSafetyFilter,
+      noOp,
+      seed,
       duration,
       aspectRatio,
       motionIntensity,
@@ -61,6 +73,14 @@ export async function POST(req: Request) {
     }: {
       prompt?: string;
       negativePrompt?: string;
+      modelId?: string;
+      resolution?: string;
+      draft?: boolean;
+      saveAudio?: boolean;
+      promptUpsampling?: boolean;
+      disableSafetyFilter?: boolean;
+      noOp?: boolean;
+      seed?: number;
       duration?: number;
       aspectRatio?: string;
       motionIntensity?: string;
@@ -80,7 +100,15 @@ export async function POST(req: Request) {
       );
     }
 
+    if (modelId && !isReplicateVideoModelId(modelId)) {
+      return NextResponse.json(
+        { error: "Unsupported video model selected." },
+        { status: 400 }
+      );
+    }
+
     const normalizedDuration = duration ?? 5;
+    const selectedModel = resolveReplicateVideoModel(modelId);
 
     if (!isSupportedVideoDuration(normalizedDuration)) {
       return NextResponse.json(
@@ -90,6 +118,7 @@ export async function POST(req: Request) {
     }
 
     const videoCost = getVideoGenerationCost({
+      modelId: selectedModel.id,
       duration: normalizedDuration,
       styleStrength,
       motionGuidance,
@@ -121,6 +150,14 @@ export async function POST(req: Request) {
     const providerJob = await provider.createVideoJob({
       prompt,
       negativePrompt,
+      modelId: selectedModel.id,
+      resolution,
+      draft,
+      saveAudio,
+      promptUpsampling,
+      disableSafetyFilter,
+      noOp,
+      seed,
       duration: normalizedDuration,
       aspectRatio,
       motionIntensity,
@@ -134,6 +171,7 @@ export async function POST(req: Request) {
 
     const job = await createVideoJob({
       userId,
+      modelId: selectedModel.id,
       prompt,
       negativePrompt,
       sourceImageUrl: imageUrl,
@@ -209,6 +247,9 @@ export async function POST(req: Request) {
             motionGuidance: motionGuidance ?? 6,
             shotType: shotType ?? "Wide Shot",
             fps: fps ?? 24,
+            resolution: resolution ?? null,
+            draft: draft ?? false,
+            modelId: selectedModel.id,
             credits: videoCost,
           },
         });
@@ -238,6 +279,9 @@ export async function POST(req: Request) {
         motionGuidance: motionGuidance ?? 6,
         shotType: shotType ?? "Wide Shot",
         fps: fps ?? 24,
+        resolution: resolution ?? null,
+        draft: draft ?? false,
+        modelId: selectedModel.id,
         credits: videoCost,
       },
     });
@@ -255,7 +299,12 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      { error: "Failed to create video job" },
+      {
+        error: "Failed to create video job",
+        ...(process.env.NODE_ENV !== "production"
+          ? { debug: error instanceof Error ? error.message : String(error) }
+          : {}),
+      },
       { status: 500 }
     );
   }

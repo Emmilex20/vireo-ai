@@ -1,20 +1,29 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { resolveReplicateVideoModel } from "@/lib/ai/providers/replicate-video-models";
 
 type VideoDraft = {
   id: string;
   title: string;
+  modelId?: string | null;
   prompt: string;
   negativePrompt?: string | null;
   duration?: number | null;
   aspectRatio?: string | null;
   motionIntensity?: string | null;
   cameraMove?: string | null;
+  resolution?: string | null;
+  draftMode?: boolean | null;
+  saveAudio?: boolean | null;
+  promptUpsampling?: boolean | null;
+  disableSafetyFilter?: boolean | null;
   styleStrength?: string | null;
   motionGuidance?: number | null;
   shotType?: string | null;
   fps?: number | null;
+  imageUrl?: string | null;
+  sourceAssetId?: string | null;
   updatedAt: string;
 };
 
@@ -98,6 +107,9 @@ export function VideoDraftsPanel({
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
+                    {resolveReplicateVideoModel(draft.modelId).label}
+                  </span>
                   {draft.duration ? (
                     <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
                       {draft.duration}s
@@ -116,6 +128,26 @@ export function VideoDraftsPanel({
                   {draft.cameraMove ? (
                     <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
                       {draft.cameraMove}
+                    </span>
+                  ) : null}
+                  {draft.resolution ? (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
+                      {draft.resolution}
+                    </span>
+                  ) : null}
+                  {draft.draftMode ? (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
+                      Draft mode
+                    </span>
+                  ) : null}
+                  {draft.saveAudio ? (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
+                      Audio saved
+                    </span>
+                  ) : null}
+                  {draft.imageUrl ? (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
+                      Source image
                     </span>
                   ) : null}
                 </div>

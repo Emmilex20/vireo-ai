@@ -65,6 +65,7 @@ export async function createVideoJob(params: {
   userId: string
   prompt: string
   negativePrompt?: string
+  modelId?: string
   sourceImageUrl?: string
   sourceAssetId?: string
   credits: number
@@ -79,28 +80,40 @@ export async function createVideoJob(params: {
   shotType?: string
   fps?: number
 }) {
-  return db.generationJob.create({
-    data: {
-      userId: params.userId,
-      type: "video",
-      status: "processing",
-      providerName: params.providerName ?? null,
-      providerJobId: params.providerJobId ?? null,
-      prompt: params.prompt,
-      negativePrompt: params.negativePrompt,
-      sourceImageUrl: params.sourceImageUrl ?? null,
-      sourceAssetId: params.sourceAssetId ?? null,
-      creditsUsed: params.credits,
-      aspectRatio: params.aspectRatio ?? null,
-      duration: params.duration ?? null,
-      motionIntensity: params.motionIntensity ?? null,
-      cameraMove: params.cameraMove ?? null,
-      styleStrength: params.styleStrength ?? null,
-      motionGuidance: params.motionGuidance ?? null,
-      shotType: params.shotType ?? null,
-      fps: params.fps ?? null,
-    },
-  })
+  const data = {
+    userId: params.userId,
+    modelId: params.modelId ?? null,
+    type: "video",
+    status: "processing",
+    providerName: params.providerName ?? null,
+    providerJobId: params.providerJobId ?? null,
+    prompt: params.prompt,
+    negativePrompt: params.negativePrompt,
+    sourceImageUrl: params.sourceImageUrl ?? null,
+    sourceAssetId: params.sourceAssetId ?? null,
+    creditsUsed: params.credits,
+    aspectRatio: params.aspectRatio ?? null,
+    duration: params.duration ?? null,
+    motionIntensity: params.motionIntensity ?? null,
+    cameraMove: params.cameraMove ?? null,
+    styleStrength: params.styleStrength ?? null,
+    motionGuidance: params.motionGuidance ?? null,
+    shotType: params.shotType ?? null,
+    fps: params.fps ?? null,
+  }
+
+  try {
+    return await db.generationJob.create({ data })
+  } catch (error) {
+    if (!isUnknownModelIdArgumentError(error)) {
+      throw error
+    }
+
+    const { modelId: _modelId, ...legacyData } = data
+    return db.generationJob.create({
+      data: legacyData,
+    })
+  }
 }
 
 export async function completeImageJob(params: {

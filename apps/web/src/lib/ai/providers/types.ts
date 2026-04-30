@@ -27,6 +27,14 @@ export type ImageGenerationInput = {
 export type VideoGenerationInput = {
   prompt: string;
   negativePrompt?: string;
+  modelId?: string;
+  resolution?: string;
+  draft?: boolean;
+  saveAudio?: boolean;
+  promptUpsampling?: boolean;
+  disableSafetyFilter?: boolean;
+  noOp?: boolean;
+  seed?: number | null;
   duration?: number;
   aspectRatio?: string;
   motionIntensity?: string;

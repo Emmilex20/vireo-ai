@@ -1,7 +1,9 @@
 import type { VideoGenerationInput } from "./types";
 
-export function buildReplicateVideoInput(input: VideoGenerationInput) {
-  const model = process.env.REPLICATE_VIDEO_MODEL || "";
+export function buildReplicateVideoInput(
+  model: string,
+  input: VideoGenerationInput
+) {
 
   const prompt = [
     input.prompt.trim(),

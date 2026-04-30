@@ -401,10 +401,17 @@ model PromptDraft {
   duration        Int?
   motionIntensity String?
   cameraMove      String?
+  resolution      String?
+  draftMode       Boolean?
+  saveAudio       Boolean?
+  promptUpsampling Boolean?
+  disableSafetyFilter Boolean?
   styleStrength   String?
   motionGuidance  Int?
   shotType        String?
   fps             Int?
+  imageUrl        String?
+  sourceAssetId   String?
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

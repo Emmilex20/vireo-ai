@@ -3,8 +3,14 @@ export const VIDEO_DURATION_OPTIONS = [5, 10, 15, 20] as const;
 const BASE_VIDEO_COST = 40;
 const BASE_VIDEO_DURATION = 5;
 const DEFAULT_MOTION_GUIDANCE = 6;
+const VIDEO_MODEL_SURCHARGES: Record<string, number> = {
+  "runwayml/gen-4.5": 0,
+  "prunaai/p-video": 0,
+  "kwaivgi/kling-v3-omni-video": 30,
+};
 
 type VideoGenerationCostInput = {
+  modelId?: string | null;
   duration: number;
   styleStrength?: string | null;
   motionGuidance?: number | null;
@@ -23,6 +29,7 @@ export function getVideoGenerationCost(input: VideoGenerationCostInput) {
     : BASE_VIDEO_DURATION;
 
   let cost = (normalizedDuration / BASE_VIDEO_DURATION) * BASE_VIDEO_COST;
+  cost += VIDEO_MODEL_SURCHARGES[input.modelId ?? ""] ?? 0;
 
   if (input.styleStrength === "high") {
     cost += 10;

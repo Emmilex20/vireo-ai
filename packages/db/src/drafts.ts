@@ -7,6 +7,22 @@ function isUnknownModelIdArgumentError(error: unknown) {
   )
 }
 
+function hasUnknownDraftRuntimeFieldError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false
+  }
+
+  return [
+    "resolution",
+    "draftMode",
+    "saveAudio",
+    "promptUpsampling",
+    "disableSafetyFilter",
+    "imageUrl",
+    "sourceAssetId",
+  ].some((field) => error.message.includes(`Unknown argument \`${field}\``))
+}
+
 export async function createPromptDraft(params: {
   userId: string
   modelId?: string
@@ -26,10 +42,17 @@ export async function createPromptDraft(params: {
   duration?: number
   motionIntensity?: string
   cameraMove?: string
+  resolution?: string
+  draftMode?: boolean
+  saveAudio?: boolean
+  promptUpsampling?: boolean
+  disableSafetyFilter?: boolean
   styleStrength?: string
   motionGuidance?: number
   shotType?: string
   fps?: number
+  imageUrl?: string
+  sourceAssetId?: string
 }) {
   const title = params.title?.trim() ?? ""
   const prompt = params.prompt?.trim() ?? ""
@@ -61,20 +84,40 @@ export async function createPromptDraft(params: {
     duration: params.duration ?? null,
     motionIntensity: params.motionIntensity ?? null,
     cameraMove: params.cameraMove ?? null,
+    resolution: params.resolution ?? null,
+    draftMode: params.draftMode ?? null,
+    saveAudio: params.saveAudio ?? null,
+    promptUpsampling: params.promptUpsampling ?? null,
+    disableSafetyFilter: params.disableSafetyFilter ?? null,
     styleStrength: params.styleStrength ?? null,
     motionGuidance: params.motionGuidance ?? null,
     shotType: params.shotType ?? null,
     fps: params.fps ?? null,
+    imageUrl: params.imageUrl ?? null,
+    sourceAssetId: params.sourceAssetId ?? null,
   }
 
   try {
     return await db.promptDraft.create({ data })
   } catch (error) {
-    if (!isUnknownModelIdArgumentError(error)) {
+    if (
+      !isUnknownModelIdArgumentError(error) &&
+      !hasUnknownDraftRuntimeFieldError(error)
+    ) {
       throw error
     }
 
-    const { modelId: _modelId, ...legacyData } = data
+    const {
+      modelId: _modelId,
+      resolution: _resolution,
+      draftMode: _draftMode,
+      saveAudio: _saveAudio,
+      promptUpsampling: _promptUpsampling,
+      disableSafetyFilter: _disableSafetyFilter,
+      imageUrl: _imageUrl,
+      sourceAssetId: _sourceAssetId,
+      ...legacyData
+    } = data
     return db.promptDraft.create({
       data: legacyData,
     })

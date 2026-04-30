@@ -6,13 +6,20 @@ import {
   Film,
   Loader2,
   Move3d,
+  Music4,
   RefreshCcw,
   RotateCcw,
   Settings2,
   Sparkles,
+  Upload,
+  X,
   Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  resolveReplicateVideoModel,
+  type ReplicateVideoModelId,
+} from "@/lib/ai/providers/replicate-video-models";
 import { getVideoGenerationCost } from "@/lib/video-generation-config";
 import { PromptTemplatesPanel } from "@/components/prompts/prompt-templates-panel";
 import { StudioSectionTitle } from "@/components/shared/studio-section-title";
@@ -24,6 +31,7 @@ import { CameraMoveSelector } from "./camera-move-selector";
 import { VideoPromptSuggestions } from "./video-prompt-suggestions";
 import { VideoAdvancedSettings } from "./video-advanced-settings";
 import { VideoDraftsPanel } from "./video-drafts-panel";
+import { VideoModelSelector } from "./video-model-selector";
 import { VideoStudioStatusBar } from "./video-studio-status-bar";
 import { StudioCard } from "./studio-card";
 import { ControlGroup } from "./control-group";
@@ -38,26 +46,47 @@ import type { VideoGenerationSetup, VideoReusePayload } from "./video-types";
 type VideoDraft = {
   id: string;
   title: string;
+  modelId?: string | null;
   prompt: string;
   negativePrompt?: string | null;
   duration?: number | null;
   aspectRatio?: string | null;
   motionIntensity?: string | null;
   cameraMove?: string | null;
+  resolution?: string | null;
+  draftMode?: boolean | null;
+  saveAudio?: boolean | null;
+  promptUpsampling?: boolean | null;
+  disableSafetyFilter?: boolean | null;
   styleStrength?: string | null;
   motionGuidance?: number | null;
   shotType?: string | null;
   fps?: number | null;
+  imageUrl?: string | null;
+  sourceAssetId?: string | null;
   updatedAt: string;
 };
 
 export function VideoStudioComposer() {
+  const defaultModel = resolveReplicateVideoModel();
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [sourceAssetId, setSourceAssetId] = useState("");
-  const [duration, setDuration] = useState("5");
-  const [aspectRatio, setAspectRatio] = useState("16:9");
+  const [uploadingSourceImage, setUploadingSourceImage] = useState(false);
+  const [sourceImageName, setSourceImageName] = useState("");
+  const [selectedModelId, setSelectedModelId] = useState<ReplicateVideoModelId>(
+    defaultModel.id
+  );
+  const [resolution, setResolution] = useState(
+    defaultModel.defaultResolution ?? "720p"
+  );
+  const [draftMode, setDraftMode] = useState(false);
+  const [saveAudio, setSaveAudio] = useState(true);
+  const [promptUpsampling, setPromptUpsampling] = useState(false);
+  const [disableSafetyFilter, setDisableSafetyFilter] = useState(true);
+  const [duration, setDuration] = useState(String(defaultModel.defaultDuration));
+  const [aspectRatio, setAspectRatio] = useState(defaultModel.defaultAspectRatio);
   const [motionIntensity, setMotionIntensity] = useState("medium");
   const [cameraMove, setCameraMove] = useState("Slow Push In");
   const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(
@@ -84,15 +113,20 @@ export function VideoStudioComposer() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [lastUsedSetup, setLastUsedSetup] = useState<VideoGenerationSetup | null>(null);
   const [takeCount, setTakeCount] = useState(0);
+  const selectedModel = useMemo(
+    () => resolveReplicateVideoModel(selectedModelId),
+    [selectedModelId]
+  );
   const videoCost = useMemo(
     () =>
       getVideoGenerationCost({
+        modelId: selectedModelId,
         duration: Number(duration),
         styleStrength,
         motionGuidance,
         fps: Number(fps),
       }),
-    [duration, fps, motionGuidance, styleStrength]
+    [duration, fps, motionGuidance, selectedModelId, styleStrength]
   );
 
   const canGenerate = useMemo(() => prompt.trim().length >= 5 && !loading, [prompt, loading]);
@@ -128,9 +162,18 @@ export function VideoStudioComposer() {
 
     try {
       const payload: VideoReusePayload = JSON.parse(raw);
+      const reuseModel = resolveReplicateVideoModel(payload.modelId ?? defaultModel.id);
 
+      setSelectedModelId(
+        (payload.modelId as ReplicateVideoModelId | undefined) ?? defaultModel.id
+      );
       setPrompt(payload.prompt ?? "");
       setNegativePrompt(payload.negativePrompt ?? "");
+      setResolution(payload.resolution ?? reuseModel.defaultResolution ?? "720p");
+      setDraftMode(payload.draftMode ?? false);
+      setSaveAudio(payload.saveAudio ?? reuseModel.supports.audioGeneration);
+      setPromptUpsampling(payload.promptUpsampling ?? false);
+      setDisableSafetyFilter(payload.disableSafetyFilter ?? true);
       setDuration(payload.duration ?? "5");
       setAspectRatio(payload.aspectRatio ?? "16:9");
       setMotionIntensity(payload.motionIntensity ?? "medium");
@@ -149,7 +192,7 @@ export function VideoStudioComposer() {
     } finally {
       sessionStorage.removeItem("vireon_video_studio_reuse_payload");
     }
-  }, []);
+  }, [defaultModel.defaultResolution, defaultModel.id]);
 
   useEffect(() => {
     if (!sessionHydrated) return;
@@ -159,9 +202,24 @@ export function VideoStudioComposer() {
       setHasPersistedSession(false);
       return;
     }
+    const persistedModel = resolveReplicateVideoModel(
+      persisted.modelId ?? defaultModel.id
+    );
 
+    setSelectedModelId(
+      (persisted.modelId as ReplicateVideoModelId | undefined) ?? defaultModel.id
+    );
     setPrompt((prev) => prev || persisted.prompt || "");
     setNegativePrompt((prev) => prev || persisted.negativePrompt || "");
+    setResolution(
+      persisted.resolution || persistedModel.defaultResolution || "720p"
+    );
+    setDraftMode(persisted.draftMode ?? false);
+    setSaveAudio(
+      persisted.saveAudio ?? persistedModel.supports.audioGeneration
+    );
+    setPromptUpsampling(persisted.promptUpsampling ?? false);
+    setDisableSafetyFilter(persisted.disableSafetyFilter ?? true);
     setDuration((prev) => prev || persisted.duration || "5");
     setAspectRatio((prev) => prev || persisted.aspectRatio || "16:9");
     setMotionIntensity((prev) => prev || persisted.motionIntensity || "medium");
@@ -175,14 +233,20 @@ export function VideoStudioComposer() {
     setDraftTitle((prev) => prev || persisted.draftTitle || "");
     setHasPersistedSession(true);
     setLastAction((prev) => prev ?? "Restored unfinished video studio session.");
-  }, [sessionHydrated]);
+  }, [defaultModel.defaultResolution, defaultModel.id, sessionHydrated]);
 
   useEffect(() => {
     if (!sessionHydrated) return;
 
     const snapshot = {
+      modelId: selectedModelId,
       prompt,
       negativePrompt,
+      resolution,
+      draftMode,
+      saveAudio,
+      promptUpsampling,
+      disableSafetyFilter,
       duration,
       aspectRatio,
       motionIntensity,
@@ -200,8 +264,14 @@ export function VideoStudioComposer() {
     setHasPersistedSession(hasMeaningfulVideoStudioState(snapshot));
   }, [
     sessionHydrated,
+    selectedModelId,
     prompt,
     negativePrompt,
+    resolution,
+    draftMode,
+    saveAudio,
+    promptUpsampling,
+    disableSafetyFilter,
     duration,
     aspectRatio,
     motionIntensity,
@@ -217,8 +287,14 @@ export function VideoStudioComposer() {
 
   function buildCurrentSetup(): VideoGenerationSetup {
     return {
+      modelId: selectedModelId,
       prompt,
       negativePrompt,
+      resolution,
+      draftMode,
+      saveAudio,
+      promptUpsampling,
+      disableSafetyFilter,
       duration,
       aspectRatio,
       motionIntensity,
@@ -254,10 +330,16 @@ export function VideoStudioComposer() {
   }
 
   function handleResetSession() {
+    setSelectedModelId(defaultModel.id);
     setPrompt("");
     setNegativePrompt("");
-    setDuration("5");
-    setAspectRatio("16:9");
+    setResolution(defaultModel.defaultResolution ?? "720p");
+    setDraftMode(false);
+    setSaveAudio(true);
+    setPromptUpsampling(false);
+    setDisableSafetyFilter(true);
+    setDuration(String(defaultModel.defaultDuration));
+    setAspectRatio(defaultModel.defaultAspectRatio);
     setMotionIntensity("medium");
     setCameraMove("Slow Push In");
     setStyleStrength("medium");
@@ -299,9 +381,15 @@ export function VideoStudioComposer() {
         },
         body: JSON.stringify({
           type: "video",
+          modelId: selectedModelId,
           title: draftTitle,
           prompt,
           negativePrompt,
+          resolution,
+          draftMode,
+          saveAudio,
+          promptUpsampling,
+          disableSafetyFilter,
           duration: Number(duration),
           aspectRatio,
           motionIntensity,
@@ -368,8 +456,17 @@ export function VideoStudioComposer() {
   }
 
   function handleLoadDraft(draft: VideoDraft) {
+    const draftModel = resolveReplicateVideoModel(draft.modelId ?? defaultModel.id);
+    setSelectedModelId(
+      (draft.modelId as ReplicateVideoModelId | undefined) ?? defaultModel.id
+    );
     setPrompt(draft.prompt);
     setNegativePrompt(draft.negativePrompt ?? "");
+    setResolution(draft.resolution ?? draftModel.defaultResolution ?? "720p");
+    setDraftMode(draft.draftMode ?? false);
+    setSaveAudio(draft.saveAudio ?? draftModel.supports.audioGeneration);
+    setPromptUpsampling(draft.promptUpsampling ?? false);
+    setDisableSafetyFilter(draft.disableSafetyFilter ?? true);
     setDuration(draft.duration != null ? String(draft.duration) : "5");
     setAspectRatio(draft.aspectRatio || "16:9");
     setMotionIntensity(draft.motionIntensity || "medium");
@@ -378,6 +475,9 @@ export function VideoStudioComposer() {
     setMotionGuidance(draft.motionGuidance ?? 6);
     setShotType(draft.shotType || "Wide Shot");
     setFps(draft.fps != null ? String(draft.fps) : "24");
+    setImageUrl(draft.imageUrl ?? "");
+    setSourceAssetId(draft.sourceAssetId ?? "");
+    setSourceImageName(draft.imageUrl ? "Saved source image" : "");
     setAdvancedOpen(true);
     setActiveDraftId(draft.id);
     setDraftTitle(draft.title);
@@ -397,8 +497,14 @@ export function VideoStudioComposer() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
+          modelId: setup.modelId,
           prompt: setup.prompt,
           negativePrompt: setup.negativePrompt,
+          resolution: setup.resolution,
+          draft: setup.draftMode,
+          saveAudio: setup.saveAudio,
+          promptUpsampling: setup.promptUpsampling,
+          disableSafetyFilter: setup.disableSafetyFilter,
           duration: Number(setup.duration),
           aspectRatio: setup.aspectRatio,
           motionIntensity: setup.motionIntensity,
@@ -489,6 +595,51 @@ export function VideoStudioComposer() {
     }
   }
 
+  async function handleSourceImageUpload(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingSourceImage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/uploads/image-reference", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        window.alert(data.error || "Failed to upload source image");
+        return;
+      }
+
+      setImageUrl(data.url);
+      setSourceAssetId("");
+      setSourceImageName(data.originalFilename || file.name);
+      setActiveDraftId(null);
+      setLastAction("Attached a source image for video generation.");
+    } catch {
+      window.alert("Failed to upload source image");
+    } finally {
+      setUploadingSourceImage(false);
+      event.target.value = "";
+    }
+  }
+
+  function handleRemoveSourceImage() {
+    setImageUrl("");
+    setSourceAssetId("");
+    setSourceImageName("");
+    setActiveDraftId(null);
+    setLastAction("Removed the source image from this video setup.");
+  }
+
   async function handleGenerateVideo() {
     if (!prompt.trim()) return;
     await runVideoGeneration(buildCurrentSetup(), false);
@@ -528,6 +679,41 @@ export function VideoStudioComposer() {
 
           <div className="space-y-5">
             <ControlGroup
+              title="Generation model"
+              subtitle="Choose the engine that fits your speed, polish, and audio needs."
+            >
+              <VideoModelSelector
+                value={selectedModelId}
+                onChange={(value) => {
+                  const nextModel = resolveReplicateVideoModel(value);
+                  setSelectedModelId(value);
+                  setResolution((prev) =>
+                    prev === (selectedModel.defaultResolution ?? "720p")
+                      ? nextModel.defaultResolution ?? "720p"
+                      : prev
+                  );
+                  setAspectRatio((prev) =>
+                    prev === selectedModel.defaultAspectRatio
+                      ? nextModel.defaultAspectRatio
+                      : prev
+                  );
+                  setDuration((prev) =>
+                    prev === String(selectedModel.defaultDuration)
+                      ? String(nextModel.defaultDuration)
+                      : prev
+                  );
+                  if (!nextModel.supports.audioGeneration) {
+                    setSaveAudio(false);
+                  } else if (!selectedModel.supports.audioGeneration) {
+                    setSaveAudio(true);
+                  }
+                  setActiveDraftId(null);
+                  setLastAction(`Selected ${nextModel.label} for the next generation.`);
+                }}
+              />
+            </ControlGroup>
+
+            <ControlGroup
               title="Prompt editor"
               subtitle="Define the scene, movement, lighting, and cinematic intent."
             >
@@ -557,40 +743,78 @@ export function VideoStudioComposer() {
                 <label className="text-xs font-medium text-white">
                   Optional image-to-video source
                 </label>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {selectedModel.supports.imageInput
+                    ? `${selectedModel.label} can use a source image as a starting frame.`
+                    : `${selectedModel.label} is prompt-only in the current setup.`}
+                </p>
 
-                <input
-                  value={imageUrl}
-                  onChange={(e) => {
-                    setImageUrl(e.target.value);
-                    setActiveDraftId(null);
-                  }}
-                  placeholder="Paste an image URL to animate it..."
-                  className="mt-3 w-full rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
-                />
-
-                {imageUrl ? (
-                  <div className="mt-3 overflow-hidden rounded-[1.25rem] border border-primary/20 bg-black/30">
-                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
-                      <p className="text-xs font-medium text-primary">
-                        Source image attached
+                {selectedModel.supports.imageInput ? (
+                  <div className="mt-3 space-y-4">
+                    <label className="flex cursor-pointer flex-col items-center justify-center rounded-[1.25rem] border border-dashed border-white/10 bg-black/20 px-5 py-6 text-center transition hover:border-primary/25 hover:bg-white/5">
+                      <div className="flex size-12 items-center justify-center rounded-2xl bg-white/10 text-white">
+                        {uploadingSourceImage ? (
+                          <Loader2 className="size-5 animate-spin" />
+                        ) : (
+                          <Upload className="size-5" />
+                        )}
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-white">
+                        {uploadingSourceImage
+                          ? "Uploading source image..."
+                          : "Upload a source image"}
                       </p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        PNG, JPG, or WEBP up to 10MB. The uploaded image becomes
+                        the starting frame for your video.
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(event) =>
+                          void handleSourceImageUpload(event)
+                        }
+                      />
+                    </label>
 
-                      <button
-                        type="button"
-                        onClick={() => setImageUrl("")}
-                        className="text-xs text-muted-foreground hover:text-white"
-                      >
-                        Remove
-                      </button>
-                    </div>
+                    {imageUrl ? (
+                      <div className="overflow-hidden rounded-[1.25rem] border border-primary/20 bg-black/30">
+                        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+                          <div>
+                            <p className="text-sm font-medium text-white">
+                              Source image attached
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {sourceImageName || "Uploaded source image"}
+                            </p>
+                          </div>
 
-                    <img
-                      src={imageUrl}
-                      alt="Source image preview"
-                      className="max-h-56 w-full object-cover"
-                    />
+                          <button
+                            type="button"
+                            onClick={handleRemoveSourceImage}
+                            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white transition hover:bg-white/10"
+                          >
+                            <X className="size-3" />
+                            Remove
+                          </button>
+                        </div>
+
+                        <img
+                          src={imageUrl}
+                          alt="Source image preview"
+                          className="max-h-56 w-full object-cover"
+                        />
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+                ) : (
+                  <div className="mt-3 rounded-[1rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">
+                    This model is currently running in prompt-only mode in the
+                    studio. Switch to a model with image-to-video support to
+                    attach a starting frame.
+                  </div>
+                )}
               </div>
 
               {hasPersistedSession ? (
@@ -660,8 +884,34 @@ export function VideoStudioComposer() {
         </StudioCard>
 
         <VideoAdvancedSettings
+          selectedModel={selectedModel}
           open={advancedOpen}
           onToggleOpen={() => setAdvancedOpen((prev) => !prev)}
+          resolution={resolution}
+          onResolutionChange={(value) => {
+            setResolution(value);
+            setActiveDraftId(null);
+          }}
+          draftMode={draftMode}
+          onDraftModeChange={(value) => {
+            setDraftMode(value);
+            setActiveDraftId(null);
+          }}
+          saveAudio={saveAudio}
+          onSaveAudioChange={(value) => {
+            setSaveAudio(value);
+            setActiveDraftId(null);
+          }}
+          promptUpsampling={promptUpsampling}
+          onPromptUpsamplingChange={(value) => {
+            setPromptUpsampling(value);
+            setActiveDraftId(null);
+          }}
+          disableSafetyFilter={disableSafetyFilter}
+          onDisableSafetyFilterChange={(value) => {
+            setDisableSafetyFilter(value);
+            setActiveDraftId(null);
+          }}
           styleStrength={styleStrength}
           onStyleStrengthChange={(value) => {
             setStyleStrength(value);
@@ -740,6 +990,16 @@ export function VideoStudioComposer() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
                       <div className="flex items-center gap-2 text-sm text-white">
+                        <Sparkles className="size-4 text-primary" />
+                        Model
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {selectedModel.label}
+                      </p>
+                    </div>
+
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center gap-2 text-sm text-white">
                         <Film className="size-4 text-primary" />
                         Duration
                       </div>
@@ -770,6 +1030,18 @@ export function VideoStudioComposer() {
 
                     <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
                       <div className="flex items-center gap-2 text-sm text-white">
+                        <Music4 className="size-4 text-primary" />
+                        Audio mode
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {selectedModel.supports.audioGeneration
+                          ? "Audio-capable"
+                          : "Video-only"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center gap-2 text-sm text-white">
                         <Sparkles className="size-4 text-primary" />
                         Scene energy
                       </div>
@@ -780,6 +1052,9 @@ export function VideoStudioComposer() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                      Model: {selectedModel.label}
+                    </span>
                     <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
                       Duration: {duration}s
                     </span>
@@ -807,6 +1082,26 @@ export function VideoStudioComposer() {
                     <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
                       Cost: {videoCost} credits
                     </span>
+                    {selectedModel.supports.resolutionControl ? (
+                      <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                        Resolution: {resolution}
+                      </span>
+                    ) : null}
+                    {selectedModel.supports.draftMode && draftMode ? (
+                      <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">
+                        Draft mode on
+                      </span>
+                    ) : null}
+                    {selectedModel.supports.audioGeneration ? (
+                      <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                        Audio: {saveAudio ? "Save" : "Off"}
+                      </span>
+                    ) : null}
+                    {selectedModel.defaultResolution ? (
+                      <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                        Default res: {selectedModel.defaultResolution}
+                      </span>
+                    ) : null}
                     {imageUrl ? (
                       <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">
                         Image-to-video source attached

@@ -8,8 +8,14 @@ export type StudioSessionState = StudioGenerationSetup & {
 };
 
 export type VideoStudioSessionState = {
+  modelId: string;
   prompt: string;
   negativePrompt: string;
+  resolution?: string;
+  draftMode?: boolean;
+  saveAudio?: boolean;
+  promptUpsampling?: boolean;
+  disableSafetyFilter?: boolean;
   duration: string;
   aspectRatio: string;
   motionIntensity: string;

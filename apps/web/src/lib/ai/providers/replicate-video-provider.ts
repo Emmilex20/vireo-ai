@@ -1,8 +1,7 @@
 import Replicate from "replicate";
 import type { VideoProvider } from "./types";
 import { buildReplicateVideoInput } from "./replicate-video-inputs";
-
-const MODEL = process.env.REPLICATE_VIDEO_MODEL;
+import { resolveReplicateVideoModel } from "./replicate-video-models";
 
 export const replicateVideoProvider: VideoProvider = {
   name: "replicate-video",
@@ -12,7 +11,10 @@ export const replicateVideoProvider: VideoProvider = {
       throw new Error("REPLICATE_API_TOKEN is not set");
     }
 
-    if (!MODEL) {
+    const selectedModel = resolveReplicateVideoModel(input.modelId);
+    const model = input.modelId ?? process.env.REPLICATE_VIDEO_MODEL ?? selectedModel.id;
+
+    if (!model) {
       throw new Error("REPLICATE_VIDEO_MODEL is not set");
     }
 
@@ -21,8 +23,11 @@ export const replicateVideoProvider: VideoProvider = {
     });
 
     const prediction = await replicate.predictions.create({
-      model: MODEL,
-      input: buildReplicateVideoInput(input)
+      model,
+      input:
+        model === selectedModel.id
+          ? selectedModel.buildInput(input)
+          : buildReplicateVideoInput(model, input)
     });
 
     return {

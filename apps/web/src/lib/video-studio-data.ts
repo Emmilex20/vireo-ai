@@ -43,6 +43,11 @@ export const videoFpsOptions = [
   { label: "60 fps", value: "60" },
 ] as const;
 
+export const videoResolutionOptions = [
+  { label: "720p", value: "720p" },
+  { label: "1080p", value: "1080p" },
+] as const;
+
 export const styleStrengthOptions = [
   { label: "Low", value: "low" },
   { label: "Medium", value: "medium" },

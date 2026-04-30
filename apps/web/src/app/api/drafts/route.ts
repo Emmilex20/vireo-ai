@@ -52,10 +52,17 @@ export async function POST(req: Request) {
       duration: body.duration,
       motionIntensity: body.motionIntensity,
       cameraMove: body.cameraMove,
+      resolution: body.resolution,
+      draftMode: body.draftMode,
+      saveAudio: body.saveAudio,
+      promptUpsampling: body.promptUpsampling,
+      disableSafetyFilter: body.disableSafetyFilter,
       styleStrength: body.styleStrength,
       motionGuidance: body.motionGuidance,
       shotType: body.shotType,
       fps: body.fps,
+      imageUrl: body.imageUrl,
+      sourceAssetId: body.sourceAssetId,
     });
 
     return NextResponse.json({
