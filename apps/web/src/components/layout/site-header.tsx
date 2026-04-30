@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { HeaderAuth } from "./header-auth";
 
 const navLinks = [
@@ -10,9 +11,14 @@ const navLinks = [
   { href: "/templates", label: "Templates" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ className }: { className?: string }) {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[rgba(5,10,11,0.82)] backdrop-blur-xl">
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[rgba(5,10,11,0.82)] backdrop-blur-xl",
+        className
+      )}
+    >
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:h-16 lg:px-8 lg:py-0">
         <Link href="/" className="flex min-w-0 items-center gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">

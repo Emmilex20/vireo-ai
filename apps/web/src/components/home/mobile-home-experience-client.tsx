@@ -108,25 +108,25 @@ export function MobileHomeExperienceClient({
         <section className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#101214] shadow-[0_18px_50px_rgba(0,0,0,0.36)]">
           <div className="relative p-5">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.2),transparent_45%)]" />
-            <div className="relative flex items-start justify-between gap-3">
+            <div className="relative flex items-start justify-between gap-4">
               <div>
-                <p className="text-base leading-7 text-white">
-                  Limited-time offer! Unlock a year of creator workflow upgrades
-                  with faster models and richer video controls.
+                <p className="max-w-[18rem] text-[15px] leading-7 text-white">
+                  Limited-time offer! Unlock a year of faster creation at 50%
+                  off.
                 </p>
                 <Link
                   href="/pricing"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                  className="mt-4 inline-flex h-10 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground shadow-[0_10px_24px_rgba(16,185,129,0.22)]"
                 >
                   View plans
-                  <ArrowUpRight className="size-4" />
+                  <ArrowUpRight className="size-3.5" />
                 </Link>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowOffer(false)}
-                className="shrink-0 rounded-full border border-white/10 bg-white/5 p-2 text-muted-foreground"
+                className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                 aria-label="Dismiss offer"
               >
                 <X className="size-4" />
