@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { getPublicCreatorProfile } from "@vireon/db";
 import { CreatorProfileClient } from "@/components/creators/creator-profile-client";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.com";
+type PublicCreator = Awaited<ReturnType<typeof getPublicCreatorProfile>>;
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -15,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     cache: "no-store"
   });
 
-  let creator: any = null;
+  let creator: PublicCreator | null = null;
 
   if (res.ok) {
     const data = await res.json();
@@ -56,7 +58,7 @@ export default async function CreatorPage({ params }: Props) {
     cache: "no-store"
   });
 
-  let creator: any = null;
+  let creator: PublicCreator | null = null;
 
   if (res.ok) {
     const data = await res.json();
@@ -65,7 +67,7 @@ export default async function CreatorPage({ params }: Props) {
 
   return (
     <PublicSiteFrame>
-      <main className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-350 px-4 py-8 sm:px-6">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

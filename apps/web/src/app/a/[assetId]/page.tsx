@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicAssetDetail, getPublicAssets } from "@vireon/db";
@@ -124,7 +125,7 @@ export default async function PublicAssetPage({ params }: Props) {
 
   return (
     <PublicSiteFrame>
-      <main className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-275 px-4 py-8 sm:px-6">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -148,7 +149,7 @@ export default async function PublicAssetPage({ params }: Props) {
           }}
         />
 
-        <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+        <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
           <a href="/explore" className="text-sm text-primary">
             {"<- Back to explore"}
           </a>
@@ -160,13 +161,13 @@ export default async function PublicAssetPage({ params }: Props) {
                   src={asset.fileUrl}
                   controls
                   playsInline
-                  className="max-h-[720px] w-full object-contain"
+                  className="max-h-180 w-full object-contain"
                 />
               ) : (
                 <img
                   src={asset.fileUrl}
                   alt={asset.title || asset.prompt || "AI creation"}
-                  className="max-h-[720px] w-full object-contain"
+                  className="max-h-180 w-full object-contain"
                 />
               )}
             </div>
@@ -176,7 +177,7 @@ export default async function PublicAssetPage({ params }: Props) {
                 Public creation
               </div>
 
-              <h1 className="mt-4 font-[family-name:var(--font-heading)] text-3xl font-bold text-white">
+              <h1 className="mt-4 font-(family-name:--font-heading) text-3xl font-bold text-white">
                 {asset.title || "Untitled creation"}
               </h1>
 
@@ -252,13 +253,13 @@ export default async function PublicAssetPage({ params }: Props) {
         </section>
 
         {relatedAssets.length > 0 ? (
-          <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6">
+          <section className="mt-8 rounded-4xl border border-white/10 bg-white/5 p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
                   Keep exploring
                 </div>
-                <h2 className="mt-4 font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
+                <h2 className="mt-4 font-(family-name:--font-heading) text-2xl font-bold text-white">
                   Related creations
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
@@ -282,9 +283,9 @@ export default async function PublicAssetPage({ params }: Props) {
                   <a
                     key={item.id}
                     href={`/a/${item.id}`}
-                    className="group overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20 transition hover:border-primary/20 hover:bg-white/[0.04]"
+                    className="group overflow-hidden rounded-3xl border border-white/10 bg-black/20 transition hover:border-primary/20 hover:bg-white/4"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-black/30">
+                    <div className="relative aspect-4/3 overflow-hidden bg-black/30">
                       {itemIsVideo ? (
                         <video
                           src={item.fileUrl}
@@ -310,7 +311,7 @@ export default async function PublicAssetPage({ params }: Props) {
                     </div>
 
                     <div className="p-4">
-                      <h3 className="line-clamp-2 font-[family-name:var(--font-heading)] text-lg font-semibold text-white">
+                      <h3 className="line-clamp-2 font-(family-name:--font-heading) text-lg font-semibold text-white">
                         {item.title || "Untitled creation"}
                       </h3>
 

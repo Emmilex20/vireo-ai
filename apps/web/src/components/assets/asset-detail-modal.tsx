@@ -97,7 +97,7 @@ export function AssetDetailModal({
           <X className="size-4 text-white" />
         </button>
 
-        <div className="relative flex min-h-[280px] items-center justify-center bg-black xl:min-h-0">
+        <div className="relative flex min-h-70 items-center justify-center bg-black xl:min-h-0">
           {activeAsset.mediaType === "video" ? (
             <video
               src={safeFileUrl ?? activeAsset.fileUrl}
@@ -134,9 +134,11 @@ export function AssetDetailModal({
                 >
                   <div className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-black/30">
                     {asset.creator.avatarUrl ? (
-                      <img
+                      <Image
                         src={asset.creator.avatarUrl}
                         alt={asset.creator.displayName || asset.creator.username}
+                        width={32}
+                        height={32}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -162,7 +164,7 @@ export function AssetDetailModal({
               </p>
             </div>
 
-            <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+            <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Actions
               </p>
@@ -250,7 +252,7 @@ export function AssetDetailModal({
             </div>
           </div>
 
-            <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+            <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Details
               </p>

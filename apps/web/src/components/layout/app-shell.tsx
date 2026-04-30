@@ -118,7 +118,7 @@ export function AppShell({ children }: AppShellProps) {
       <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-white/10 bg-black/20 backdrop-blur-xl lg:block">
         <div className="flex h-full flex-col p-5">
           <Link
-            href="/studio"
+            href="/"
             className="flex items-center gap-3"
             data-tour="studio"
           >
@@ -199,7 +199,7 @@ export function AppShell({ children }: AppShellProps) {
           <div className="px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-start justify-between gap-3 lg:h-16 lg:items-center">
               <div className="min-w-0">
-                <div className="flex items-center gap-3 lg:hidden">
+                <Link href="/" className="flex items-center gap-3 lg:hidden">
                   <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
                     <Image
                       src="/logo.png"
@@ -219,7 +219,7 @@ export function AppShell({ children }: AppShellProps) {
                       Active tool
                     </div>
                   </div>
-                </div>
+                </Link>
                 <h1 className="mt-3 font-heading text-lg font-semibold text-white lg:mt-0">
                   {activeItem.title}
                 </h1>

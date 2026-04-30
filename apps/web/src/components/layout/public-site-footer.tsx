@@ -22,6 +22,8 @@ const legalLinks = [
 ];
 
 export function PublicSiteFooter() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="border-t border-white/10 bg-[#060b11]">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -38,7 +40,7 @@ export function PublicSiteFooter() {
                 />
               </div>
               <div>
-                <p className="font-[family-name:var(--font-heading)] text-xl font-bold text-white">
+                <p className="font-(family-name:--font-heading) text-xl font-bold text-white">
                   Vireon AI
                 </p>
                 <p className="text-sm text-slate-400">
@@ -60,7 +62,7 @@ export function PublicSiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Vireon AI. All rights reserved.</p>
+          <p>&copy; {currentYear} Vireon AI. All rights reserved.</p>
           <p>Built for creators who want faster visual workflows with more polish.</p>
         </div>
       </div>

@@ -99,6 +99,7 @@ export function MobileHomeExperienceClient({
       mediaType: source?.mediaType ?? (model.badge === "Video" ? "video" : "image"),
     };
   });
+  const loopingModelCards = [...modelCarouselCards, ...modelCarouselCards];
 
   return (
     <div className="space-y-6 sm:hidden">
@@ -205,12 +206,13 @@ export function MobileHomeExperienceClient({
           </Link>
         </div>
 
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {modelCarouselCards.map((card) => (
+        <div className="overflow-hidden px-1 pb-1">
+          <div className="flex w-max gap-3 motion-safe:animate-[mobileModelsMarquee_32s_linear_infinite] motion-reduce:translate-x-0">
+          {loopingModelCards.map((card, index) => (
             <Link
-              key={card.id}
+              key={`${card.id}-${index}`}
               href={card.href}
-              className="group relative block h-[16.5rem] w-[88%] flex-none snap-start overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#12161f]"
+              className="group relative block h-[16.5rem] w-[88vw] max-w-[22rem] flex-none overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#12161f]"
             >
               {card.mediaUrl ? (
                 card.mediaType === "video" ? (
@@ -254,6 +256,7 @@ export function MobileHomeExperienceClient({
               </div>
             </Link>
           ))}
+          </div>
         </div>
       </section>
 
@@ -447,6 +450,17 @@ export function MobileHomeExperienceClient({
           ))}
         </div>
       </section>
+
+      <style jsx>{`
+        @keyframes mobileModelsMarquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(calc(-50% - 0.375rem));
+          }
+        }
+      `}</style>
     </div>
   );
 }

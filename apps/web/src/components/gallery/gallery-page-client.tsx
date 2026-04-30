@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AssetCard } from "@/components/assets/asset-card";
@@ -60,16 +61,6 @@ export function GalleryPageClient() {
     return inferMediaType(item);
   }
 
-  function matchesSearch(item: PublicAsset) {
-    const term = query.trim().toLowerCase();
-    if (!term) return true;
-
-    return (
-      item.title?.toLowerCase().includes(term) ||
-      item.prompt?.toLowerCase().includes(term)
-    );
-  }
-
   async function handleEngagement(assetId: string, action: "like" | "save") {
     const res = await fetch("/api/assets/engagement", {
       method: "POST",
@@ -113,15 +104,22 @@ export function GalleryPageClient() {
   );
 
   const filteredAssets = useMemo(() => {
+    const term = query.trim().toLowerCase();
+
     return assets.filter((asset) => {
       const typeMatch = filter === "all" || mediaTypeOf(asset) === filter;
-      return typeMatch && matchesSearch(asset);
+      const searchMatch =
+        !term ||
+        asset.title?.toLowerCase().includes(term) ||
+        asset.prompt?.toLowerCase().includes(term);
+
+      return typeMatch && searchMatch;
     });
   }, [assets, filter, query]);
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-[1400px] px-4 py-8">
+      <main className="mx-auto max-w-350 px-4 py-8">
         <div className="h-10 w-64 rounded bg-white/10" />
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -133,7 +131,7 @@ export function GalleryPageClient() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-8">
+    <main className="mx-auto w-full max-w-350 px-4 py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -148,7 +146,7 @@ export function GalleryPageClient() {
         }}
       />
 
-      <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(14,22,28,0.98),rgba(10,16,24,0.94))] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)]">
+      <section className="rounded-4xl border border-white/10 bg-[linear-gradient(180deg,rgba(14,22,28,0.98),rgba(10,16,24,0.94))] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)]">
         <div className="flex flex-col gap-5 lg:flex-row lg:justify-between lg:items-end">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
@@ -209,13 +207,15 @@ export function GalleryPageClient() {
                     <a
                       href={`/u/${asset.creator.username}`}
                       onClick={(event) => event.stopPropagation()}
-                      className="flex items-center gap-3 rounded-[1rem] border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
                     >
                       <div className="flex size-9 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
                         {asset.creator.avatarUrl ? (
-                          <img
+                          <Image
                             src={asset.creator.avatarUrl}
                             alt={asset.creator.displayName || asset.creator.username}
+                            width={36}
+                            height={36}
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -280,13 +280,15 @@ export function GalleryPageClient() {
                     <a
                       href={`/u/${asset.creator.username}`}
                       onClick={(event) => event.stopPropagation()}
-                      className="flex items-center gap-3 rounded-[1rem] border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
                     >
                       <div className="flex size-9 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
                         {asset.creator.avatarUrl ? (
-                          <img
+                          <Image
                             src={asset.creator.avatarUrl}
                             alt={asset.creator.displayName || asset.creator.username}
+                            width={36}
+                            height={36}
                             className="h-full w-full object-cover"
                           />
                         ) : (

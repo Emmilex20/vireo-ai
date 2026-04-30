@@ -25,7 +25,7 @@ type ProfileResponse = {
 export function ProfileEditClient() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [origin, setOrigin] = useState("")
+  const origin = typeof window !== "undefined" ? window.location.origin : ""
 
   const [username, setUsername] = useState("")
   const [fullName, setFullName] = useState("")
@@ -43,8 +43,6 @@ export function ProfileEditClient() {
       : null
 
   useEffect(() => {
-    setOrigin(window.location.origin)
-
     async function loadProfile() {
       try {
         const res = await fetch("/api/me/profile")
@@ -115,13 +113,13 @@ export function ProfileEditClient() {
 
   if (loading) {
     return (
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
         <div className="h-8 w-44 rounded bg-white/10" />
         <div className="mt-3 h-4 w-72 rounded bg-white/10" />
         <div className="mt-6 grid gap-4">
-          <div className="h-14 rounded-[1rem] bg-white/10" />
-          <div className="h-14 rounded-[1rem] bg-white/10" />
-          <div className="h-32 rounded-[1rem] bg-white/10" />
+          <div className="h-14 rounded-2xl bg-white/10" />
+          <div className="h-14 rounded-2xl bg-white/10" />
+          <div className="h-32 rounded-2xl bg-white/10" />
         </div>
       </section>
     )
@@ -129,8 +127,8 @@ export function ProfileEditClient() {
 
   return (
     <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-        <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold text-white">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
+        <h1 className="font-(family-name:--font-heading) text-3xl font-bold text-white">
           Edit profile
         </h1>
         <p className="mt-2 text-muted-foreground">
@@ -169,7 +167,7 @@ export function ProfileEditClient() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <div className="mt-6 rounded-3xl border border-white/10 bg-black/20 p-4">
           <p className="text-sm font-medium text-white">Profile tips</p>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
             <li>Use a memorable username so people can find you easily.</li>
@@ -178,14 +176,14 @@ export function ProfileEditClient() {
           </ul>
         </div>
 
-        <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <div className="mt-6 rounded-3xl border border-white/10 bg-black/20 p-4">
           <p className="text-sm font-medium text-white">Public profile link</p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Share your public creator page so people can view your work and follow
             you.
           </p>
 
-          <div className="mt-4 rounded-[1rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white">
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white">
             {publicProfileUrl ?? "Set a username to generate your public profile link."}
           </div>
 
@@ -219,8 +217,8 @@ export function ProfileEditClient() {
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-        <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
+        <h2 className="font-(family-name:--font-heading) text-2xl font-bold text-white">
           Public profile settings
         </h2>
         <p className="mt-2 text-muted-foreground">
@@ -236,7 +234,7 @@ export function ProfileEditClient() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Your display name"
-              className="w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
             />
           </div>
 
@@ -248,7 +246,7 @@ export function ProfileEditClient() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="your_username"
-              className="w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
             />
           </div>
 
@@ -261,7 +259,7 @@ export function ProfileEditClient() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell people about your creative identity..."
-              className="w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
             />
           </div>
 
@@ -273,7 +271,7 @@ export function ProfileEditClient() {
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               placeholder="https://your-site.com"
-              className="w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
             />
           </div>
 
@@ -285,7 +283,7 @@ export function ProfileEditClient() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="City, Country"
-              className="w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-primary/30"
             />
           </div>
         </div>

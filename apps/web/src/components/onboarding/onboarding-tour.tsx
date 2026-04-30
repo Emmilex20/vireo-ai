@@ -1,18 +1,16 @@
 "use client";
 
 import { Joyride, STATUS, type EventData, type Step } from "react-joyride";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export function OnboardingTour() {
-  const [run, setRun] = useState(false);
-
-  useEffect(() => {
-    const hasSeen = window.localStorage.getItem("vireon_onboarding_seen");
-
-    if (!hasSeen) {
-      setRun(true);
+  const [run, setRun] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
     }
-  }, []);
+
+    return !window.localStorage.getItem("vireon_onboarding_seen");
+  });
 
   function handleFinish() {
     window.localStorage.setItem("vireon_onboarding_seen", "true");

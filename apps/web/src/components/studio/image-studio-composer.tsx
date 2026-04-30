@@ -867,9 +867,11 @@ export function ImageStudioComposer() {
                             Remove
                           </button>
                         </div>
-                        <img
+                        <Image
                           src={referenceImageUrl}
                           alt="Reference image"
+                          width={1200}
+                          height={720}
                           className="max-h-72 w-full object-cover"
                         />
                       </div>
@@ -930,7 +932,7 @@ export function ImageStudioComposer() {
 
       <div className="space-y-6">
         <div className="space-y-4 xl:sticky xl:top-24 xl:space-y-6">
-          <StudioCard className="overflow-hidden !p-0">
+          <StudioCard className="overflow-hidden p-0!">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div>
                 <p className="text-sm font-medium text-white">
