@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ImageToVideoWorkflowCard } from "@/components/dashboard/image-to-video-workflow-card";
 import { RecentImageToVideoPanel } from "@/components/dashboard/recent-image-to-video-panel";
 import { LandingConversionSection } from "@/components/home/landing-conversion-section";
+import { MobileHomeExperience } from "@/components/home/mobile-home-experience";
 import { PageShell } from "@/components/layout/page-shell";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 import { ExploreFeed } from "@/components/marketing/explore-feed";
@@ -33,13 +34,17 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-130 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_45%),radial-gradient(circle_at_15%_22%,rgba(20,184,166,0.1),transparent_28%)]" />
         <div className="pointer-events-none absolute right-0 top-112 h-96 w-[24rem] rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.09),transparent_62%)] blur-3xl" />
 
-        <div className="relative space-y-8 sm:space-y-10 lg:space-y-12">
-          <HomeHero />
-          <LandingConversionSection />
-          <QuickTools />
-          <ImageToVideoWorkflowCard />
-          <RecentImageToVideoPanel />
-          <ExploreFeed />
+        <div className="relative">
+          <MobileHomeExperience />
+
+          <div className="hidden space-y-8 sm:block sm:space-y-10 lg:space-y-12">
+            <HomeHero />
+            <LandingConversionSection />
+            <QuickTools />
+            <ImageToVideoWorkflowCard />
+            <RecentImageToVideoPanel />
+            <ExploreFeed />
+          </div>
         </div>
       </PageShell>
     </PublicSiteFrame>

@@ -27,10 +27,10 @@ export function SiteHeader() {
           </div>
 
           <div className="min-w-0 flex-col leading-none">
-            <span className="block truncate font-(family-name:--font-heading) text-xl font-bold tracking-tight text-white sm:text-lg">
+            <span className="block truncate font-(family-name:--font-heading) text-[1.1rem] font-bold tracking-tight text-white sm:text-lg">
               Vireon AI
             </span>
-            <span className="mt-1 block truncate text-[11px] text-slate-400">
+            <span className="mt-1 hidden truncate text-[11px] text-slate-400 sm:block">
               Premium AI creator studio
             </span>
           </div>

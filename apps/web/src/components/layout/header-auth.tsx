@@ -79,7 +79,7 @@ export function HeaderAuth() {
   return (
     <div className="flex items-center gap-2 sm:gap-3">
       {credits !== null && (
-        <div className="hidden items-center rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs text-white sm:flex">
+        <div className="flex items-center rounded-full border border-primary/25 bg-primary/10 px-3 py-2 text-xs font-medium text-primary sm:border-white/10 sm:bg-white/5 sm:px-4 sm:py-1 sm:text-white">
           {credits} credits
         </div>
       )}
@@ -93,8 +93,8 @@ export function HeaderAuth() {
       </Button>
 
       <Link href="/studio">
-        <Button className="h-10 rounded-full bg-primary px-3 text-primary-foreground hover:bg-primary/90 sm:px-5">
-          <span className="sm:hidden">Create</span>
+        <Button className="h-10 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 sm:px-5">
+          <span className="sm:hidden">Studio</span>
           <span className="hidden sm:inline">Go to Studio</span>
         </Button>
       </Link>
