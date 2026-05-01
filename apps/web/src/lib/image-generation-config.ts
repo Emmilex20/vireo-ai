@@ -2,10 +2,16 @@ const BASE_IMAGE_COST = 5;
 const DEFAULT_STEPS = 30;
 const DEFAULT_GUIDANCE = 7.5;
 const IMAGE_MODEL_SURCHARGES: Record<string, number> = {
-  "black-forest-labs/flux-schnell": 0,
-  "google/imagen-4-ultra": 10,
+  "openai/gpt-image-2": 10,
+  "google/nano-banana-2": 8,
+  "google/nano-banana-pro": 10,
+  "recraft-ai/recraft-v4": 6,
+  "wan-video/wan-2.7-image": 8,
+  "x-ai/grok-imagine-image": 4,
+  "bytedance/seedream-5-lite": 6,
   "bytedance/seedream-4.5": 8,
-  "ideogram-ai/ideogram-v3-quality": 6,
+  "google/imagen-4": 6,
+  "black-forest-labs/flux-2-max": 6,
 };
 
 type ImageQualityMode = "standard" | "high" | "ultra";

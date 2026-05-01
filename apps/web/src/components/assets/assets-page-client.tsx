@@ -185,7 +185,7 @@ export function AssetsPageClient() {
     const payload = {
       prompt: item.prompt ?? "",
       negativePrompt: item.negativePrompt ?? "",
-      modelId: item.modelId ?? "black-forest-labs/flux-schnell",
+      modelId: item.modelId ?? "openai/gpt-image-2",
       referenceImageUrl: item.sourceImageUrl ?? "",
       style: item.style ?? "Cinematic",
       aspectRatio: item.aspectRatio ?? "4:3",

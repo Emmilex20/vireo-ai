@@ -1,14 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { type ChangeEvent, type ReactNode } from "react";
+import { useState, type ChangeEvent, type ReactNode } from "react";
 import {
   ChevronDown,
+  ChevronRight,
   ImagePlus,
   Layers3,
   Loader2,
   RotateCcw,
   Save,
+  Search,
   Settings2,
   Sparkles,
   Upload,
@@ -21,6 +23,7 @@ import { PromptTemplatesPanel } from "@/components/prompts/prompt-templates-pane
 import { Button } from "@/components/ui/button";
 import {
   listReplicateImageModels,
+  type ReplicateImageModelConfig,
   type ReplicateImageModelId,
 } from "@/lib/ai/providers/replicate-image-models";
 import { aspectRatios, imageStyles } from "@/lib/studio-data";
@@ -166,6 +169,7 @@ export function MobileImageCreatorPage({
   onSuggestionSelect,
   lastAction,
 }: Props) {
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const imageModels = listReplicateImageModels();
   const selectedModel =
     imageModels.find((model) => model.id === selectedModelId) ?? imageModels[0];
@@ -239,24 +243,27 @@ export function MobileImageCreatorPage({
         <details className="group" open>
           <Summary icon={Sparkles} title="Model And Output" />
           <Panel className="mt-3 space-y-5">
-            <div className="grid gap-2">
-              {imageModels.map((model) => (
-                <button
-                  key={model.id}
-                  type="button"
-                  onClick={() => onModelChange(model.id)}
-                  className={cn(
-                    "rounded-2xl border p-3 text-left",
-                    selectedModelId === model.id
-                      ? "border-[#2dd4bf]/35 bg-[#2dd4bf]/10"
-                      : "border-white/10 bg-white/5"
-                  )}
-                >
-                  <span className="block text-sm font-semibold text-white">{model.label}</span>
-                  <span className="mt-1 line-clamp-2 text-xs leading-5 text-white/45">{model.description}</span>
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setModelPickerOpen(true)}
+              className="group flex w-full items-center gap-3 rounded-3xl border border-[#2dd4bf]/20 bg-[linear-gradient(135deg,rgba(45,212,191,0.12),rgba(255,255,255,0.04))] p-3 text-left shadow-[0_18px_44px_rgba(0,0,0,0.22)] transition active:scale-[0.99]"
+            >
+              <ModelGlyph label={selectedModel.provider} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9ff5e8]/70">
+                  Selected model
+                </span>
+                <span className="mt-1 block truncate text-base font-semibold text-white">
+                  {selectedModel.label}
+                </span>
+                <span className="mt-1 line-clamp-1 text-xs text-white/45">
+                  {selectedModel.description}
+                </span>
+              </span>
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-white/8 text-white/55 transition group-active:bg-white/12">
+                <ChevronRight className="size-4" />
+              </span>
+            </button>
 
             <ChoiceWrap title="Style">
               {imageStyles.map((style) => (
@@ -439,7 +446,205 @@ export function MobileImageCreatorPage({
           </Button>
         </div>
       </div>
+
+      {modelPickerOpen ? (
+        <ImageModelSheet
+          models={imageModels}
+          selectedModelId={selectedModelId}
+          onClose={() => setModelPickerOpen(false)}
+          onSelect={(modelId) => {
+            onModelChange(modelId);
+            setModelPickerOpen(false);
+          }}
+        />
+      ) : null}
     </section>
+  );
+}
+
+function ImageModelSheet({
+  models,
+  selectedModelId,
+  onSelect,
+  onClose,
+}: {
+  models: ReplicateImageModelConfig[];
+  selectedModelId: ReplicateImageModelId;
+  onSelect: (modelId: ReplicateImageModelId) => void;
+  onClose: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const selectedModel =
+    models.find((model) => model.id === selectedModelId) ?? models[0];
+  const recommendedModels = models.filter((model) => model.recommended).slice(0, 3);
+  const filteredModels = models.filter((model) => {
+    const search = query.trim().toLowerCase();
+    if (!search) return true;
+
+    return [model.label, model.provider, model.description, model.badge, model.features.join(" ")]
+      .join(" ")
+      .toLowerCase()
+      .includes(search);
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end bg-black/70 px-2 pb-2 pt-10 backdrop-blur-sm">
+      <div className="flex max-h-[88vh] w-full flex-col overflow-hidden rounded-[2rem] border border-white/12 bg-[#111519] shadow-[0_-28px_90px_rgba(0,0,0,0.65)]">
+        <div className="shrink-0 border-b border-white/10 p-4">
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/20" />
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-base font-semibold text-white">Choose Image Model</p>
+              <p className="mt-1 text-xs leading-5 text-white/45">
+                Search, compare features, and switch without stretching the page.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-white/8 text-white/60"
+              aria-label="Close model picker"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          <label className="mt-4 flex h-11 items-center gap-2 rounded-2xl border border-white/10 bg-[#0b0e10] px-3 text-sm text-white/60">
+            <Search className="size-4" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search models"
+              className="min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-white/35"
+            />
+          </label>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 [scrollbar-width:thin]">
+          {!query.trim() && recommendedModels.length ? (
+            <div className="mb-5">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/35">
+                Recommended
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]">
+                {recommendedModels.map((model) => (
+                  <button
+                    key={model.id}
+                    type="button"
+                    onClick={() => onSelect(model.id)}
+                    className={cn(
+                      "relative h-28 w-56 shrink-0 overflow-hidden rounded-3xl border p-4 text-left",
+                      model.id === selectedModel.id
+                        ? "border-[#2dd4bf]/60"
+                        : "border-white/10"
+                    )}
+                  >
+                    <div className={cn("absolute inset-0 bg-gradient-to-br", model.heroTone ?? "from-zinc-700 via-zinc-950 to-black")} />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.7))]" />
+                    <div className="relative flex h-full flex-col justify-end">
+                      <span className="text-sm font-semibold text-white">{model.label}</span>
+                      <span className="mt-1 line-clamp-1 text-xs text-white/65">
+                        {model.description}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/35">
+            All models
+          </p>
+          <div className="grid gap-2">
+            {filteredModels.map((model) => (
+              <MobileModelOption
+                key={model.id}
+                label={model.label}
+                provider={model.provider}
+                description={model.description}
+                badge={model.badge}
+                features={model.features}
+                selected={model.id === selectedModelId}
+                fast={model.fast}
+                onClick={() => onSelect(model.id)}
+              />
+            ))}
+            {filteredModels.length === 0 ? (
+              <p className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center text-sm text-white/45">
+                No image models match your search.
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileModelOption({
+  label,
+  provider,
+  description,
+  badge,
+  features,
+  selected,
+  fast,
+  onClick,
+}: {
+  label: string;
+  provider: string;
+  description: string;
+  badge?: string;
+  features: readonly string[];
+  selected: boolean;
+  fast?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-3 rounded-3xl border p-3 text-left transition active:scale-[0.99]",
+        selected
+          ? "border-[#2dd4bf]/45 bg-[#2dd4bf]/10"
+          : "border-white/10 bg-white/5"
+      )}
+    >
+      <ModelGlyph label={provider} />
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <span className="truncate text-sm font-semibold text-white">{label}</span>
+          {badge ? (
+            <span
+              className={cn(
+                "rounded-md px-1.5 py-0.5 text-[10px] font-semibold",
+                fast ? "bg-fuchsia-500/25 text-fuchsia-100" : "bg-emerald-500/20 text-emerald-200"
+              )}
+            >
+              {badge}
+            </span>
+          ) : null}
+        </span>
+        <span className="mt-1 block truncate text-xs text-white/42">{description}</span>
+        <span className="mt-2 flex flex-wrap gap-1.5">
+          {features.slice(0, 3).map((feature) => (
+            <span key={feature} className="rounded-md bg-white/8 px-2 py-0.5 text-[10px] text-white/45">
+              {feature}
+            </span>
+          ))}
+        </span>
+      </span>
+      <span className={cn("size-3 rounded-full border", selected ? "border-[#2dd4bf] bg-[#2dd4bf]" : "border-white/25")} />
+    </button>
+  );
+}
+
+function ModelGlyph({ label }: { label: string }) {
+  return (
+    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,rgba(45,212,191,0.28),rgba(99,102,241,0.24))] text-xs font-bold text-white">
+      {label.slice(0, 2).toUpperCase()}
+    </span>
   );
 }
 

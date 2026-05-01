@@ -361,8 +361,9 @@ export function DesktopVideoCreatorPage({
                   <button
                     type="button"
                     onClick={() => onPromptChange("")}
-                    className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-white/60 transition hover:bg-white/10 hover:text-white"
+                    className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-[#0b0e10] px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/50 transition hover:border-white/18 hover:bg-white/8 hover:text-white"
                   >
+                    <X className="size-3.5" />
                     Clear
                   </button>
                 </div>
@@ -548,9 +549,7 @@ export function DesktopVideoCreatorPage({
 
             <div className="shrink-0 border-t border-white/10 bg-[#0d1012] p-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 min-w-20 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-sm font-semibold">
-                  {videoCost} credits
-                </div>
+                <CostBadge cost={videoCost} />
                 <Button
                   onClick={() => void onGenerate()}
                   disabled={!canGenerate}
@@ -1177,6 +1176,17 @@ function ModelGlyph({ model }: { model: ReplicateVideoModelConfig }) {
     <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(45,212,191,0.28),rgba(99,102,241,0.24))] text-xs font-bold text-white">
       {model.provider.slice(0, 2).toUpperCase()}
     </span>
+  );
+}
+
+function CostBadge({ cost }: { cost: number }) {
+  return (
+    <div className="inline-flex h-10 min-w-[112px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-[#2dd4bf]/25 bg-[#061817] px-3 text-[#b7fff5] shadow-[0_0_24px_rgba(45,212,191,0.08)]">
+      <span className="text-base font-semibold tabular-nums leading-none">{cost}</span>
+      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#b7fff5]/65">
+        credits
+      </span>
+    </div>
   );
 }
 

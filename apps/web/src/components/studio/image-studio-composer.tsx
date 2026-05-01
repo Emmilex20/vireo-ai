@@ -74,7 +74,7 @@ type ReusePayload = {
 };
 
 const imageModels = listReplicateImageModels();
-const defaultModelId = "black-forest-labs/flux-schnell" as const;
+const defaultModelId = "openai/gpt-image-2" as const;
 
 type ImageStudioComposerProps = {
   onChangeMode?: (mode: StudioMode) => void;

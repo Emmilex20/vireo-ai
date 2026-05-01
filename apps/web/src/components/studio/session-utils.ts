@@ -8,7 +8,7 @@ export function hasMeaningfulStudioState(
       state.negativePrompt.trim() ||
       state.referenceImageUrl.trim() ||
       state.draftTitle?.trim() ||
-      state.modelId !== "black-forest-labs/flux-schnell" ||
+      state.modelId !== "openai/gpt-image-2" ||
       state.style !== "Cinematic" ||
       state.aspectRatio !== "4:3" ||
       state.qualityMode !== "high" ||

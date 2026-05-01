@@ -5,7 +5,7 @@ import {
 } from "./replicate-image-models";
 import type { ImageProvider } from "./types";
 
-const FALLBACK_MODEL = "black-forest-labs/flux-schnell";
+const FALLBACK_MODEL = "openai/gpt-image-2";
 
 type ReplicatePredictionInput = {
   model?: string;
