@@ -30,6 +30,8 @@ import {
 import { aspectRatios, imageStyles } from "@/lib/studio-data";
 import { cn } from "@/lib/utils";
 import type { StudioMode } from "./studio-mode-config";
+import { GenerationProgress } from "./generation-progress";
+import { GenerationResultActions } from "./generation-result-actions";
 
 type Draft = {
   id: string;
@@ -73,6 +75,7 @@ type Props = {
   imageCost: number;
   image: string | null;
   loading: boolean;
+  generationProgress: number;
   canGenerate: boolean;
   onGenerate: () => Promise<void>;
   canGenerateVariation: boolean;
@@ -142,6 +145,7 @@ export function MobileImageCreatorPage({
   imageCost,
   image,
   loading,
+  generationProgress,
   canGenerate,
   onGenerate,
   canGenerateVariation,
@@ -208,6 +212,16 @@ export function MobileImageCreatorPage({
             <Pill className="capitalize">{qualityMode}</Pill>
             <Pill>{imageCost} credits</Pill>
           </div>
+          {loading ? (
+            <div className="border-t border-white/10 p-3">
+              <GenerationProgress value={generationProgress} label="Image generation" />
+            </div>
+          ) : null}
+          {image && !loading ? (
+            <div className="flex justify-end border-t border-white/10 p-3">
+              <GenerationResultActions url={image} downloadName="vireon-image.webp" />
+            </div>
+          ) : null}
           <div className="grid grid-cols-2 gap-2 border-t border-white/10 p-3">
             <Button
               type="button"

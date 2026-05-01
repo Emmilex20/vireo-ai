@@ -138,6 +138,7 @@ export function VideoStudioComposer({
   const [lastAction, setLastAction] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [lastUsedSetup, setLastUsedSetup] = useState<VideoGenerationSetup | null>(null);
   const [takeCount, setTakeCount] = useState(0);
@@ -166,6 +167,22 @@ export function VideoStudioComposer({
     () => !!lastUsedSetup && !loading,
     [lastUsedSetup, loading]
   );
+
+  useEffect(() => {
+    if (!loading) return;
+
+    const startedAt = Date.now();
+    setGenerationProgress(4);
+
+    const interval = window.setInterval(() => {
+      const elapsedMs = Date.now() - startedAt;
+      const estimated = Math.min(96, 4 + (elapsedMs / 300000) * 92);
+
+      setGenerationProgress((current) => Math.max(current, estimated));
+    }, 500);
+
+    return () => window.clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     if (!selectedModelOptions.aspectRatios.includes(aspectRatio)) {
@@ -617,6 +634,7 @@ export function VideoStudioComposer({
 
   async function runVideoGeneration(setup: VideoGenerationSetup, isTake = false) {
     setLoading(true);
+    setGenerationProgress(4);
     setVideoUrl(null);
     setLastAction(isTake ? `Started take ${takeCount + 1}.` : "Started a new video generation.");
 
@@ -658,6 +676,7 @@ export function VideoStudioComposer({
       if (!res.ok) {
         alert(data.error || "Failed to generate video");
         setLoading(false);
+        setGenerationProgress(0);
         window.dispatchEvent(new Event("vireon:credits-updated"));
         setLastAction(isTake ? "Another take failed to start." : "Video generation failed to start.");
         return;
@@ -670,6 +689,7 @@ export function VideoStudioComposer({
 
       if (data.status === "completed") {
         setVideoUrl(data.outputUrl);
+        setGenerationProgress(100);
         setLoading(false);
         window.dispatchEvent(new Event("vireon:credits-updated"));
         setLastAction(
@@ -682,6 +702,7 @@ export function VideoStudioComposer({
 
       if (data.status === "failed") {
         setLoading(false);
+        setGenerationProgress(0);
         window.dispatchEvent(new Event("vireon:credits-updated"));
         setLastAction(
           data.failureReason ||
@@ -700,6 +721,7 @@ export function VideoStudioComposer({
         if (statusData.status === "completed") {
           setVideoUrl(statusData.outputUrl);
           clearInterval(interval);
+          setGenerationProgress(100);
           setLoading(false);
           window.dispatchEvent(new Event("vireon:credits-updated"));
           setLastAction(
@@ -712,6 +734,7 @@ export function VideoStudioComposer({
         if (statusData.status === "failed") {
           clearInterval(interval);
           setLoading(false);
+          setGenerationProgress(0);
           window.dispatchEvent(new Event("vireon:credits-updated"));
           setLastUsedSetup(setup);
           setLastAction(
@@ -725,6 +748,7 @@ export function VideoStudioComposer({
       }, 2000);
     } catch {
       setLoading(false);
+      setGenerationProgress(0);
       setLastAction("Something went wrong during video generation.");
       alert("Something went wrong");
     }
@@ -969,6 +993,7 @@ export function VideoStudioComposer({
       videoCost={videoCost}
       videoUrl={videoUrl}
       loading={loading}
+      generationProgress={generationProgress}
       canGenerate={canGenerate}
       onGenerate={handleGenerateVideo}
       canGenerateAnotherTake={canGenerateAnotherTake}
@@ -1102,6 +1127,7 @@ export function VideoStudioComposer({
       videoCost={videoCost}
       videoUrl={videoUrl}
       loading={loading}
+      generationProgress={generationProgress}
       canGenerate={canGenerate}
       onGenerate={handleGenerateVideo}
       canGenerateAnotherTake={canGenerateAnotherTake}

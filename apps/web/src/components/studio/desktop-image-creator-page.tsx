@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 import {
   ChevronRight,
-  Download,
   FolderOpen,
   HelpCircle,
   History,
@@ -37,6 +36,8 @@ import { aspectRatios, imageStyles } from "@/lib/studio-data";
 import { cn } from "@/lib/utils";
 import type { StudioMode } from "./studio-mode-config";
 import { StudioHomeSidebar } from "./studio-home-sidebar";
+import { GenerationProgress } from "./generation-progress";
+import { GenerationResultActions } from "./generation-result-actions";
 
 type Draft = {
   id: string;
@@ -81,6 +82,7 @@ type DesktopImageCreatorPageProps = {
   imageCost: number;
   image: string | null;
   loading: boolean;
+  generationProgress: number;
   canGenerate: boolean;
   onGenerate: () => Promise<void>;
   canGenerateVariation: boolean;
@@ -154,6 +156,7 @@ export function DesktopImageCreatorPage({
   imageCost,
   image,
   loading,
+  generationProgress,
   canGenerate,
   onGenerate,
   canGenerateVariation,
@@ -200,7 +203,6 @@ export function DesktopImageCreatorPage({
     [activeDraftId, drafts]
   );
   const wordCount = prompt.trim() ? prompt.trim().split(/\s+/).length : 0;
-  const hasResult = Boolean(image);
 
   function appendPrompt(value: string) {
     const next = prompt.trim() ? `${prompt.trim()}, ${value}` : value;
@@ -505,9 +507,18 @@ export function DesktopImageCreatorPage({
                 )}
 
                 {loading ? (
-                  <div className="absolute inset-x-6 bottom-6 rounded-xl border border-[#2dd4bf]/25 bg-[#061817]/90 p-3 text-sm text-[#b7fff5] backdrop-blur">
-                    Generation in progress
-                  </div>
+                  <GenerationProgress
+                    value={generationProgress}
+                    label="Image generation"
+                    className="absolute inset-x-6 bottom-6"
+                  />
+                ) : null}
+                {image && !loading ? (
+                  <GenerationResultActions
+                    url={image}
+                    downloadName="vireon-image.webp"
+                    className="absolute bottom-4 right-4"
+                  />
                 ) : null}
               </div>
             </div>
@@ -532,16 +543,6 @@ export function DesktopImageCreatorPage({
                   <RotateCcw className="mr-2 size-4" />
                   Variation
                 </Button>
-                {hasResult ? (
-                  <a
-                    href={image ?? undefined}
-                    download
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
-                  >
-                    <Download className="size-4" />
-                    Download
-                  </a>
-                ) : null}
               </div>
             </div>
           </section>

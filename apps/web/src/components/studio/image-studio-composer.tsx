@@ -98,6 +98,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
   const [steps, setSteps] = useState(30);
   const [guidance, setGuidance] = useState(7.5);
   const [loading, setLoading] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
   const [image, setImage] = useState<string | null>(null);
   const [lastUsedSetup, setLastUsedSetup] =
     useState<StudioGenerationSetup | null>(null);
@@ -146,6 +147,22 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
   const supportsSeed = selectedModel.supports.seed;
   const supportsSteps = selectedModel.supports.steps;
   const supportsGuidance = selectedModel.supports.guidance;
+
+  useEffect(() => {
+    if (!loading) return;
+
+    const startedAt = Date.now();
+    setGenerationProgress(4);
+
+    const interval = window.setInterval(() => {
+      const elapsedMs = Date.now() - startedAt;
+      const estimated = Math.min(96, 4 + (elapsedMs / 300000) * 92);
+
+      setGenerationProgress((current) => Math.max(current, estimated));
+    }, 500);
+
+    return () => window.clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     if (!selectedModelOptions.aspectRatios.includes(selectedAspectRatio)) {
@@ -347,6 +364,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
     isVariation = false
   ) {
     setLoading(true);
+    setGenerationProgress(4);
     setImage(null);
 
     try {
@@ -373,6 +391,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
       if (!res.ok) {
         window.alert(data.error || "Failed to generate image");
         setLoading(false);
+        setGenerationProgress(0);
         window.dispatchEvent(new Event("vireon:credits-updated"));
         return;
       }
@@ -385,6 +404,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
 
       if (data.status === "completed") {
         setImage(data.outputUrl);
+        setGenerationProgress(100);
         setLoading(false);
         window.dispatchEvent(new Event("vireon:credits-updated"));
         setLastAction(
@@ -397,6 +417,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
 
       if (data.status === "failed") {
         setLoading(false);
+        setGenerationProgress(0);
         window.dispatchEvent(new Event("vireon:credits-updated"));
         setLastAction(
           data.failureReason ||
@@ -419,6 +440,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
         if (statusData.status === "completed") {
           setImage(statusData.outputUrl);
           window.clearInterval(interval);
+          setGenerationProgress(100);
           setLoading(false);
           window.dispatchEvent(new Event("vireon:credits-updated"));
           setLastAction(
@@ -431,6 +453,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
         if (statusData.status === "failed") {
           window.clearInterval(interval);
           setLoading(false);
+          setGenerationProgress(0);
           window.dispatchEvent(new Event("vireon:credits-updated"));
           setLastUsedSetup(setup);
           setLastAction(
@@ -442,6 +465,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
       }, 1500);
     } catch {
       setLoading(false);
+      setGenerationProgress(0);
       setLastAction("Something went wrong during generation.");
       window.alert("Something went wrong");
     }
@@ -555,6 +579,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
     setLastUsedSetup(null);
     setVariationCount(0);
     setImage(null);
+    setGenerationProgress(0);
     clearStudioSessionState();
     setLastAction("Reset the current studio session.");
   }
@@ -742,6 +767,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
         imageCost={imageCost}
         image={image}
         loading={loading}
+        generationProgress={generationProgress}
         canGenerate={canGenerate}
         onGenerate={handleGenerate}
         canGenerateVariation={canGenerateVariation}
@@ -826,6 +852,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
         imageCost={imageCost}
         image={image}
         loading={loading}
+        generationProgress={generationProgress}
         canGenerate={canGenerate}
         onGenerate={handleGenerate}
         canGenerateVariation={canGenerateVariation}

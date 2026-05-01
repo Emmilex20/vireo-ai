@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clapperboard,
-  Download,
   Film,
   FolderOpen,
   Gift,
@@ -56,6 +55,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { StudioMode } from "./studio-mode-config";
 import { StudioHomeSidebar } from "./studio-home-sidebar";
+import { GenerationProgress } from "./generation-progress";
+import { GenerationResultActions } from "./generation-result-actions";
 
 type VideoDraft = {
   id: string;
@@ -122,6 +123,7 @@ type DesktopVideoCreatorPageProps = {
   videoCost: number;
   videoUrl: string | null;
   loading: boolean;
+  generationProgress: number;
   canGenerate: boolean;
   onGenerate: () => Promise<void>;
   canGenerateAnotherTake: boolean;
@@ -230,6 +232,7 @@ export function DesktopVideoCreatorPage({
   videoCost,
   videoUrl,
   loading,
+  generationProgress,
   canGenerate,
   onGenerate,
   canGenerateAnotherTake,
@@ -278,7 +281,6 @@ export function DesktopVideoCreatorPage({
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const videoModels = listReplicateVideoModels();
   const wordCount = prompt.trim() ? prompt.trim().split(/\s+/).length : 0;
-  const hasResult = Boolean(videoUrl);
   const activeDraftName = useMemo(
     () => activeDraftTitle ?? drafts.find((draft) => draft.id === activeDraftId)?.title,
     [activeDraftId, activeDraftTitle, drafts]
@@ -561,9 +563,18 @@ export function DesktopVideoCreatorPage({
                   </div>
                 )}
                 {loading ? (
-                  <div className="absolute inset-x-6 bottom-6 rounded-xl border border-[#2dd4bf]/25 bg-[#061817]/90 p-3 text-sm text-[#b7fff5] backdrop-blur">
-                    Video generation in progress
-                  </div>
+                  <GenerationProgress
+                    value={generationProgress}
+                    label="Video generation"
+                    className="absolute inset-x-6 bottom-6"
+                  />
+                ) : null}
+                {videoUrl && !loading ? (
+                  <GenerationResultActions
+                    url={videoUrl}
+                    downloadName="vireon-video.mp4"
+                    className="absolute bottom-4 right-4"
+                  />
                 ) : null}
               </div>
             </div>
@@ -588,16 +599,6 @@ export function DesktopVideoCreatorPage({
                   <RotateCcw className="mr-2 size-4" />
                   Another take
                 </Button>
-                {hasResult ? (
-                  <a
-                    href={videoUrl ?? undefined}
-                    download
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
-                  >
-                    <Download className="size-4" />
-                    Download
-                  </a>
-                ) : null}
               </div>
             </div>
           </section>

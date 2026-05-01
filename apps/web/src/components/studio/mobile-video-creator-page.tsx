@@ -40,6 +40,8 @@ import {
 } from "@/lib/video-studio-data";
 import { cn } from "@/lib/utils";
 import type { StudioMode } from "./studio-mode-config";
+import { GenerationProgress } from "./generation-progress";
+import { GenerationResultActions } from "./generation-result-actions";
 
 type VideoDraft = {
   id: string;
@@ -106,6 +108,7 @@ type Props = {
   videoCost: number;
   videoUrl: string | null;
   loading: boolean;
+  generationProgress: number;
   canGenerate: boolean;
   onGenerate: () => Promise<void>;
   canGenerateAnotherTake: boolean;
@@ -191,6 +194,7 @@ export function MobileVideoCreatorPage({
   videoCost,
   videoUrl,
   loading,
+  generationProgress,
   canGenerate,
   onGenerate,
   canGenerateAnotherTake,
@@ -275,6 +279,16 @@ export function MobileVideoCreatorPage({
             <Pill>{videoCost} credits</Pill>
             {takeCount > 0 ? <Pill>Take {takeCount}</Pill> : null}
           </div>
+          {loading ? (
+            <div className="border-t border-white/10 p-3">
+              <GenerationProgress value={generationProgress} label="Video generation" />
+            </div>
+          ) : null}
+          {videoUrl && !loading ? (
+            <div className="flex justify-end border-t border-white/10 p-3">
+              <GenerationResultActions url={videoUrl} downloadName="vireon-video.mp4" />
+            </div>
+          ) : null}
           <div className="grid grid-cols-2 gap-2 border-t border-white/10 p-3">
             <Button
               type="button"
