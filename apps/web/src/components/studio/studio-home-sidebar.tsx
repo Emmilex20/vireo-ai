@@ -35,19 +35,23 @@ type DesktopNavItem = {
   mode?: StudioMode;
 };
 
+function comingSoonHref(feature: string) {
+  return `/coming-soon?feature=${encodeURIComponent(feature)}`;
+}
+
 const createLinks: DesktopNavItem[] = [
   { label: "Video", href: "/studio", icon: Clapperboard, full: true, mode: "video" },
   { label: "Image", href: "/studio", icon: ImageIcon, mode: "image" },
-  { label: "Character", href: "/creators", icon: Users },
-  { label: "World", href: "/explore", icon: Globe2 },
-  { label: "Audio", href: "/studio", icon: AudioLines },
+  { label: "Character", href: comingSoonHref("Character Studio"), icon: Users },
+  { label: "World", href: comingSoonHref("World Builder"), icon: Globe2 },
+  { label: "Audio", href: comingSoonHref("Audio Studio"), icon: AudioLines },
 ];
 
 const sidebarSections = [
   {
     label: "Assets",
     items: [
-      { label: "Character & World", href: "/creators", icon: Users },
+      { label: "Character & World", href: comingSoonHref("Character & World"), icon: Users },
       { label: "Media", href: "/assets", icon: FolderOpen },
     ],
   },
@@ -55,17 +59,17 @@ const sidebarSections = [
     label: "Inspire",
     items: [
       { label: "Template", href: "/templates", icon: Grid2x2 },
-      { label: "Tutorials", href: "/pricing", icon: BookOpen },
-      { label: "Blog", href: "/explore", icon: Lightbulb },
+      { label: "Tutorials", href: comingSoonHref("Tutorials"), icon: BookOpen },
+      { label: "Blog", href: comingSoonHref("Blog"), icon: Lightbulb },
     ],
   },
 ] as const;
 
 const pinnedToolCards = [
-  { id: "suite-motion", title: "Motion Sync", href: "/studio", mediaUrl: null },
-  { id: "suite-lip", title: "Lip-Sync", href: "/studio", mediaUrl: null },
-  { id: "suite-edit-video", title: "Edit Video", href: "/studio", mediaUrl: null },
-  { id: "suite-camera", title: "Camera Angle Control", href: "/studio", mediaUrl: null },
+  { id: "suite-motion", title: "Motion Sync", href: comingSoonHref("Motion Sync"), mediaUrl: null },
+  { id: "suite-lip", title: "Lip-Sync", href: comingSoonHref("Lip-Sync"), mediaUrl: null },
+  { id: "suite-edit-video", title: "Edit Video", href: comingSoonHref("Edit Video"), mediaUrl: null },
+  { id: "suite-camera", title: "Camera Angle Control", href: comingSoonHref("Camera Angle Control"), mediaUrl: null },
 ] as const;
 
 export function StudioHomeSidebar({
@@ -118,9 +122,9 @@ export function StudioHomeSidebar({
               <CompactSidebarLink href="/" icon={Home} label="Home" active />
               <CompactSidebarLink href="/studio" icon={Sparkles} label="Create" />
               <CompactSidebarLink href="/assets" icon={FolderOpen} label="Assets" />
-              <CompactSidebarLink href="/explore" icon={Lightbulb} label="Inspire" />
+              <CompactSidebarLink href={comingSoonHref("Inspire")} icon={Lightbulb} label="Inspire" />
               <div className="mx-auto h-px w-8 bg-white/10" />
-              <CompactSidebarLink href="/studio" icon={Grid2x2} label="All Tools" />
+              <CompactSidebarLink href={comingSoonHref("All Tools")} icon={Grid2x2} label="All Tools" />
               {pinnedToolCards.map((card) => (
                 <CompactSidebarThumb
                   key={card.id}
@@ -194,7 +198,7 @@ export function StudioHomeSidebar({
               </p>
               <div className="space-y-1.5">
                 <Link
-                  href="/studio"
+                  href={comingSoonHref("All Tools")}
                   className="flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5 text-white transition hover:bg-white/5"
                 >
                   <span className="flex items-center gap-3">

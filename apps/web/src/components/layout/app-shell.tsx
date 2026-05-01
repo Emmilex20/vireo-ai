@@ -17,6 +17,7 @@ import {
   ImageIcon,
   Lightbulb,
   Plus,
+  Sparkles,
   UserRound,
   Users,
   Video
@@ -39,6 +40,10 @@ type StudioMobileNavItem = {
   icon: React.ComponentType<{ className?: string }>;
   mode?: StudioMobileMode;
 };
+
+function comingSoonHref(feature: string) {
+  return `/coming-soon?feature=${encodeURIComponent(feature)}`;
+}
 
 const navItems = [
   {
@@ -115,6 +120,15 @@ const navItems = [
   }
 ];
 
+const comingSoonActiveItem = {
+  href: "/coming-soon",
+  label: "Coming soon",
+  title: "Coming soon",
+  description: "This creator workspace is being designed and will launch later.",
+  activeDescription: "Upcoming creator workspace",
+  icon: Sparkles
+};
+
 const studioMobileNavSections: Array<{
   label: string;
   items: StudioMobileNavItem[];
@@ -124,15 +138,15 @@ const studioMobileNavSections: Array<{
     items: [
       { href: "/studio", label: "Video", icon: Video, mode: "video" },
       { href: "/studio", label: "Image", icon: ImageIcon, mode: "image" },
-      { href: "/creators", label: "Character", icon: Users },
-      { href: "/explore", label: "World", icon: Globe2 },
-      { href: "/studio", label: "Audio", icon: AudioLines },
+      { href: comingSoonHref("Character Studio"), label: "Character", icon: Users },
+      { href: comingSoonHref("World Builder"), label: "World", icon: Globe2 },
+      { href: comingSoonHref("Audio Studio"), label: "Audio", icon: AudioLines },
     ],
   },
   {
     label: "Assets",
     items: [
-      { href: "/creators", label: "Character & World", icon: Users },
+      { href: comingSoonHref("Character & World"), label: "Character & World", icon: Users },
       { href: "/assets", label: "Media", icon: FolderOpen },
     ],
   },
@@ -140,17 +154,17 @@ const studioMobileNavSections: Array<{
     label: "Inspire",
     items: [
       { href: "/templates", label: "Template", icon: Grid2x2 },
-      { href: "/pricing", label: "Tutorials", icon: BookOpen },
-      { href: "/explore", label: "Blog", icon: Lightbulb },
+      { href: comingSoonHref("Tutorials"), label: "Tutorials", icon: BookOpen },
+      { href: comingSoonHref("Blog"), label: "Blog", icon: Lightbulb },
     ],
   },
   {
     label: "Pinned",
     items: [
-      { href: "/studio", label: "All Tools", icon: Grid2x2 },
-      { href: "/studio", label: "Motion Sync", icon: Video, mode: "video" },
-      { href: "/studio", label: "Lip-Sync", icon: AudioLines },
-      { href: "/studio", label: "Edit Video", icon: Video, mode: "video" },
+      { href: comingSoonHref("All Tools"), label: "All Tools", icon: Grid2x2 },
+      { href: comingSoonHref("Motion Sync"), label: "Motion Sync", icon: Video },
+      { href: comingSoonHref("Lip-Sync"), label: "Lip-Sync", icon: AudioLines },
+      { href: comingSoonHref("Edit Video"), label: "Edit Video", icon: Video },
     ],
   },
 ] as const;
@@ -162,9 +176,11 @@ export function AppShell({ children }: AppShellProps) {
     pathname.startsWith("/studio/") ||
     pathname.startsWith("/suite/animate-video/");
   const activeItem =
-    navItems.find(
-      (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
-    ) ?? navItems[0];
+    pathname.startsWith("/coming-soon")
+      ? comingSoonActiveItem
+      : navItems.find(
+          (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
+        ) ?? navItems[0];
   const ActiveIcon = activeItem.icon;
 
   useEffect(() => {
