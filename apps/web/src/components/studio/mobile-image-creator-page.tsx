@@ -22,6 +22,7 @@ import {
 import { PromptTemplatesPanel } from "@/components/prompts/prompt-templates-panel";
 import { Button } from "@/components/ui/button";
 import {
+  getImageModelUiOptions,
   listReplicateImageModels,
   type ReplicateImageModelConfig,
   type ReplicateImageModelId,
@@ -65,6 +66,7 @@ type Props = {
   selectedStyle: string;
   onStyleChange: (value: string) => void;
   selectedAspectRatio: string;
+  aspectRatioOptions: string[];
   onAspectRatioChange: (value: string) => void;
   qualityMode: "standard" | "high" | "ultra";
   onQualityModeChange: (value: "standard" | "high" | "ultra") => void;
@@ -133,6 +135,7 @@ export function MobileImageCreatorPage({
   selectedStyle,
   onStyleChange,
   selectedAspectRatio,
+  aspectRatioOptions,
   onAspectRatioChange,
   qualityMode,
   onQualityModeChange,
@@ -173,6 +176,10 @@ export function MobileImageCreatorPage({
   const imageModels = listReplicateImageModels();
   const selectedModel =
     imageModels.find((model) => model.id === selectedModelId) ?? imageModels[0];
+  const selectedModelOptions = getImageModelUiOptions(selectedModel);
+  const visibleAspectRatios = aspectRatios.filter((ratio) =>
+    aspectRatioOptions.includes(ratio.value)
+  );
 
   return (
     <section className="lg:hidden">
@@ -265,6 +272,13 @@ export function MobileImageCreatorPage({
               </span>
             </button>
 
+            <div className="rounded-3xl border border-white/10 bg-[#0b0e10] p-3 text-xs leading-5 text-white/50">
+              <p className="font-semibold text-white/70">Requirements</p>
+              <p>Required: {selectedModelOptions.required.join(", ")}</p>
+              <p>Optional: {selectedModelOptions.optional.join(", ")}</p>
+              <p>Ratios: {selectedModelOptions.aspectRatios.join(", ")}</p>
+            </div>
+
             <ChoiceWrap title="Style">
               {imageStyles.map((style) => (
                 <Chip key={style} active={selectedStyle === style} onClick={() => onStyleChange(style)}>
@@ -274,7 +288,7 @@ export function MobileImageCreatorPage({
             </ChoiceWrap>
 
             <ChoiceWrap title="Aspect ratio">
-              {aspectRatios.map((ratio) => (
+              {visibleAspectRatios.map((ratio) => (
                 <Chip key={ratio.value} active={selectedAspectRatio === ratio.value} onClick={() => onAspectRatioChange(ratio.value)}>
                   {ratio.label}
                 </Chip>

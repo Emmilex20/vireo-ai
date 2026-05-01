@@ -14,6 +14,7 @@ type VideoAdvancedSettingsProps = {
   open: boolean;
   onToggleOpen: () => void;
   resolution: string;
+  resolutionOptions?: readonly { label: string; value: string }[];
   onResolutionChange: (value: string) => void;
   draftMode: boolean;
   onDraftModeChange: (value: boolean) => void;
@@ -38,6 +39,7 @@ export function VideoAdvancedSettings({
   open,
   onToggleOpen,
   resolution,
+  resolutionOptions = videoResolutionOptions,
   onResolutionChange,
   draftMode,
   onDraftModeChange,
@@ -86,7 +88,7 @@ export function VideoAdvancedSettings({
                 Resolution
               </label>
               <div className="grid grid-cols-2 gap-3">
-                {videoResolutionOptions.map((item) => (
+                {resolutionOptions.map((item) => (
                   <button
                     key={item.value}
                     type="button"

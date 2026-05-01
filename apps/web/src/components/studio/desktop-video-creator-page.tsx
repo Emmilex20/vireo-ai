@@ -40,6 +40,7 @@ import {
   listReplicateVideoModels,
   type ReplicateVideoModelConfig,
   type ReplicateVideoModelId,
+  type VideoModelUiOptions,
 } from "@/lib/ai/providers/replicate-video-models";
 import {
   cameraMoves,
@@ -84,6 +85,7 @@ type DesktopVideoCreatorPageProps = {
   onChangeMode?: (mode: StudioMode) => void;
   selectedModelId: ReplicateVideoModelId;
   selectedModel: ReplicateVideoModelConfig;
+  modelOptions: VideoModelUiOptions;
   onModelChange: (value: ReplicateVideoModelId) => void;
   prompt: string;
   onPromptChange: (value: string) => void;
@@ -191,6 +193,7 @@ export function DesktopVideoCreatorPage({
   onChangeMode,
   selectedModelId,
   selectedModel,
+  modelOptions,
   onModelChange,
   prompt,
   onPromptChange,
@@ -283,6 +286,12 @@ export function DesktopVideoCreatorPage({
   const supportsEndFrame = selectedModel.features.includes("Start/End");
   const supportsReferences = selectedModel.features.includes("Reference");
   const supportsMultiShot = selectedModel.features.includes("Multi-shots");
+  const visibleDurations = videoDurations.filter((item) =>
+    modelOptions.durations.includes(Number(item.value))
+  );
+  const visibleAspectRatios = videoAspectRatios.filter((item) =>
+    modelOptions.aspectRatios.includes(item.value)
+  );
 
   return (
     <div className="hidden h-screen overflow-hidden bg-[#090b0d] text-white lg:flex">
@@ -353,6 +362,18 @@ export function DesktopVideoCreatorPage({
                   </span>
                   <ChevronRight className="size-4 text-white/45" />
                 </button>
+                <div className="mt-3 rounded-xl border border-white/10 bg-[#0b0e10] p-3 text-xs leading-5 text-white/50">
+                  <div className="font-semibold text-white/70">Requirements</div>
+                  <div>Required: {modelOptions.required.join(", ")}</div>
+                  <div>Optional: {modelOptions.optional.join(", ")}</div>
+                  <div>Ratios: {modelOptions.aspectRatios.join(", ")}</div>
+                  <div>
+                    Duration: {modelOptions.durations.map((item) => `${item}s`).join(", ")}
+                  </div>
+                  {modelOptions.resolutions.length ? (
+                    <div>Resolution: {modelOptions.resolutions.join(", ")}</div>
+                  ) : null}
+                </div>
               </Panel>
 
               <Panel>
@@ -484,8 +505,8 @@ export function DesktopVideoCreatorPage({
               <Panel>
                 <PanelHeader icon={Film} title="Motion And Format" description="Set length, frame, motion energy, and camera behavior." />
                 <div className="mt-4 space-y-4">
-                  <ChoiceGrid label="Duration" items={videoDurations} value={duration} onChange={onDurationChange} columns="grid-cols-4" />
-                  <ChoiceGrid label="Aspect ratio" items={videoAspectRatios} value={aspectRatio} onChange={onAspectRatioChange} columns="grid-cols-3" />
+                  <ChoiceGrid label="Duration" items={visibleDurations} value={duration} onChange={onDurationChange} columns="grid-cols-4" />
+                  <ChoiceGrid label="Aspect ratio" items={visibleAspectRatios} value={aspectRatio} onChange={onAspectRatioChange} columns="grid-cols-3" />
                   <ChoiceGrid label="Motion" items={motionIntensityOptions} value={motionIntensity} onChange={onMotionIntensityChange} columns="grid-cols-3" />
                   <div>
                     <Label>Camera move</Label>
@@ -635,6 +656,7 @@ export function DesktopVideoCreatorPage({
               {rightPanel === "settings" ? (
                 <SettingsPanel
                   selectedModel={selectedModel}
+                  modelOptions={modelOptions}
                   advancedOpen={advancedOpen}
                   onToggleAdvancedOpen={onToggleAdvancedOpen}
                   negativePrompt={negativePrompt}
@@ -889,6 +911,7 @@ function DraftsPanel({
 
 function SettingsPanel({
   selectedModel,
+  modelOptions,
   advancedOpen,
   onToggleAdvancedOpen,
   negativePrompt,
@@ -913,6 +936,7 @@ function SettingsPanel({
   onFpsChange,
 }: {
   selectedModel: ReplicateVideoModelConfig;
+  modelOptions: VideoModelUiOptions;
   advancedOpen: boolean;
   onToggleAdvancedOpen: () => void;
   negativePrompt: string;
@@ -964,7 +988,15 @@ function SettingsPanel({
             </div>
 
             {selectedModel.supports.resolutionControl ? (
-              <ChoiceGrid label="Resolution" items={videoResolutionOptions} value={resolution} onChange={onResolutionChange} columns="grid-cols-2" />
+              <ChoiceGrid
+                label="Resolution"
+                items={videoResolutionOptions.filter((item) =>
+                  modelOptions.resolutions.includes(item.value)
+                )}
+                value={resolution}
+                onChange={onResolutionChange}
+                columns="grid-cols-2"
+              />
             ) : null}
             {selectedModel.supports.fpsControl ? (
               <ChoiceGrid label="Frame rate" items={videoFpsOptions} value={fps} onChange={onFpsChange} columns="grid-cols-3" />

@@ -13,6 +13,7 @@ import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
 import {
+  getVideoModelUiOptions,
   isReplicateVideoModelId,
   resolveReplicateVideoModel,
 } from "@/lib/ai/providers/replicate-video-models";
@@ -116,9 +117,44 @@ export async function POST(req: Request) {
     const normalizedDuration = duration ?? 5;
     const selectedModel = resolveReplicateVideoModel(modelId);
 
-    if (!isSupportedVideoDuration(normalizedDuration)) {
+    const modelOptions = getVideoModelUiOptions(selectedModel);
+
+    if (
+      !isSupportedVideoDuration(normalizedDuration) ||
+      !modelOptions.durations.includes(normalizedDuration)
+    ) {
       return NextResponse.json(
-        { error: "Supported video durations are 5, 10, 15, and 20 seconds." },
+        {
+          error: `${selectedModel.label} supports ${modelOptions.durations
+            .map((value) => `${value}s`)
+            .join(", ")} durations.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (aspectRatio && !modelOptions.aspectRatios.includes(aspectRatio)) {
+      return NextResponse.json(
+        {
+          error: `${selectedModel.label} supports ${modelOptions.aspectRatios.join(
+            ", "
+          )} aspect ratios.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      resolution &&
+      modelOptions.resolutions.length &&
+      !modelOptions.resolutions.includes(resolution)
+    ) {
+      return NextResponse.json(
+        {
+          error: `${selectedModel.label} supports ${modelOptions.resolutions.join(
+            ", "
+          )} resolutions.`,
+        },
         { status: 400 }
       );
     }

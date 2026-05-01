@@ -6,15 +6,17 @@ import { cn } from "@/lib/utils";
 type AspectRatioSelectorProps = {
   value: string;
   onChange: (ratio: string) => void;
+  options?: readonly { label: string; value: string }[];
 };
 
 export function AspectRatioSelector({
   value,
   onChange,
+  options = aspectRatios,
 }: AspectRatioSelectorProps) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-      {aspectRatios.map((ratio) => (
+      {options.map((ratio) => (
         <button
           key={ratio.value}
           type="button"

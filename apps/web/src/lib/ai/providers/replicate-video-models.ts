@@ -85,6 +85,24 @@ export type ReplicateVideoModelConfig = {
 };
 
 const DEFAULT_VIDEO_MODEL: ReplicateVideoModelId = "kwaivgi/kling-v3-video";
+const STANDARD_VIDEO_ASPECT_RATIOS = ["16:9", "9:16", "1:1"] as const;
+const WIDE_VIDEO_ASPECT_RATIOS = [
+  "16:9",
+  "4:3",
+  "1:1",
+  "3:4",
+  "9:16",
+  "21:9",
+] as const;
+const DURATION_OPTIONS = [5, 10, 15, 20] as const;
+
+export type VideoModelUiOptions = {
+  aspectRatios: string[];
+  durations: number[];
+  resolutions: string[];
+  required: string[];
+  optional: string[];
+};
 
 function buildPrompt(input: VideoGenerationInput) {
   return [
@@ -118,11 +136,13 @@ function buildStandardVideoInput(input: VideoGenerationInput) {
     reference_images: references,
     references,
     image_input: references,
+    input_images: references,
     images: references,
     audio: input.audioUrl || undefined,
     audio_url: input.audioUrl || undefined,
     input_audio: input.audioUrl || undefined,
     audio_reference: input.audioUrl || undefined,
+    audio_inputs: input.audioUrl ? [input.audioUrl] : undefined,
     duration: input.duration ?? 5,
     seconds: input.duration ?? 5,
     aspect_ratio: input.aspectRatio ?? "16:9",
@@ -645,4 +665,74 @@ export function resolveReplicateVideoModelBySlug(slug?: string | null) {
 
 export function listReplicateVideoModels() {
   return Object.values(REPLICATE_VIDEO_MODELS);
+}
+
+function getDurationRange(model: ReplicateVideoModelConfig) {
+  const durationFeature = model.features.find((feature) => /\d+-\d+s/.test(feature));
+  const range = durationFeature?.match(/(\d+)-(\d+)s/);
+
+  if (!range) {
+    return [model.defaultDuration, model.defaultDuration] as const;
+  }
+
+  return [Number(range[1]), Number(range[2])] as const;
+}
+
+function getResolutionOptions(model: ReplicateVideoModelConfig) {
+  if (!model.supports.resolutionControl) {
+    return model.defaultResolution ? [model.defaultResolution] : [];
+  }
+
+  if (model.features.includes("4K") || model.features.includes("720p-4K")) {
+    return ["720p", "1080p", "4K"];
+  }
+
+  if (
+    model.features.includes("480-1080p") ||
+    model.features.includes("512-1080p") ||
+    model.features.includes("540-1080p") ||
+    model.features.includes("768-1080p") ||
+    model.features.includes("360-1080p")
+  ) {
+    return ["480p", "720p", "1080p"];
+  }
+
+  if (model.features.includes("480-720p")) {
+    return ["480p", "720p"];
+  }
+
+  return ["720p", "1080p"];
+}
+
+export function getVideoModelUiOptions(
+  model: ReplicateVideoModelConfig
+): VideoModelUiOptions {
+  const [minDuration, maxDuration] = getDurationRange(model);
+  const durations = DURATION_OPTIONS.filter(
+    (duration) => duration >= minDuration && duration <= maxDuration
+  );
+  const aspectRatios = model.provider === "ByteDance"
+    ? [...WIDE_VIDEO_ASPECT_RATIOS]
+    : [...STANDARD_VIDEO_ASPECT_RATIOS];
+  const optional = [
+    model.supports.imageInput ? "Start/source image" : null,
+    model.features.includes("Start/End") ? "End frame" : null,
+    model.features.includes("Reference") || model.features.includes("Multi-shots")
+      ? "Visual references"
+      : null,
+    model.supports.audioGeneration ? "Audio reference or generated audio" : null,
+    model.supports.resolutionControl ? "Resolution" : null,
+    model.supports.fpsControl ? "FPS" : null,
+    model.supports.draftMode ? "Draft mode" : null,
+    model.supports.promptUpsampling ? "Prompt upsampling" : null,
+    model.supports.disableSafetyFilter ? "Safety filter toggle" : null,
+  ].filter(Boolean) as string[];
+
+  return {
+    aspectRatios,
+    durations: durations.length ? durations : [model.defaultDuration],
+    resolutions: getResolutionOptions(model),
+    required: ["Prompt"],
+    optional,
+  };
 }

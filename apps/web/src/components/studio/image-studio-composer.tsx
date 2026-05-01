@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  getImageModelUiOptions,
   listReplicateImageModels,
   type ReplicateImageModelId,
 } from "@/lib/ai/providers/replicate-image-models";
@@ -89,7 +90,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
   const [referenceImageName, setReferenceImageName] = useState("");
   const [uploadingReferenceImage, setUploadingReferenceImage] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState("Cinematic");
-  const [selectedAspectRatio, setSelectedAspectRatio] = useState("4:3");
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState("1:1");
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [qualityMode, setQualityMode] = useState<QualityMode>("high");
   const [promptBoost, setPromptBoost] = useState(true);
@@ -136,11 +137,35 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
     () => imageModels.find((model) => model.id === selectedModelId) ?? imageModels[0],
     [selectedModelId]
   );
+  const selectedModelOptions = useMemo(
+    () => getImageModelUiOptions(selectedModel),
+    [selectedModel]
+  );
 
   const supportsReferenceImage = selectedModel.supports.referenceImage;
   const supportsSeed = selectedModel.supports.seed;
   const supportsSteps = selectedModel.supports.steps;
   const supportsGuidance = selectedModel.supports.guidance;
+
+  useEffect(() => {
+    if (!selectedModelOptions.aspectRatios.includes(selectedAspectRatio)) {
+      setSelectedAspectRatio(selectedModel.defaultAspectRatio);
+    }
+  }, [
+    selectedAspectRatio,
+    selectedModel.defaultAspectRatio,
+    selectedModelOptions.aspectRatios,
+  ]);
+
+  function normalizeAspectRatioForModel(
+    modelId: ReplicateImageModelId,
+    ratio?: string | null
+  ) {
+    const model = imageModels.find((item) => item.id === modelId) ?? imageModels[0];
+    const options = getImageModelUiOptions(model).aspectRatios;
+
+    return ratio && options.includes(ratio) ? ratio : model.defaultAspectRatio;
+  }
 
   const imageCost = useMemo(
     () =>
@@ -212,11 +237,14 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
 
           setPrompt(payload.prompt ?? "");
           setNegativePrompt(payload.negativePrompt ?? "");
-          setSelectedModelId(payload.modelId ?? defaultModelId);
+          const payloadModelId = payload.modelId ?? defaultModelId;
+          setSelectedModelId(payloadModelId);
           setReferenceImageUrl(payload.referenceImageUrl ?? "");
           setReferenceImageName(payload.referenceImageUrl ? "History reference image" : "");
           setSelectedStyle(payload.style ?? "Cinematic");
-          setSelectedAspectRatio(payload.aspectRatio ?? "4:3");
+          setSelectedAspectRatio(
+            normalizeAspectRatioForModel(payloadModelId, payload.aspectRatio)
+          );
           setQualityMode(payload.qualityMode ?? "high");
           setPromptBoost(payload.promptBoost ?? true);
           setSeed(payload.seed != null ? String(payload.seed) : "");
@@ -234,15 +262,18 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
 
         setPrompt(persisted.prompt ?? "");
         setNegativePrompt(persisted.negativePrompt ?? "");
-        setSelectedModelId(
-          (persisted.modelId as ReplicateImageModelId | undefined) ?? defaultModelId
-        );
+        const persistedModelId =
+          (persisted.modelId as ReplicateImageModelId | undefined) ??
+          defaultModelId;
+        setSelectedModelId(persistedModelId);
         setReferenceImageUrl(persisted.referenceImageUrl ?? "");
         setReferenceImageName(
           persisted.referenceImageUrl ? "Saved reference image" : ""
         );
         setSelectedStyle(persisted.style ?? "Cinematic");
-        setSelectedAspectRatio(persisted.aspectRatio ?? "4:3");
+        setSelectedAspectRatio(
+          normalizeAspectRatioForModel(persistedModelId, persisted.aspectRatio)
+        );
         setQualityMode(persisted.qualityMode ?? "high");
         setPromptBoost(persisted.promptBoost ?? true);
         setSeed(persisted.seed != null ? String(persisted.seed) : "");
@@ -511,7 +542,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
     setReferenceImageUrl("");
     setReferenceImageName("");
     setSelectedStyle("Cinematic");
-    setSelectedAspectRatio("4:3");
+    setSelectedAspectRatio("1:1");
     setQualityMode("high");
     setPromptBoost(true);
     setSeed("");
@@ -620,11 +651,14 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
   function handleLoadDraft(draft: PromptDraft) {
     setPrompt(draft.prompt);
     setNegativePrompt(draft.negativePrompt ?? "");
-    setSelectedModelId(draft.modelId ?? defaultModelId);
+    const draftModelId = draft.modelId ?? defaultModelId;
+    setSelectedModelId(draftModelId);
     setReferenceImageUrl("");
     setReferenceImageName("");
     setSelectedStyle(draft.style || "Cinematic");
-    setSelectedAspectRatio(draft.aspectRatio || "4:3");
+    setSelectedAspectRatio(
+      normalizeAspectRatioForModel(draftModelId, draft.aspectRatio)
+    );
     setQualityMode((draft.qualityMode as QualityMode) || "high");
     setPromptBoost(draft.promptBoost);
     setSeed(draft.seed != null ? String(draft.seed) : "");
@@ -695,6 +729,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
           setActiveDraftId(null);
         }}
         selectedAspectRatio={selectedAspectRatio}
+        aspectRatioOptions={selectedModelOptions.aspectRatios}
         onAspectRatioChange={(value) => {
           setSelectedAspectRatio(value);
           setActiveDraftId(null);
@@ -778,6 +813,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
           setActiveDraftId(null);
         }}
         selectedAspectRatio={selectedAspectRatio}
+        aspectRatioOptions={selectedModelOptions.aspectRatios}
         onAspectRatioChange={(value) => {
           setSelectedAspectRatio(value);
           setActiveDraftId(null);

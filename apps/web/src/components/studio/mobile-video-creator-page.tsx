@@ -25,6 +25,7 @@ import {
   listReplicateVideoModels,
   type ReplicateVideoModelConfig,
   type ReplicateVideoModelId,
+  type VideoModelUiOptions,
 } from "@/lib/ai/providers/replicate-video-models";
 import {
   cameraMoves,
@@ -68,6 +69,7 @@ type Props = {
   onChangeMode?: (mode: StudioMode) => void;
   selectedModelId: ReplicateVideoModelId;
   selectedModel: ReplicateVideoModelConfig;
+  modelOptions: VideoModelUiOptions;
   onModelChange: (value: ReplicateVideoModelId) => void;
   prompt: string;
   onPromptChange: (value: string) => void;
@@ -152,6 +154,7 @@ export function MobileVideoCreatorPage({
   onChangeMode,
   selectedModelId,
   selectedModel,
+  modelOptions,
   onModelChange,
   prompt,
   onPromptChange,
@@ -236,6 +239,15 @@ export function MobileVideoCreatorPage({
   const supportsEndFrame = selectedModel.features.includes("Start/End");
   const supportsReferences = selectedModel.features.includes("Reference");
   const supportsMultiShot = selectedModel.features.includes("Multi-shots");
+  const visibleDurations = videoDurations.filter((item) =>
+    modelOptions.durations.includes(Number(item.value))
+  );
+  const visibleAspectRatios = videoAspectRatios.filter((item) =>
+    modelOptions.aspectRatios.includes(item.value)
+  );
+  const visibleResolutions = videoResolutionOptions.filter((item) =>
+    modelOptions.resolutions.includes(item.value)
+  );
 
   return (
     <section className="lg:hidden">
@@ -327,11 +339,24 @@ export function MobileVideoCreatorPage({
               </span>
             </button>
 
+            <div className="rounded-3xl border border-white/10 bg-[#0b0e10] p-3 text-xs leading-5 text-white/50">
+              <p className="font-semibold text-white/70">Requirements</p>
+              <p>Required: {modelOptions.required.join(", ")}</p>
+              <p>Optional: {modelOptions.optional.join(", ")}</p>
+              <p>Ratios: {modelOptions.aspectRatios.join(", ")}</p>
+              <p>
+                Duration: {modelOptions.durations.map((item) => `${item}s`).join(", ")}
+              </p>
+              {modelOptions.resolutions.length ? (
+                <p>Resolution: {modelOptions.resolutions.join(", ")}</p>
+              ) : null}
+            </div>
+
             <ChoiceWrap title="Duration">
-              {videoDurations.map((item) => <Chip key={item.value} active={duration === item.value} onClick={() => onDurationChange(item.value)}>{item.label}</Chip>)}
+              {visibleDurations.map((item) => <Chip key={item.value} active={duration === item.value} onClick={() => onDurationChange(item.value)}>{item.label}</Chip>)}
             </ChoiceWrap>
             <ChoiceWrap title="Aspect ratio">
-              {videoAspectRatios.map((item) => <Chip key={item.value} active={aspectRatio === item.value} onClick={() => onAspectRatioChange(item.value)}>{item.label}</Chip>)}
+              {visibleAspectRatios.map((item) => <Chip key={item.value} active={aspectRatio === item.value} onClick={() => onAspectRatioChange(item.value)}>{item.label}</Chip>)}
             </ChoiceWrap>
           </Panel>
         </details>
@@ -470,7 +495,7 @@ export function MobileVideoCreatorPage({
             </button>
             {advancedOpen ? (
               <>
-                {selectedModel.supports.resolutionControl ? <ChoiceWrap title="Resolution">{videoResolutionOptions.map((item) => <Chip key={item.value} active={resolution === item.value} onClick={() => onResolutionChange(item.value)}>{item.label}</Chip>)}</ChoiceWrap> : null}
+                {selectedModel.supports.resolutionControl ? <ChoiceWrap title="Resolution">{visibleResolutions.map((item) => <Chip key={item.value} active={resolution === item.value} onClick={() => onResolutionChange(item.value)}>{item.label}</Chip>)}</ChoiceWrap> : null}
                 {selectedModel.supports.fpsControl ? <ChoiceWrap title="Frame rate">{videoFpsOptions.map((item) => <Chip key={item.value} active={fps === item.value} onClick={() => onFpsChange(item.value)}>{item.label}</Chip>)}</ChoiceWrap> : null}
                 {selectedModel.supports.styleStrength ? <ChoiceWrap title="Style strength">{styleStrengthOptions.map((item) => <Chip key={item.value} active={styleStrength === item.value} onClick={() => onStyleStrengthChange(item.value)}>{item.label}</Chip>)}</ChoiceWrap> : null}
                 {selectedModel.supports.shotType ? <ChoiceWrap title="Shot type">{videoShotTypes.map((item) => <Chip key={item} active={shotType === item} onClick={() => onShotTypeChange(item)}>{item}</Chip>)}</ChoiceWrap> : null}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
 import {
+  getImageModelUiOptions,
   isReplicateImageModelId,
   resolveReplicateImageModel,
 } from "@/lib/ai/providers/replicate-image-models";
@@ -108,11 +109,26 @@ export async function POST(req: Request) {
     const provider = getImageProvider();
     const workersMode = await isWorkersMode();
     const selectedModel = resolveReplicateImageModel(modelId);
+    const modelOptions = getImageModelUiOptions(selectedModel);
 
     if (referenceImageUrl && !selectedModel.supports.referenceImage) {
       return NextResponse.json(
         {
           error: `${selectedModel.label} does not support reference image uploads.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      aspectRatio &&
+      !modelOptions.aspectRatios.includes(aspectRatio)
+    ) {
+      return NextResponse.json(
+        {
+          error: `${selectedModel.label} supports ${modelOptions.aspectRatios.join(
+            ", "
+          )} aspect ratios.`,
         },
         { status: 400 }
       );
@@ -209,7 +225,7 @@ export async function POST(req: Request) {
             modelId: selectedModel.id,
             referenceImageUrl: referenceImageUrl ?? null,
             style: style ?? "Cinematic",
-            aspectRatio: aspectRatio ?? "4:3",
+            aspectRatio: aspectRatio ?? selectedModel.defaultAspectRatio,
             qualityMode: qualityMode ?? "high",
             promptBoost: promptBoost ?? true,
             seed: seed ?? null,
@@ -239,7 +255,7 @@ export async function POST(req: Request) {
         modelId: selectedModel.id,
         referenceImageUrl: referenceImageUrl ?? null,
         style: style ?? "Cinematic",
-        aspectRatio: aspectRatio ?? "4:3",
+        aspectRatio: aspectRatio ?? selectedModel.defaultAspectRatio,
         qualityMode: qualityMode ?? "high",
         promptBoost: promptBoost ?? true,
         seed: seed ?? null,

@@ -6,15 +6,17 @@ import { cn } from "@/lib/utils";
 type VideoAspectRatioSelectorProps = {
   value: string;
   onChange: (value: string) => void;
+  options?: readonly { label: string; value: string }[];
 };
 
 export function VideoAspectRatioSelector({
   value,
   onChange,
+  options = videoAspectRatios,
 }: VideoAspectRatioSelectorProps) {
   return (
     <div className="grid grid-cols-3 gap-3">
-      {videoAspectRatios.map((item) => (
+      {options.map((item) => (
         <button
           key={item.value}
           type="button"

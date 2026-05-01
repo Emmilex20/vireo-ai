@@ -6,15 +6,17 @@ import { cn } from "@/lib/utils";
 type VideoDurationSelectorProps = {
   value: string;
   onChange: (value: string) => void;
+  options?: readonly { label: string; value: string }[];
 };
 
 export function VideoDurationSelector({
   value,
   onChange,
+  options = videoDurations,
 }: VideoDurationSelectorProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {videoDurations.map((item) => (
+      {options.map((item) => (
         <button
           key={item.value}
           type="button"

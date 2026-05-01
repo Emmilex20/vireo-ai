@@ -17,11 +17,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  getVideoModelUiOptions,
   resolveReplicateVideoModel,
   resolveReplicateVideoModelBySlug,
   type ReplicateVideoModelId,
 } from "@/lib/ai/providers/replicate-video-models";
 import { getVideoGenerationCost } from "@/lib/video-generation-config";
+import {
+  videoAspectRatios,
+  videoDurations,
+  videoResolutionOptions,
+} from "@/lib/video-studio-data";
 import { PromptTemplatesPanel } from "@/components/prompts/prompt-templates-panel";
 import { StudioSectionTitle } from "@/components/shared/studio-section-title";
 import { PromptQuickActions } from "./prompt-quick-actions";
@@ -139,6 +145,10 @@ export function VideoStudioComposer({
     () => resolveReplicateVideoModel(selectedModelId),
     [selectedModelId]
   );
+  const selectedModelOptions = useMemo(
+    () => getVideoModelUiOptions(selectedModel),
+    [selectedModel]
+  );
   const videoCost = useMemo(
     () =>
       getVideoGenerationCost({
@@ -156,6 +166,33 @@ export function VideoStudioComposer({
     () => !!lastUsedSetup && !loading,
     [lastUsedSetup, loading]
   );
+
+  useEffect(() => {
+    if (!selectedModelOptions.aspectRatios.includes(aspectRatio)) {
+      setAspectRatio(selectedModel.defaultAspectRatio);
+    }
+
+    if (!selectedModelOptions.durations.includes(Number(duration))) {
+      setDuration(String(selectedModel.defaultDuration));
+    }
+
+    if (
+      selectedModelOptions.resolutions.length &&
+      !selectedModelOptions.resolutions.includes(resolution)
+    ) {
+      setResolution(
+        selectedModel.defaultResolution ?? selectedModelOptions.resolutions[0]
+      );
+    }
+  }, [
+    aspectRatio,
+    duration,
+    resolution,
+    selectedModel,
+    selectedModelOptions.aspectRatios,
+    selectedModelOptions.durations,
+    selectedModelOptions.resolutions,
+  ]);
 
   const activeDraftTitle = useMemo(() => {
     if (!activeDraftId) return null;
@@ -555,20 +592,19 @@ export function VideoStudioComposer({
     if (typeof window !== "undefined") {
       window.history.pushState({}, "", `/suite/animate-video/${nextModel.slug}`);
     }
+    const nextOptions = getVideoModelUiOptions(nextModel);
     setResolution((prev) =>
-      prev === (selectedModel.defaultResolution ?? "720p")
-        ? nextModel.defaultResolution ?? "720p"
-        : prev
+      nextOptions.resolutions.includes(prev)
+        ? prev
+        : nextModel.defaultResolution ?? nextOptions.resolutions[0] ?? "720p"
     );
     setAspectRatio((prev) =>
-      prev === selectedModel.defaultAspectRatio
-        ? nextModel.defaultAspectRatio
-        : prev
+      nextOptions.aspectRatios.includes(prev) ? prev : nextModel.defaultAspectRatio
     );
     setDuration((prev) =>
-      prev === String(selectedModel.defaultDuration)
-        ? String(nextModel.defaultDuration)
-        : prev
+      nextOptions.durations.includes(Number(prev))
+        ? prev
+        : String(nextModel.defaultDuration)
     );
     if (!nextModel.supports.audioGeneration) {
       setSaveAudio(false);
@@ -878,6 +914,7 @@ export function VideoStudioComposer({
       onChangeMode={onChangeMode}
       selectedModelId={selectedModelId}
       selectedModel={selectedModel}
+      modelOptions={selectedModelOptions}
       onModelChange={handleModelChange}
       prompt={prompt}
       onPromptChange={(value) => {
@@ -1010,6 +1047,7 @@ export function VideoStudioComposer({
       onChangeMode={onChangeMode}
       selectedModelId={selectedModelId}
       selectedModel={selectedModel}
+      modelOptions={selectedModelOptions}
       onModelChange={handleModelChange}
       prompt={prompt}
       onPromptChange={(value) => {
@@ -1305,6 +1343,9 @@ export function VideoStudioComposer({
                 <div className="space-y-4">
                   <VideoAspectRatioSelector
                     value={aspectRatio}
+                    options={videoAspectRatios.filter((item) =>
+                      selectedModelOptions.aspectRatios.includes(item.value)
+                    )}
                     onChange={(value) => {
                       setAspectRatio(value);
                       setActiveDraftId(null);
@@ -1312,6 +1353,9 @@ export function VideoStudioComposer({
                   />
                   <VideoDurationSelector
                     value={duration}
+                    options={videoDurations.filter((item) =>
+                      selectedModelOptions.durations.includes(Number(item.value))
+                    )}
                     onChange={(value) => {
                       setDuration(value);
                       setActiveDraftId(null);
@@ -1350,6 +1394,9 @@ export function VideoStudioComposer({
           open={advancedOpen}
           onToggleOpen={() => setAdvancedOpen((prev) => !prev)}
           resolution={resolution}
+          resolutionOptions={videoResolutionOptions.filter((item) =>
+            selectedModelOptions.resolutions.includes(item.value)
+          )}
           onResolutionChange={(value) => {
             setResolution(value);
             setActiveDraftId(null);

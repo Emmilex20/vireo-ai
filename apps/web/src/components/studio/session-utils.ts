@@ -10,7 +10,7 @@ export function hasMeaningfulStudioState(
       state.draftTitle?.trim() ||
       state.modelId !== "openai/gpt-image-2" ||
       state.style !== "Cinematic" ||
-      state.aspectRatio !== "4:3" ||
+      state.aspectRatio !== "1:1" ||
       state.qualityMode !== "high" ||
       state.promptBoost !== true ||
       state.seed !== null ||

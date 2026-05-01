@@ -68,6 +68,23 @@ export type ReplicateImageModelConfig = {
 };
 
 const DEFAULT_IMAGE_MODEL: ReplicateImageModelId = "openai/gpt-image-2";
+const STANDARD_IMAGE_ASPECT_RATIOS = [
+  "1:1",
+  "3:2",
+  "2:3",
+  "3:4",
+  "4:3",
+  "9:16",
+  "16:9",
+] as const;
+const GPT_IMAGE_ASPECT_RATIOS = ["1:1", "3:2", "2:3"] as const;
+
+export type ImageModelUiOptions = {
+  aspectRatios: string[];
+  qualityModes: Array<"standard" | "high" | "ultra">;
+  required: string[];
+  optional: string[];
+};
 
 function mapAspectRatio(aspectRatio?: string) {
   const supported = ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"];
@@ -149,6 +166,7 @@ function buildStandardImageInput(input: ImageGenerationInput) {
     output_format: "webp",
     num_outputs: 1,
     num_images: 1,
+    number_of_images: 1,
     max_images: 1,
     seed: input.seed ?? undefined,
     steps: input.steps ?? undefined,
@@ -159,15 +177,62 @@ function buildStandardImageInput(input: ImageGenerationInput) {
 }
 
 function buildReferenceImageInput(input: ImageGenerationInput) {
+  const referenceImages = input.referenceImageUrl
+    ? [input.referenceImageUrl]
+    : undefined;
+
   return {
     ...buildStandardImageInput(input),
     image: input.referenceImageUrl || undefined,
     input_image: input.referenceImageUrl || undefined,
     reference_image: input.referenceImageUrl || undefined,
     reference: input.referenceImageUrl || undefined,
-    image_input: input.referenceImageUrl ? [input.referenceImageUrl] : undefined,
-    reference_images: input.referenceImageUrl ? [input.referenceImageUrl] : undefined,
-    images: input.referenceImageUrl ? [input.referenceImageUrl] : undefined,
+    image_input: referenceImages,
+    input_images: referenceImages,
+    reference_images: referenceImages,
+    images: referenceImages,
+  };
+}
+
+function buildGptImageInput(input: ImageGenerationInput) {
+  const referenceImages = input.referenceImageUrl
+    ? [input.referenceImageUrl]
+    : undefined;
+  const quality =
+    input.qualityMode === "ultra"
+      ? "high"
+      : input.qualityMode === "standard"
+        ? "medium"
+        : "auto";
+
+  return {
+    prompt: buildImagePrompt(input),
+    input_images: referenceImages,
+    aspect_ratio: GPT_IMAGE_ASPECT_RATIOS.includes(
+      input.aspectRatio as (typeof GPT_IMAGE_ASPECT_RATIOS)[number]
+    )
+      ? input.aspectRatio
+      : "1:1",
+    quality,
+    number_of_images: 1,
+    output_format: "webp",
+    background: "auto",
+    moderation: "auto",
+  };
+}
+
+function buildGoogleImageInput(input: ImageGenerationInput) {
+  const referenceImages = input.referenceImageUrl
+    ? [input.referenceImageUrl]
+    : undefined;
+
+  return {
+    prompt: buildImagePrompt(input),
+    image_input: referenceImages ?? [],
+    input_images: referenceImages,
+    aspect_ratio: mapAspectRatio(input.aspectRatio),
+    resolution: input.qualityMode === "ultra" ? "2K" : "1K",
+    output_format: "jpg",
   };
 }
 
@@ -216,7 +281,7 @@ export const REPLICATE_IMAGE_MODELS: Record<
     id: "openai/gpt-image-2",
     label: "GPT Image 2",
     description: "OpenAI's next-gen image model",
-    defaultAspectRatio: "4:3",
+    defaultAspectRatio: "1:1",
     badge: "New",
     slug: "gpt-image-2",
     provider: "OpenAI",
@@ -224,7 +289,7 @@ export const REPLICATE_IMAGE_MODELS: Record<
     features: ["Reference"],
     heroTone: "from-sky-500 via-blue-950 to-black",
     supports: referenceSupport,
-    buildInput: buildReferenceImageInput,
+    buildInput: buildGptImageInput,
   },
   "google/nano-banana-2": {
     id: "google/nano-banana-2",
@@ -238,7 +303,7 @@ export const REPLICATE_IMAGE_MODELS: Record<
     features: ["Reference", "4K"],
     heroTone: "from-yellow-400 via-rose-900 to-black",
     supports: referenceSupport,
-    buildInput: buildImagenInput,
+    buildInput: buildGoogleImageInput,
   },
   "google/nano-banana-pro": {
     id: "google/nano-banana-pro",
@@ -251,7 +316,7 @@ export const REPLICATE_IMAGE_MODELS: Record<
     features: ["Reference", "4K"],
     heroTone: "from-amber-500 via-stone-900 to-black",
     supports: referenceSupport,
-    buildInput: buildImagenInput,
+    buildInput: buildGoogleImageInput,
   },
   "recraft-ai/recraft-v4": {
     id: "recraft-ai/recraft-v4",
@@ -323,7 +388,7 @@ export const REPLICATE_IMAGE_MODELS: Record<
     provider: "Google",
     features: ["Reference"],
     supports: referenceSupport,
-    buildInput: buildImagenInput,
+    buildInput: buildGoogleImageInput,
   },
   "bytedance/seedream-4": {
     id: "bytedance/seedream-4",
@@ -607,4 +672,29 @@ export function resolveReplicateImageModel(
 
 export function listReplicateImageModels() {
   return Object.values(REPLICATE_IMAGE_MODELS);
+}
+
+export function getImageModelUiOptions(
+  model: ReplicateImageModelConfig
+): ImageModelUiOptions {
+  const aspectRatios =
+    model.id === "openai/gpt-image-2"
+      ? [...GPT_IMAGE_ASPECT_RATIOS]
+      : [...STANDARD_IMAGE_ASPECT_RATIOS];
+  const optional = [
+    model.supports.negativePrompt ? "Negative prompt" : null,
+    model.supports.referenceImage ? "Reference image" : null,
+    model.supports.seed ? "Seed" : null,
+    model.supports.steps ? "Steps" : null,
+    model.supports.guidance ? "Guidance" : null,
+    "Style prompt",
+    "Quality mode",
+  ].filter(Boolean) as string[];
+
+  return {
+    aspectRatios,
+    qualityModes: ["standard", "high", "ultra"],
+    required: ["Prompt"],
+    optional,
+  };
 }

@@ -28,6 +28,7 @@ import {
 import { PromptTemplatesPanel } from "@/components/prompts/prompt-templates-panel";
 import { Button } from "@/components/ui/button";
 import {
+  getImageModelUiOptions,
   listReplicateImageModels,
   type ReplicateImageModelConfig,
   type ReplicateImageModelId,
@@ -73,6 +74,7 @@ type DesktopImageCreatorPageProps = {
   selectedStyle: string;
   onStyleChange: (value: string) => void;
   selectedAspectRatio: string;
+  aspectRatioOptions: string[];
   onAspectRatioChange: (value: string) => void;
   qualityMode: "standard" | "high" | "ultra";
   onQualityModeChange: (value: "standard" | "high" | "ultra") => void;
@@ -145,6 +147,7 @@ export function DesktopImageCreatorPage({
   selectedStyle,
   onStyleChange,
   selectedAspectRatio,
+  aspectRatioOptions,
   onAspectRatioChange,
   qualityMode,
   onQualityModeChange,
@@ -188,6 +191,10 @@ export function DesktopImageCreatorPage({
   const imageModels = listReplicateImageModels();
   const selectedModel =
     imageModels.find((model) => model.id === selectedModelId) ?? imageModels[0];
+  const selectedModelOptions = getImageModelUiOptions(selectedModel);
+  const visibleAspectRatios = aspectRatios.filter((ratio) =>
+    aspectRatioOptions.includes(ratio.value)
+  );
   const activeDraftTitle = useMemo(
     () => drafts.find((draft) => draft.id === activeDraftId)?.title,
     [activeDraftId, drafts]
@@ -276,6 +283,18 @@ export function DesktopImageCreatorPage({
                   </span>
                   <ChevronRight className="size-4 text-white/45" />
                 </button>
+                <div className="mt-3 rounded-xl border border-white/10 bg-[#0b0e10] p-3 text-xs leading-5 text-white/50">
+                  <div className="font-semibold text-white/70">Requirements</div>
+                  <div className="mt-1">
+                    Required: {selectedModelOptions.required.join(", ")}
+                  </div>
+                  <div>
+                    Optional: {selectedModelOptions.optional.join(", ")}
+                  </div>
+                  <div>
+                    Ratios: {selectedModelOptions.aspectRatios.join(", ")}
+                  </div>
+                </div>
               </Panel>
 
               <Panel>
@@ -392,7 +411,7 @@ export function DesktopImageCreatorPage({
                   <div>
                     <Label>Aspect ratio</Label>
                     <div className="mt-2 grid grid-cols-5 gap-2">
-                      {aspectRatios.map((ratio) => (
+                      {visibleAspectRatios.map((ratio) => (
                         <button
                           key={ratio.value}
                           type="button"
