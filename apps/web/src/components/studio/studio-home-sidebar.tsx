@@ -8,6 +8,7 @@ import {
   BookOpen,
   ChevronDown,
   Clapperboard,
+  CreditCard,
   FolderOpen,
   Globe2,
   Grid2x2,
@@ -62,6 +63,12 @@ const sidebarSections = [
       { label: "Template", href: "/templates", icon: Grid2x2 },
       { label: "Tutorials", href: comingSoonHref("Tutorials"), icon: BookOpen },
       { label: "Blog", href: comingSoonHref("Blog"), icon: Lightbulb },
+    ],
+  },
+  {
+    label: "Plan",
+    items: [
+      { label: "Pricing", href: "/pricing", icon: CreditCard },
     ],
   },
 ] as const;
@@ -149,6 +156,7 @@ export function StudioHomeSidebar({
               <CompactSidebarLink href="/" icon={Home} label="Home" active={isHrefActive("/")} />
               <CompactSidebarLink href="/studio" icon={Sparkles} label="Create" active={isHrefActive("/studio")} />
               <CompactSidebarLink href="/assets" icon={FolderOpen} label="Assets" active={isHrefActive("/assets")} />
+              <CompactSidebarLink href="/pricing" icon={CreditCard} label="Pricing" active={isHrefActive("/pricing")} />
               <CompactSidebarLink href={comingSoonHref("Inspire")} icon={Lightbulb} label="Inspire" active={isHrefActive(comingSoonHref("Inspire"))} />
               <div className="mx-auto h-px w-8 bg-white/10" />
               <CompactSidebarLink href={comingSoonHref("All Tools")} icon={Grid2x2} label="All Tools" active={isHrefActive(comingSoonHref("All Tools"))} />

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   AudioLines,
   BookOpen,
+  CreditCard,
   FolderOpen,
   Globe2,
   Grid2x2,
@@ -64,6 +65,14 @@ const navItems = [
     description: "Start faster with reusable creator prompts and layouts",
     activeDescription: "Prompt templates and presets",
     icon: Grid2x2
+  },
+  {
+    href: "/pricing",
+    label: "Pricing",
+    title: "Pricing",
+    description: "Compare plans and credit options for your creator workflow",
+    activeDescription: "Plans and credits",
+    icon: CreditCard
   }
 ];
 
@@ -112,6 +121,12 @@ const studioMobileNavSections: Array<{
       { href: "/templates", label: "Template", icon: Grid2x2 },
       { href: comingSoonHref("Tutorials"), label: "Tutorials", icon: BookOpen },
       { href: comingSoonHref("Blog"), label: "Blog", icon: Lightbulb },
+    ],
+  },
+  {
+    label: "Plan",
+    items: [
+      { href: "/pricing", label: "Pricing", icon: CreditCard },
     ],
   },
   {
@@ -208,6 +223,13 @@ export function AppShell({ children }: AppShellProps) {
                 <div className="hidden sm:block">
                   <NotificationNavBadge />
                 </div>
+                <Link
+                  href="/pricing"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-[0_0_18px_rgba(16,185,129,0.12)] transition hover:bg-primary/15"
+                  aria-label="Open pricing"
+                >
+                  <CreditCard className="size-4" />
+                </Link>
                 <div className="rounded-full border border-white/10 bg-white/5 p-1">
                   <UserButton
                     appearance={{
