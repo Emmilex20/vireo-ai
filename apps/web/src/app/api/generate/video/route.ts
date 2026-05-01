@@ -152,6 +152,38 @@ export async function POST(req: Request) {
 
     const provider = getVideoProvider();
     const workersMode = await isWorkersMode();
+    const supportsEndFrame = selectedModel.features.includes("Start/End");
+    const supportsReferences =
+      selectedModel.features.includes("Reference") ||
+      selectedModel.features.includes("Multi-shots");
+
+    if (imageUrl && !selectedModel.supports.imageInput) {
+      return NextResponse.json(
+        { error: `${selectedModel.label} does not support source images.` },
+        { status: 400 }
+      );
+    }
+
+    if (endImageUrl && !supportsEndFrame) {
+      return NextResponse.json(
+        { error: `${selectedModel.label} does not support end frames.` },
+        { status: 400 }
+      );
+    }
+
+    if (referenceImageUrls?.length && !supportsReferences) {
+      return NextResponse.json(
+        { error: `${selectedModel.label} does not support visual references.` },
+        { status: 400 }
+      );
+    }
+
+    if (audioUrl && !selectedModel.supports.audioGeneration) {
+      return NextResponse.json(
+        { error: `${selectedModel.label} does not support audio references.` },
+        { status: 400 }
+      );
+    }
 
     const providerJob = await provider.createVideoJob({
       prompt,
@@ -173,9 +205,9 @@ export async function POST(req: Request) {
       shotType,
       fps,
       imageUrl,
-      endImageUrl,
-      referenceImageUrls,
-      audioUrl
+      endImageUrl: supportsEndFrame ? endImageUrl : undefined,
+      referenceImageUrls: supportsReferences ? referenceImageUrls : undefined,
+      audioUrl: selectedModel.supports.audioGeneration ? audioUrl : undefined
     });
 
     const job = await createVideoJob({

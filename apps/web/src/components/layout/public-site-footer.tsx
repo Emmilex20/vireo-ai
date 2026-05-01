@@ -21,11 +21,11 @@ const legalLinks = [
   { href: "/cookie-policy", label: "Cookie Policy" },
 ];
 
-export function PublicSiteFooter() {
+export function PublicSiteFooter({ className }: { className?: string }) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-white/10 bg-[#060b11]">
+    <footer className={`border-t border-white/10 bg-[#060b11] ${className ?? ""}`}>
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.25fr_0.75fr_0.75fr_0.9fr]">
           <div className="max-w-md">

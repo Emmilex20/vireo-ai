@@ -5,25 +5,25 @@ export type ReplicateVideoModelId =
   | "prunaai/p-video"
   | "bytedance/seedance-2.0"
   | "kwaivgi/kling-v3-omni-video"
-  | "kwaivgi/kling-v3"
+  | "kwaivgi/kling-v3-video"
   | "minimax/hailuo-02"
   | "google/veo-3.1"
   | "bytedance/seedance-1.5-pro"
   | "x-ai/grok-imagine"
   | "kwaivgi/kling-v2.6"
-  | "wan-video/wan-2.6"
+  | "wan-video/wan-2.6-i2v"
   | "openai/sora-2"
-  | "lightricks/ltx-video-2.3"
+  | "lightricks/ltx-2.3-fast"
   | "kwaivgi/kling-v2.5"
   | "kwaivgi/kling-o1"
   | "google/veo-3"
-  | "wan-video/wan-2.5"
+  | "wan-video/wan-2.5-i2v"
   | "minimax/hailuo-2.3"
   | "kwaivgi/kling-v2.1"
   | "bytedance/seedance-1"
   | "vidu/vidu-q3"
   | "pixverse/pixverse-v5"
-  | "wan-video/wan-2.2"
+  | "wan-video/wan-2.2-i2v-fast"
   | "vidu/vidu-q2";
 
 type VideoModelFeature =
@@ -84,7 +84,7 @@ export type ReplicateVideoModelConfig = {
   buildInput: (input: VideoGenerationInput) => Record<string, unknown>;
 };
 
-const DEFAULT_VIDEO_MODEL: ReplicateVideoModelId = "kwaivgi/kling-v3";
+const DEFAULT_VIDEO_MODEL: ReplicateVideoModelId = "kwaivgi/kling-v3-video";
 
 function buildPrompt(input: VideoGenerationInput) {
   return [
@@ -99,39 +99,50 @@ function buildPrompt(input: VideoGenerationInput) {
 }
 
 function buildStandardVideoInput(input: VideoGenerationInput) {
+  const prompt = buildPrompt(input);
+  const references = input.referenceImageUrls?.length
+    ? input.referenceImageUrls
+    : undefined;
+
   return {
-    prompt: buildPrompt(input),
+    prompt,
+    text: prompt,
     negative_prompt: input.negativePrompt || undefined,
     image: input.imageUrl || undefined,
+    input_image: input.imageUrl || undefined,
     start_image: input.imageUrl || undefined,
+    first_frame_image: input.imageUrl || undefined,
+    source_image: input.imageUrl || undefined,
     end_image: input.endImageUrl || undefined,
-    reference_images: input.referenceImageUrls?.length
-      ? input.referenceImageUrls
-      : undefined,
+    last_frame_image: input.endImageUrl || undefined,
+    reference_images: references,
+    references,
+    image_input: references,
+    images: references,
     audio: input.audioUrl || undefined,
     audio_url: input.audioUrl || undefined,
+    input_audio: input.audioUrl || undefined,
+    audio_reference: input.audioUrl || undefined,
     duration: input.duration ?? 5,
+    seconds: input.duration ?? 5,
     aspect_ratio: input.aspectRatio ?? "16:9",
     resolution: input.resolution ?? "720p",
     fps: input.fps ?? 24,
+    frame_rate: input.fps ?? 24,
+    generate_audio: input.saveAudio ?? true,
+    save_audio: input.saveAudio ?? true,
+    prompt_upsampling: input.promptUpsampling ?? undefined,
+    disable_safety_filter: input.disableSafetyFilter ?? undefined,
+    draft: input.draft ?? undefined,
+    seed: input.seed ?? undefined,
   };
 }
 
 function buildKlingInput(input: VideoGenerationInput) {
   return {
+    ...buildStandardVideoInput(input),
     mode: "pro",
     prompt: buildPrompt(input),
-    negative_prompt: input.negativePrompt || undefined,
-    start_image: input.imageUrl || undefined,
-    end_image: input.endImageUrl || undefined,
-    image: input.imageUrl || undefined,
-    reference_images: input.referenceImageUrls?.length
-      ? input.referenceImageUrls
-      : undefined,
-    audio: input.audioUrl || undefined,
-    audio_url: input.audioUrl || undefined,
-    duration: input.duration ?? 5,
-    aspect_ratio: input.aspectRatio ?? "16:9",
     generate_audio: input.saveAudio ?? true,
     keep_original_sound: Boolean(input.imageUrl),
     video_reference_type: input.imageUrl ? "feature" : undefined,
@@ -140,16 +151,8 @@ function buildKlingInput(input: VideoGenerationInput) {
 
 function buildSeedanceInput(input: VideoGenerationInput) {
   return {
+    ...buildStandardVideoInput(input),
     prompt: buildPrompt(input),
-    image: input.imageUrl || undefined,
-    end_image: input.endImageUrl || undefined,
-    reference_images: input.referenceImageUrls?.length
-      ? input.referenceImageUrls
-      : undefined,
-    audio: input.audioUrl || undefined,
-    audio_url: input.audioUrl || undefined,
-    duration: input.duration ?? 5,
-    aspect_ratio: input.aspectRatio ?? "16:9",
     resolution: input.resolution ?? "1080p",
     camera_fixed: false,
   };
@@ -157,32 +160,16 @@ function buildSeedanceInput(input: VideoGenerationInput) {
 
 function buildVeoInput(input: VideoGenerationInput) {
   return {
+    ...buildStandardVideoInput(input),
     prompt: buildPrompt(input),
-    image: input.imageUrl || undefined,
-    end_image: input.endImageUrl || undefined,
-    reference_images: input.referenceImageUrls?.length
-      ? input.referenceImageUrls
-      : undefined,
-    audio: input.audioUrl || undefined,
-    audio_url: input.audioUrl || undefined,
-    duration: input.duration ?? 5,
-    aspect_ratio: input.aspectRatio ?? "16:9",
     generate_audio: input.saveAudio ?? true,
   };
 }
 
 function buildWanInput(input: VideoGenerationInput) {
   return {
+    ...buildStandardVideoInput(input),
     prompt: buildPrompt(input),
-    negative_prompt: input.negativePrompt || undefined,
-    image: input.imageUrl || undefined,
-    end_image: input.endImageUrl || undefined,
-    reference_images: input.referenceImageUrls?.length
-      ? input.referenceImageUrls
-      : undefined,
-    audio: input.audioUrl || undefined,
-    audio_url: input.audioUrl || undefined,
-    duration: input.duration ?? 5,
     resolution: input.resolution ?? "720p",
   };
 }
@@ -315,8 +302,8 @@ export const REPLICATE_VIDEO_MODELS: Record<
     supports: sharedImageAudioSupport,
     buildInput: buildKlingInput,
   },
-  "kwaivgi/kling-v3": {
-    id: "kwaivgi/kling-v3",
+  "kwaivgi/kling-v3-video": {
+    id: "kwaivgi/kling-v3-video",
     label: "Kling 3.0",
     description: "Enhanced audio, consistency, and multi-shot workflows.",
     defaultAspectRatio: "16:9",
@@ -414,8 +401,8 @@ export const REPLICATE_VIDEO_MODELS: Record<
     supports: sharedImageAudioSupport,
     buildInput: buildKlingInput,
   },
-  "wan-video/wan-2.6": {
-    id: "wan-video/wan-2.6",
+  "wan-video/wan-2.6-i2v": {
+    id: "wan-video/wan-2.6-i2v",
     label: "Wan 2.6",
     description: "Cinematic videos with audio and multi-shot prompts.",
     defaultAspectRatio: "16:9",
@@ -444,8 +431,8 @@ export const REPLICATE_VIDEO_MODELS: Record<
     supports: sharedImageAudioSupport,
     buildInput: buildStandardVideoInput,
   },
-  "lightricks/ltx-video-2.3": {
-    id: "lightricks/ltx-video-2.3",
+  "lightricks/ltx-2.3-fast": {
+    id: "lightricks/ltx-2.3-fast",
     label: "LTX 2.3",
     description: "Next-gen cinematic 4K videos up to 20s.",
     defaultAspectRatio: "16:9",
@@ -505,8 +492,8 @@ export const REPLICATE_VIDEO_MODELS: Record<
     supports: sharedImageAudioSupport,
     buildInput: buildVeoInput,
   },
-  "wan-video/wan-2.5": {
-    id: "wan-video/wan-2.5",
+  "wan-video/wan-2.5-i2v": {
+    id: "wan-video/wan-2.5-i2v",
     label: "Wan 2.5",
     description: "Professional creative videos.",
     defaultAspectRatio: "16:9",
@@ -596,8 +583,8 @@ export const REPLICATE_VIDEO_MODELS: Record<
     supports: sharedImageAudioSupport,
     buildInput: buildStandardVideoInput,
   },
-  "wan-video/wan-2.2": {
-    id: "wan-video/wan-2.2",
+  "wan-video/wan-2.2-i2v-fast": {
+    id: "wan-video/wan-2.2-i2v-fast",
     label: "Wan 2.2",
     description: "Consistent aesthetic for video concepts.",
     defaultAspectRatio: "16:9",

@@ -8,11 +8,11 @@ const VIDEO_MODEL_SURCHARGES: Record<string, number> = {
   "prunaai/p-video": 0,
   "bytedance/seedance-2.0": 30,
   "kwaivgi/kling-v3-omni-video": 30,
-  "kwaivgi/kling-v3": 25,
+  "kwaivgi/kling-v3-video": 25,
   "google/veo-3.1": 35,
   "google/veo-3": 30,
   "openai/sora-2": 30,
-  "lightricks/ltx-video-2.3": 20,
+  "lightricks/ltx-2.3-fast": 20,
   "bytedance/seedance-1.5-pro": 15,
 };
 

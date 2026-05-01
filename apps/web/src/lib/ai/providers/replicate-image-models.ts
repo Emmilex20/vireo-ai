@@ -134,14 +134,26 @@ function buildImagePrompt(input: ImageGenerationInput) {
 }
 
 function buildStandardImageInput(input: ImageGenerationInput) {
+  const prompt = buildPrompt(input);
+  const negativePrompt = buildNegativePrompt(input.negativePrompt);
+
   return {
-    prompt: buildPrompt(input),
-    negative_prompt: buildNegativePrompt(input.negativePrompt),
+    prompt,
+    text: prompt,
+    negative_prompt: negativePrompt,
     aspect_ratio: mapAspectRatio(input.aspectRatio),
+    aspect: mapAspectRatio(input.aspectRatio),
+    image_size: input.qualityMode === "ultra" ? "2K" : "1K",
+    size: input.qualityMode === "ultra" ? "4K" : "2K",
+    resolution: input.qualityMode === "ultra" ? "2K" : undefined,
     output_format: "webp",
     num_outputs: 1,
+    num_images: 1,
+    max_images: 1,
     seed: input.seed ?? undefined,
+    steps: input.steps ?? undefined,
     num_inference_steps: input.steps ?? undefined,
+    guidance: input.guidance ?? undefined,
     guidance_scale: input.guidance ?? undefined,
   };
 }
@@ -150,8 +162,12 @@ function buildReferenceImageInput(input: ImageGenerationInput) {
   return {
     ...buildStandardImageInput(input),
     image: input.referenceImageUrl || undefined,
-    image_input: input.referenceImageUrl ? [input.referenceImageUrl] : undefined,
+    input_image: input.referenceImageUrl || undefined,
     reference_image: input.referenceImageUrl || undefined,
+    reference: input.referenceImageUrl || undefined,
+    image_input: input.referenceImageUrl ? [input.referenceImageUrl] : undefined,
+    reference_images: input.referenceImageUrl ? [input.referenceImageUrl] : undefined,
+    images: input.referenceImageUrl ? [input.referenceImageUrl] : undefined,
   };
 }
 

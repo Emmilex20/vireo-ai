@@ -3,6 +3,7 @@ import {
   resolveReplicateImageModel,
   type ReplicateImageModelId,
 } from "./replicate-image-models";
+import { normalizeReplicateInputForModel } from "./replicate-schema";
 import type { ImageProvider } from "./types";
 
 const FALLBACK_MODEL = "openai/gpt-image-2";
@@ -34,9 +35,14 @@ export const replicateImageProvider: ImageProvider = {
 
     const model = resolveReplicateImageModel(input.modelId);
 
+    const predictionInput = await normalizeReplicateInputForModel(
+      model.id,
+      model.buildInput(input)
+    );
+
     const prediction = await replicate.predictions.create({
       model: model.id,
-      input: model.buildInput(input),
+      input: predictionInput,
     });
 
     return {

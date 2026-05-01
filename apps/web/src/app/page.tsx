@@ -26,6 +26,7 @@ export default function HomePage() {
       showMobileDock
       headerClassName="lg:hidden"
       contentClassName="pt-16 lg:pt-0"
+      footerClassName="lg:pl-73"
     >
       <main className="relative min-h-screen overflow-hidden pb-28 lg:pb-14">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-130 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_45%),radial-gradient(circle_at_15%_22%,rgba(20,184,166,0.1),transparent_28%)]" />

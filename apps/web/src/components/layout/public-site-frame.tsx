@@ -8,11 +8,13 @@ export function PublicSiteFrame({
   showMobileDock = false,
   headerClassName,
   contentClassName,
+  footerClassName,
 }: {
   children: ReactNode;
   showMobileDock?: boolean;
   headerClassName?: string;
   contentClassName?: string;
+  footerClassName?: string;
 }) {
   return (
     <>
@@ -20,7 +22,7 @@ export function PublicSiteFrame({
       <div className={`relative min-h-[calc(100vh-4rem)] pt-16 ${contentClassName ?? ""}`}>
         {children}
       </div>
-      <PublicSiteFooter />
+      <PublicSiteFooter className={footerClassName} />
       {showMobileDock ? <MobileBottomNav /> : null}
     </>
   );

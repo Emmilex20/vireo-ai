@@ -1,7 +1,7 @@
 import Replicate from "replicate";
 import type { VideoProvider } from "./types";
-import { buildReplicateVideoInput } from "./replicate-video-inputs";
 import { resolveReplicateVideoModel } from "./replicate-video-models";
+import { normalizeReplicateInputForModel } from "./replicate-schema";
 
 export const replicateVideoProvider: VideoProvider = {
   name: "replicate-video",
@@ -12,22 +12,18 @@ export const replicateVideoProvider: VideoProvider = {
     }
 
     const selectedModel = resolveReplicateVideoModel(input.modelId);
-    const model = input.modelId ?? process.env.REPLICATE_VIDEO_MODEL ?? selectedModel.id;
-
-    if (!model) {
-      throw new Error("REPLICATE_VIDEO_MODEL is not set");
-    }
+    const model = selectedModel.id;
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN
     });
 
+    const rawInput = selectedModel.buildInput(input);
+    const predictionInput = await normalizeReplicateInputForModel(model, rawInput);
+
     const prediction = await replicate.predictions.create({
       model,
-      input:
-        model === selectedModel.id
-          ? selectedModel.buildInput(input)
-          : buildReplicateVideoInput(model, input)
+      input: predictionInput
     });
 
     return {

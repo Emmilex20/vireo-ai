@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
-import { resolveReplicateImageModel } from "@/lib/ai/providers/replicate-image-models";
+import {
+  isReplicateImageModelId,
+  resolveReplicateImageModel,
+} from "@/lib/ai/providers/replicate-image-models";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
 import { getImageGenerationCost } from "@/lib/image-generation-config";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
@@ -76,6 +79,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (modelId && !isReplicateImageModelId(modelId)) {
+      return NextResponse.json(
+        { error: "Unsupported image model selected." },
+        { status: 400 }
+      );
+    }
+
     const safety = checkPromptSafety(prompt, negativePrompt);
 
     if (!safety.allowed) {
@@ -119,7 +129,7 @@ export async function POST(req: Request) {
     const providerJob = await provider.createImageJob({
       prompt,
       negativePrompt,
-      modelId,
+      modelId: selectedModel.id,
       referenceImageUrl,
       style,
       aspectRatio,
@@ -196,7 +206,7 @@ export async function POST(req: Request) {
           providerJobId: finalJob.providerJobId,
           inlineProcessed: true,
           meta: {
-            modelId: modelId ?? process.env.REPLICATE_IMAGE_MODEL ?? null,
+            modelId: selectedModel.id,
             referenceImageUrl: referenceImageUrl ?? null,
             style: style ?? "Cinematic",
             aspectRatio: aspectRatio ?? "4:3",
@@ -226,7 +236,7 @@ export async function POST(req: Request) {
       providerName: job.providerName,
       providerJobId: job.providerJobId,
       meta: {
-        modelId: modelId ?? process.env.REPLICATE_IMAGE_MODEL ?? null,
+        modelId: selectedModel.id,
         referenceImageUrl: referenceImageUrl ?? null,
         style: style ?? "Cinematic",
         aspectRatio: aspectRatio ?? "4:3",
