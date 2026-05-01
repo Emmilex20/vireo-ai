@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   AudioLines,
   BookOpen,
@@ -77,6 +78,27 @@ export function StudioHomeSidebar({
   onOpenChange,
   onChangeMode,
 }: StudioHomeSidebarProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isHrefActive = (href: string) => {
+    const [hrefPath = href, hrefQuery] = href.split("?");
+
+    if (hrefPath === "/") {
+      return pathname === "/";
+    }
+
+    if (hrefPath === "/coming-soon") {
+      const hrefFeature = new URLSearchParams(hrefQuery).get("feature");
+
+      return (
+        pathname === "/coming-soon" &&
+        (!hrefFeature || hrefFeature === searchParams.get("feature"))
+      );
+    }
+
+    return pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
+  };
+
   return (
     <aside
       className={cn(
@@ -110,7 +132,12 @@ export function StudioHomeSidebar({
           {open ? (
             <Link
               href="/"
-              className="flex items-center gap-2 rounded-[0.85rem] border border-fuchsia-400/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] px-2.5 py-1.5 text-white shadow-[0_0_0_1px_rgba(236,72,153,0.14),0_0_18px_rgba(217,70,239,0.24)]"
+              className={cn(
+                "flex items-center gap-2 rounded-[0.85rem] border px-2.5 py-1.5 transition",
+                isHrefActive("/")
+                  ? "border-fuchsia-400/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] text-white shadow-[0_0_0_1px_rgba(236,72,153,0.14),0_0_18px_rgba(217,70,239,0.24)]"
+                  : "border-white/8 bg-white/4 text-slate-200 hover:bg-white/8 hover:text-white"
+              )}
             >
               <span className="flex size-6.5 items-center justify-center rounded-full bg-white text-black">
                 <Home className="size-3.5" />
@@ -119,12 +146,12 @@ export function StudioHomeSidebar({
             </Link>
           ) : (
             <div className="space-y-2.5 pt-1">
-              <CompactSidebarLink href="/" icon={Home} label="Home" active />
-              <CompactSidebarLink href="/studio" icon={Sparkles} label="Create" />
-              <CompactSidebarLink href="/assets" icon={FolderOpen} label="Assets" />
-              <CompactSidebarLink href={comingSoonHref("Inspire")} icon={Lightbulb} label="Inspire" />
+              <CompactSidebarLink href="/" icon={Home} label="Home" active={isHrefActive("/")} />
+              <CompactSidebarLink href="/studio" icon={Sparkles} label="Create" active={isHrefActive("/studio")} />
+              <CompactSidebarLink href="/assets" icon={FolderOpen} label="Assets" active={isHrefActive("/assets")} />
+              <CompactSidebarLink href={comingSoonHref("Inspire")} icon={Lightbulb} label="Inspire" active={isHrefActive(comingSoonHref("Inspire"))} />
               <div className="mx-auto h-px w-8 bg-white/10" />
-              <CompactSidebarLink href={comingSoonHref("All Tools")} icon={Grid2x2} label="All Tools" />
+              <CompactSidebarLink href={comingSoonHref("All Tools")} icon={Grid2x2} label="All Tools" active={isHrefActive(comingSoonHref("All Tools"))} />
               {pinnedToolCards.map((card) => (
                 <CompactSidebarThumb
                   key={card.id}
@@ -181,7 +208,12 @@ export function StudioHomeSidebar({
                       <Link
                         key={item.label}
                         href={item.href}
-                        className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-slate-300 transition hover:bg-white/5 hover:text-white"
+                        className={cn(
+                          "flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition hover:bg-white/5 hover:text-white",
+                          isHrefActive(item.href)
+                            ? "bg-white/7 text-white"
+                            : "text-slate-300"
+                        )}
                       >
                         <Icon className="size-4" />
                         <span className="text-[12px] font-medium">{item.label}</span>
@@ -199,7 +231,12 @@ export function StudioHomeSidebar({
               <div className="space-y-1.5">
                 <Link
                   href={comingSoonHref("All Tools")}
-                  className="flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5 text-white transition hover:bg-white/5"
+                  className={cn(
+                    "flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5 transition hover:bg-white/5",
+                    isHrefActive(comingSoonHref("All Tools"))
+                      ? "bg-white/7 text-white"
+                      : "text-slate-300"
+                  )}
                 >
                   <span className="flex items-center gap-3">
                     <Grid2x2 className="size-4 text-slate-300" />
@@ -208,13 +245,13 @@ export function StudioHomeSidebar({
                   <ChevronDown className="size-4 -rotate-90 text-slate-500" />
                 </Link>
 
-                {pinnedToolCards.map((card, index) => (
+                {pinnedToolCards.map((card) => (
                   <Link
                     key={card.id}
                     href={card.href}
                     className={cn(
                       "flex items-center gap-2 rounded-[0.9rem] px-2.5 py-1.5 text-slate-300 transition hover:bg-white/5 hover:text-white",
-                      index === 0
+                      isHrefActive(card.href)
                         ? "border border-fuchsia-400/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] text-white shadow-[0_0_0_1px_rgba(236,72,153,0.12),0_0_24px_rgba(217,70,239,0.35)]"
                         : ""
                     )}
@@ -264,7 +301,15 @@ function SidebarActionLink({
   }
 
   return (
-    <Link href={item.href} className={className}>
+    <Link
+      href={item.href}
+      onClick={() => {
+        if (item.mode) {
+          sessionStorage.setItem("vireon_studio_open_mode", item.mode);
+        }
+      }}
+      className={className}
+    >
       {content}
     </Link>
   );
