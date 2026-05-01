@@ -25,6 +25,9 @@ export type VideoStudioSessionState = {
   shotType: string;
   fps: string;
   imageUrl?: string;
+  endImageUrl?: string;
+  referenceImageUrls?: string[];
+  audioUrl?: string;
   sourceAssetId?: string;
   draftTitle: string;
 };

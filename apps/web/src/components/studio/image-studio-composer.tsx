@@ -32,6 +32,8 @@ import { PromptSuggestions } from "./prompt-suggestions";
 import { StylePresets } from "./style-presets";
 import { StudioCard } from "./studio-card";
 import { StudioStatusBar } from "./studio-status-bar";
+import { DesktopImageCreatorPage } from "./desktop-image-creator-page";
+import { MobileImageCreatorPage } from "./mobile-image-creator-page";
 import {
   clearStudioSessionState,
   loadStudioSessionState,
@@ -39,6 +41,7 @@ import {
 } from "./session-storage";
 import { hasMeaningfulStudioState } from "./session-utils";
 import type { QualityMode, StudioGenerationSetup } from "./types";
+import type { StudioMode } from "./studio-mode-config";
 
 type PromptDraft = {
   id: string;
@@ -73,7 +76,11 @@ type ReusePayload = {
 const imageModels = listReplicateImageModels();
 const defaultModelId = "black-forest-labs/flux-schnell" as const;
 
-export function ImageStudioComposer() {
+type ImageStudioComposerProps = {
+  onChangeMode?: (mode: StudioMode) => void;
+};
+
+export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps = {}) {
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
   const [selectedModelId, setSelectedModelId] =
@@ -659,7 +666,174 @@ export function ImageStudioComposer() {
   }
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:gap-6">
+    <>
+      <DesktopImageCreatorPage
+        onChangeMode={onChangeMode}
+        selectedModelId={selectedModelId}
+        onModelChange={handleModelChange}
+        supportsReferenceImage={supportsReferenceImage}
+        referenceImageUrl={referenceImageUrl}
+        referenceImageName={referenceImageName}
+        uploadingReferenceImage={uploadingReferenceImage}
+        onReferenceImageUpload={handleReferenceImageUpload}
+        onRemoveReferenceImage={handleRemoveReferenceImage}
+        prompt={prompt}
+        onPromptChange={(value) => {
+          setPrompt(value);
+          setActiveDraftId(null);
+        }}
+        negativePrompt={negativePrompt}
+        onNegativePromptChange={(value) => {
+          setNegativePrompt(value);
+          setActiveDraftId(null);
+        }}
+        onClearPrompt={handleClearPrompt}
+        onResetSession={handleResetSession}
+        selectedStyle={selectedStyle}
+        onStyleChange={(value) => {
+          setSelectedStyle(value);
+          setActiveDraftId(null);
+        }}
+        selectedAspectRatio={selectedAspectRatio}
+        onAspectRatioChange={(value) => {
+          setSelectedAspectRatio(value);
+          setActiveDraftId(null);
+        }}
+        qualityMode={qualityMode}
+        onQualityModeChange={(value) => {
+          setQualityMode(value);
+          setActiveDraftId(null);
+        }}
+        imageCost={imageCost}
+        image={image}
+        loading={loading}
+        canGenerate={canGenerate}
+        onGenerate={handleGenerate}
+        canGenerateVariation={canGenerateVariation}
+        onGenerateVariation={handleGenerateVariation}
+        advancedOpen={advancedOpen}
+        onToggleAdvancedOpen={() => setAdvancedOpen((prev) => !prev)}
+        supportsSeed={supportsSeed}
+        supportsSteps={supportsSteps}
+        supportsGuidance={supportsGuidance}
+        promptBoost={promptBoost}
+        onPromptBoostChange={(value) => {
+          setPromptBoost(value);
+          setActiveDraftId(null);
+        }}
+        seed={seed}
+        onSeedChange={(value) => {
+          setSeed(value);
+          setActiveDraftId(null);
+        }}
+        steps={steps}
+        onStepsChange={(value) => {
+          setSteps(value);
+          setActiveDraftId(null);
+        }}
+        guidance={guidance}
+        onGuidanceChange={(value) => {
+          setGuidance(value);
+          setActiveDraftId(null);
+        }}
+        draftTitle={draftTitle}
+        onDraftTitleChange={setDraftTitle}
+        savingDraft={savingDraft}
+        onSaveDraft={handleSaveDraft}
+        drafts={drafts}
+        activeDraftId={activeDraftId}
+        deletingDraftId={deletingDraftId}
+        onLoadDraft={handleLoadDraft}
+        onDeleteDraft={handleDeleteDraft}
+        selectedSuggestion={selectedSuggestion}
+        onSuggestionSelect={handleSuggestionSelect}
+        lastAction={lastAction}
+      />
+
+      <MobileImageCreatorPage
+        onChangeMode={onChangeMode}
+        selectedModelId={selectedModelId}
+        onModelChange={handleModelChange}
+        supportsReferenceImage={supportsReferenceImage}
+        referenceImageUrl={referenceImageUrl}
+        referenceImageName={referenceImageName}
+        uploadingReferenceImage={uploadingReferenceImage}
+        onReferenceImageUpload={handleReferenceImageUpload}
+        onRemoveReferenceImage={handleRemoveReferenceImage}
+        prompt={prompt}
+        onPromptChange={(value) => {
+          setPrompt(value);
+          setActiveDraftId(null);
+        }}
+        negativePrompt={negativePrompt}
+        onNegativePromptChange={(value) => {
+          setNegativePrompt(value);
+          setActiveDraftId(null);
+        }}
+        onClearPrompt={handleClearPrompt}
+        onResetSession={handleResetSession}
+        selectedStyle={selectedStyle}
+        onStyleChange={(value) => {
+          setSelectedStyle(value);
+          setActiveDraftId(null);
+        }}
+        selectedAspectRatio={selectedAspectRatio}
+        onAspectRatioChange={(value) => {
+          setSelectedAspectRatio(value);
+          setActiveDraftId(null);
+        }}
+        qualityMode={qualityMode}
+        onQualityModeChange={(value) => {
+          setQualityMode(value);
+          setActiveDraftId(null);
+        }}
+        imageCost={imageCost}
+        image={image}
+        loading={loading}
+        canGenerate={canGenerate}
+        onGenerate={handleGenerate}
+        canGenerateVariation={canGenerateVariation}
+        onGenerateVariation={handleGenerateVariation}
+        advancedOpen={advancedOpen}
+        onToggleAdvancedOpen={() => setAdvancedOpen((prev) => !prev)}
+        supportsSeed={supportsSeed}
+        supportsSteps={supportsSteps}
+        supportsGuidance={supportsGuidance}
+        promptBoost={promptBoost}
+        onPromptBoostChange={(value) => {
+          setPromptBoost(value);
+          setActiveDraftId(null);
+        }}
+        seed={seed}
+        onSeedChange={(value) => {
+          setSeed(value);
+          setActiveDraftId(null);
+        }}
+        steps={steps}
+        onStepsChange={(value) => {
+          setSteps(value);
+          setActiveDraftId(null);
+        }}
+        guidance={guidance}
+        onGuidanceChange={(value) => {
+          setGuidance(value);
+          setActiveDraftId(null);
+        }}
+        draftTitle={draftTitle}
+        onDraftTitleChange={setDraftTitle}
+        savingDraft={savingDraft}
+        onSaveDraft={handleSaveDraft}
+        drafts={drafts}
+        activeDraftId={activeDraftId}
+        deletingDraftId={deletingDraftId}
+        onLoadDraft={handleLoadDraft}
+        onDeleteDraft={handleDeleteDraft}
+        selectedSuggestion={selectedSuggestion}
+        onSuggestionSelect={handleSuggestionSelect}
+        lastAction={lastAction}
+      />
+
+      <section className="hidden">
       <div className="space-y-6">
         <StudioStatusBar
           hasPrompt={prompt.trim().length >= 5}
@@ -1155,6 +1329,7 @@ export function ImageStudioComposer() {
           </StudioCard>
         </div>
       </div>
-    </section>
+      </section>
+    </>
   );
 }

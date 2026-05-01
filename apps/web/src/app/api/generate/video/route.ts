@@ -69,6 +69,9 @@ export async function POST(req: Request) {
       shotType,
       fps,
       imageUrl,
+      endImageUrl,
+      referenceImageUrls,
+      audioUrl,
       sourceAssetId
     }: {
       prompt?: string;
@@ -90,6 +93,9 @@ export async function POST(req: Request) {
       shotType?: string;
       fps?: number;
       imageUrl?: string;
+      endImageUrl?: string;
+      referenceImageUrls?: string[];
+      audioUrl?: string;
       sourceAssetId?: string;
     } = body;
 
@@ -166,7 +172,10 @@ export async function POST(req: Request) {
       motionGuidance,
       shotType,
       fps,
-      imageUrl
+      imageUrl,
+      endImageUrl,
+      referenceImageUrls,
+      audioUrl
     });
 
     const job = await createVideoJob({

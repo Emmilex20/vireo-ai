@@ -19,6 +19,9 @@ export type VideoStudioMeaningfulState = {
   shotType: string;
   fps: string;
   imageUrl?: string;
+  endImageUrl?: string;
+  referenceImageUrls?: string[];
+  audioUrl?: string;
   sourceAssetId?: string;
 };
 
@@ -47,6 +50,9 @@ export function hasMeaningfulVideoStudioState(
       state.shotType !== "Wide Shot" ||
       state.fps !== "24" ||
       Boolean(state.imageUrl?.trim()) ||
+      Boolean(state.endImageUrl?.trim()) ||
+      Boolean(state.referenceImageUrls?.length) ||
+      Boolean(state.audioUrl?.trim()) ||
       Boolean(state.sourceAssetId?.trim())
   );
 }

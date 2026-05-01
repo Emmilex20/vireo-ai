@@ -26,6 +26,12 @@ export function buildReplicateVideoInput(
     return {
       prompt,
       image: input.imageUrl || undefined,
+      end_image: input.endImageUrl || undefined,
+      reference_images: input.referenceImageUrls?.length
+        ? input.referenceImageUrls
+        : undefined,
+      audio: input.audioUrl || undefined,
+      audio_url: input.audioUrl || undefined,
       duration: input.duration ?? 5,
       aspect_ratio: input.aspectRatio ?? "16:9",
       negative_prompt: input.negativePrompt || undefined,
@@ -38,13 +44,25 @@ export function buildReplicateVideoInput(
     return {
       prompt,
       negative_prompt: input.negativePrompt || undefined,
-      image: input.imageUrl || undefined
+      image: input.imageUrl || undefined,
+      end_image: input.endImageUrl || undefined,
+      reference_images: input.referenceImageUrls?.length
+        ? input.referenceImageUrls
+        : undefined,
+      audio: input.audioUrl || undefined,
+      audio_url: input.audioUrl || undefined
     };
   }
 
   if (model.includes("stable-video")) {
     return {
       input_image: input.imageUrl || undefined,
+      end_image: input.endImageUrl || undefined,
+      reference_images: input.referenceImageUrls?.length
+        ? input.referenceImageUrls
+        : undefined,
+      audio: input.audioUrl || undefined,
+      audio_url: input.audioUrl || undefined,
       video_length: input.duration ?? 5,
       sizing_strategy: "maintain_aspect_ratio",
       motion_bucket_id: mapMotionBucket(input.motionIntensity)
@@ -55,7 +73,14 @@ export function buildReplicateVideoInput(
     prompt,
     duration: input.duration ?? 5,
     aspect_ratio: input.aspectRatio ?? "16:9",
-    negative_prompt: input.negativePrompt || undefined
+    negative_prompt: input.negativePrompt || undefined,
+    image: input.imageUrl || undefined,
+    end_image: input.endImageUrl || undefined,
+    reference_images: input.referenceImageUrls?.length
+      ? input.referenceImageUrls
+      : undefined,
+    audio: input.audioUrl || undefined,
+    audio_url: input.audioUrl || undefined
   };
 }
 

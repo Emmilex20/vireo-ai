@@ -16,6 +16,9 @@ export type VideoReusePayload = {
   shotType: string;
   fps: string;
   imageUrl?: string;
+  endImageUrl?: string;
+  referenceImageUrls?: string[];
+  audioUrl?: string;
   sourceAssetId?: string;
 };
 
@@ -37,5 +40,8 @@ export type VideoGenerationSetup = {
   shotType: string;
   fps: string;
   imageUrl?: string;
+  endImageUrl?: string;
+  referenceImageUrls?: string[];
+  audioUrl?: string;
   sourceAssetId?: string;
 };

@@ -44,6 +44,9 @@ export type VideoGenerationInput = {
   shotType?: string;
   fps?: number;
   imageUrl?: string;
+  endImageUrl?: string;
+  referenceImageUrls?: string[];
+  audioUrl?: string;
 };
 
 export type ImageProvider = {

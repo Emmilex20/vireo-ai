@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   resolveReplicateVideoModel,
+  resolveReplicateVideoModelBySlug,
   type ReplicateVideoModelId,
 } from "@/lib/ai/providers/replicate-video-models";
 import { getVideoGenerationCost } from "@/lib/video-generation-config";
@@ -33,6 +34,8 @@ import { VideoAdvancedSettings } from "./video-advanced-settings";
 import { VideoDraftsPanel } from "./video-drafts-panel";
 import { VideoModelSelector } from "./video-model-selector";
 import { VideoStudioStatusBar } from "./video-studio-status-bar";
+import { DesktopVideoCreatorPage } from "./desktop-video-creator-page";
+import { MobileVideoCreatorPage } from "./mobile-video-creator-page";
 import { StudioCard } from "./studio-card";
 import { ControlGroup } from "./control-group";
 import {
@@ -42,6 +45,7 @@ import {
 } from "./session-storage";
 import { hasMeaningfulVideoStudioState } from "./video-session-utils";
 import type { VideoGenerationSetup, VideoReusePayload } from "./video-types";
+import type { StudioMode } from "./studio-mode-config";
 
 type VideoDraft = {
   id: string;
@@ -67,14 +71,32 @@ type VideoDraft = {
   updatedAt: string;
 };
 
-export function VideoStudioComposer() {
-  const defaultModel = resolveReplicateVideoModel();
+type VideoStudioComposerProps = {
+  onChangeMode?: (mode: StudioMode) => void;
+  initialModelSlug?: string;
+};
+
+export function VideoStudioComposer({
+  onChangeMode,
+  initialModelSlug,
+}: VideoStudioComposerProps = {}) {
+  const initialModelFromSlug = resolveReplicateVideoModelBySlug(initialModelSlug);
+  const defaultModel = initialModelFromSlug ?? resolveReplicateVideoModel();
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [endImageUrl, setEndImageUrl] = useState("");
+  const [referenceImageUrls, setReferenceImageUrls] = useState<string[]>([]);
+  const [audioUrl, setAudioUrl] = useState("");
   const [sourceAssetId, setSourceAssetId] = useState("");
   const [uploadingSourceImage, setUploadingSourceImage] = useState(false);
+  const [uploadingEndImage, setUploadingEndImage] = useState(false);
+  const [uploadingReferenceImage, setUploadingReferenceImage] = useState(false);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
   const [sourceImageName, setSourceImageName] = useState("");
+  const [endImageName, setEndImageName] = useState("");
+  const [referenceImageNames, setReferenceImageNames] = useState<string[]>([]);
+  const [audioName, setAudioName] = useState("");
   const [selectedModelId, setSelectedModelId] = useState<ReplicateVideoModelId>(
     defaultModel.id
   );
@@ -202,12 +224,12 @@ export function VideoStudioComposer() {
       setHasPersistedSession(false);
       return;
     }
-    const persistedModel = resolveReplicateVideoModel(
-      persisted.modelId ?? defaultModel.id
-    );
+    const persistedModelId =
+      initialModelFromSlug?.id ?? persisted.modelId ?? defaultModel.id;
+    const persistedModel = resolveReplicateVideoModel(persistedModelId);
 
     setSelectedModelId(
-      (persisted.modelId as ReplicateVideoModelId | undefined) ?? defaultModel.id
+      (persistedModelId as ReplicateVideoModelId | undefined) ?? defaultModel.id
     );
     setPrompt((prev) => prev || persisted.prompt || "");
     setNegativePrompt((prev) => prev || persisted.negativePrompt || "");
@@ -229,11 +251,32 @@ export function VideoStudioComposer() {
     setShotType((prev) => prev || persisted.shotType || "Wide Shot");
     setFps((prev) => prev || persisted.fps || "24");
     setImageUrl((prev) => prev || persisted.imageUrl || "");
+    setEndImageUrl((prev) => prev || persisted.endImageUrl || "");
+    setReferenceImageUrls((prev) =>
+      prev.length ? prev : persisted.referenceImageUrls ?? []
+    );
+    setAudioUrl((prev) => prev || persisted.audioUrl || "");
     setSourceAssetId((prev) => prev || persisted.sourceAssetId || "");
+    setEndImageName((prev) =>
+      prev || (persisted.endImageUrl ? "Saved end frame" : "")
+    );
+    setReferenceImageNames((prev) =>
+      prev.length
+        ? prev
+        : (persisted.referenceImageUrls ?? []).map(
+            (_, index) => `Saved reference ${index + 1}`
+          )
+    );
+    setAudioName((prev) => prev || (persisted.audioUrl ? "Saved audio reference" : ""));
     setDraftTitle((prev) => prev || persisted.draftTitle || "");
     setHasPersistedSession(true);
     setLastAction((prev) => prev ?? "Restored unfinished video studio session.");
-  }, [defaultModel.defaultResolution, defaultModel.id, sessionHydrated]);
+  }, [
+    defaultModel.defaultResolution,
+    defaultModel.id,
+    initialModelFromSlug?.id,
+    sessionHydrated,
+  ]);
 
   useEffect(() => {
     if (!sessionHydrated) return;
@@ -256,6 +299,9 @@ export function VideoStudioComposer() {
       shotType,
       fps,
       imageUrl,
+      endImageUrl,
+      referenceImageUrls,
+      audioUrl,
       sourceAssetId,
       draftTitle
     };
@@ -281,11 +327,20 @@ export function VideoStudioComposer() {
     shotType,
     fps,
     imageUrl,
+    endImageUrl,
+    referenceImageUrls,
+    audioUrl,
     sourceAssetId,
     draftTitle
   ]);
 
   function buildCurrentSetup(): VideoGenerationSetup {
+    const supportsEndFrame = selectedModel.features.includes("Start/End");
+    const supportsReferences =
+      selectedModel.features.includes("Reference") ||
+      selectedModel.features.includes("Multi-shots");
+    const supportsAudio = selectedModel.supports.audioGeneration;
+
     return {
       modelId: selectedModelId,
       prompt,
@@ -304,6 +359,9 @@ export function VideoStudioComposer() {
       shotType,
       fps,
       imageUrl,
+      endImageUrl: supportsEndFrame ? endImageUrl : "",
+      referenceImageUrls: supportsReferences ? referenceImageUrls : [],
+      audioUrl: supportsAudio ? audioUrl : "",
       sourceAssetId
     };
   }
@@ -347,7 +405,13 @@ export function VideoStudioComposer() {
     setShotType("Wide Shot");
     setFps("24");
     setImageUrl("");
+    setEndImageUrl("");
+    setReferenceImageUrls([]);
+    setAudioUrl("");
     setSourceAssetId("");
+    setEndImageName("");
+    setReferenceImageNames([]);
+    setAudioName("");
     setDraftTitle("");
     setSelectedSuggestion(null);
     setActiveDraftId(null);
@@ -485,6 +549,36 @@ export function VideoStudioComposer() {
     setLastAction(`Loaded video draft "${draft.title}".`);
   }
 
+  function handleModelChange(value: ReplicateVideoModelId) {
+    const nextModel = resolveReplicateVideoModel(value);
+    setSelectedModelId(value);
+    if (typeof window !== "undefined") {
+      window.history.pushState({}, "", `/suite/animate-video/${nextModel.slug}`);
+    }
+    setResolution((prev) =>
+      prev === (selectedModel.defaultResolution ?? "720p")
+        ? nextModel.defaultResolution ?? "720p"
+        : prev
+    );
+    setAspectRatio((prev) =>
+      prev === selectedModel.defaultAspectRatio
+        ? nextModel.defaultAspectRatio
+        : prev
+    );
+    setDuration((prev) =>
+      prev === String(selectedModel.defaultDuration)
+        ? String(nextModel.defaultDuration)
+        : prev
+    );
+    if (!nextModel.supports.audioGeneration) {
+      setSaveAudio(false);
+    } else if (!selectedModel.supports.audioGeneration) {
+      setSaveAudio(true);
+    }
+    setActiveDraftId(null);
+    setLastAction(`Selected ${nextModel.label} for the next generation.`);
+  }
+
   async function runVideoGeneration(setup: VideoGenerationSetup, isTake = false) {
     setLoading(true);
     setVideoUrl(null);
@@ -514,6 +608,11 @@ export function VideoStudioComposer() {
           shotType: setup.shotType,
           fps: Number(setup.fps),
           imageUrl: setup.imageUrl || undefined,
+          endImageUrl: setup.endImageUrl || undefined,
+          referenceImageUrls: setup.referenceImageUrls?.length
+            ? setup.referenceImageUrls
+            : undefined,
+          audioUrl: setup.audioUrl || undefined,
           sourceAssetId: setup.sourceAssetId || undefined
         })
       });
@@ -640,6 +739,129 @@ export function VideoStudioComposer() {
     setLastAction("Removed the source image from this video setup.");
   }
 
+  async function uploadVideoFrame(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/uploads/image-reference", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to upload image");
+    }
+
+    return {
+      url: data.url as string,
+      filename: (data.originalFilename as string | undefined) || file.name,
+    };
+  }
+
+  async function handleEndImageUpload(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingEndImage(true);
+
+    try {
+      const uploaded = await uploadVideoFrame(file);
+      setEndImageUrl(uploaded.url);
+      setEndImageName(uploaded.filename);
+      setActiveDraftId(null);
+      setLastAction("Attached an end frame for video generation.");
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to upload end frame");
+    } finally {
+      setUploadingEndImage(false);
+      event.target.value = "";
+    }
+  }
+
+  function handleRemoveEndImage() {
+    setEndImageUrl("");
+    setEndImageName("");
+    setActiveDraftId(null);
+    setLastAction("Removed the end frame from this video setup.");
+  }
+
+  async function handleReferenceImageUpload(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingReferenceImage(true);
+
+    try {
+      const uploaded = await uploadVideoFrame(file);
+      setReferenceImageUrls((prev) => [...prev.slice(0, 3), uploaded.url]);
+      setReferenceImageNames((prev) => [...prev.slice(0, 3), uploaded.filename]);
+      setActiveDraftId(null);
+      setLastAction("Added a reference image for this video setup.");
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Failed to upload reference image"
+      );
+    } finally {
+      setUploadingReferenceImage(false);
+      event.target.value = "";
+    }
+  }
+
+  function handleRemoveReferenceImage(index: number) {
+    setReferenceImageUrls((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+    setReferenceImageNames((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+    setActiveDraftId(null);
+    setLastAction("Removed a reference image from this video setup.");
+  }
+
+  async function handleAudioUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAudio(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/uploads/audio-reference", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        window.alert(data.error || "Failed to upload audio reference");
+        return;
+      }
+
+      setAudioUrl(data.url);
+      setAudioName(data.originalFilename || file.name);
+      setSaveAudio(true);
+      setActiveDraftId(null);
+      setLastAction("Attached an audio reference for video generation.");
+    } catch {
+      window.alert("Failed to upload audio reference");
+    } finally {
+      setUploadingAudio(false);
+      event.target.value = "";
+    }
+  }
+
+  function handleRemoveAudio() {
+    setAudioUrl("");
+    setAudioName("");
+    setActiveDraftId(null);
+    setLastAction("Removed the audio reference from this video setup.");
+  }
+
   async function handleGenerateVideo() {
     if (!prompt.trim()) return;
     await runVideoGeneration(buildCurrentSetup(), false);
@@ -651,7 +873,272 @@ export function VideoStudioComposer() {
   }
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:gap-6">
+    <>
+    <DesktopVideoCreatorPage
+      onChangeMode={onChangeMode}
+      selectedModelId={selectedModelId}
+      selectedModel={selectedModel}
+      onModelChange={handleModelChange}
+      prompt={prompt}
+      onPromptChange={(value) => {
+        setPrompt(value);
+        setActiveDraftId(null);
+      }}
+      negativePrompt={negativePrompt}
+      onNegativePromptChange={(value) => {
+        setNegativePrompt(value);
+        setActiveDraftId(null);
+      }}
+      imageUrl={imageUrl}
+      sourceImageName={sourceImageName}
+      uploadingSourceImage={uploadingSourceImage}
+      onSourceImageUpload={handleSourceImageUpload}
+      onRemoveSourceImage={handleRemoveSourceImage}
+      endImageUrl={endImageUrl}
+      endImageName={endImageName}
+      uploadingEndImage={uploadingEndImage}
+      onEndImageUpload={handleEndImageUpload}
+      onRemoveEndImage={handleRemoveEndImage}
+      referenceImageUrls={referenceImageUrls}
+      referenceImageNames={referenceImageNames}
+      uploadingReferenceImage={uploadingReferenceImage}
+      onReferenceImageUpload={handleReferenceImageUpload}
+      onRemoveReferenceImage={handleRemoveReferenceImage}
+      audioUrl={audioUrl}
+      audioName={audioName}
+      uploadingAudio={uploadingAudio}
+      onAudioUpload={handleAudioUpload}
+      onRemoveAudio={handleRemoveAudio}
+      duration={duration}
+      onDurationChange={(value) => {
+        setDuration(value);
+        setActiveDraftId(null);
+      }}
+      aspectRatio={aspectRatio}
+      onAspectRatioChange={(value) => {
+        setAspectRatio(value);
+        setActiveDraftId(null);
+      }}
+      motionIntensity={motionIntensity}
+      onMotionIntensityChange={(value) => {
+        setMotionIntensity(value);
+        setActiveDraftId(null);
+      }}
+      cameraMove={cameraMove}
+      onCameraMoveChange={(value) => {
+        setCameraMove(value);
+        setActiveDraftId(null);
+      }}
+      videoCost={videoCost}
+      videoUrl={videoUrl}
+      loading={loading}
+      canGenerate={canGenerate}
+      onGenerate={handleGenerateVideo}
+      canGenerateAnotherTake={canGenerateAnotherTake}
+      onGenerateAnotherTake={handleGenerateAnotherTake}
+      draftTitle={draftTitle}
+      onDraftTitleChange={setDraftTitle}
+      savingDraft={savingDraft}
+      onSaveDraft={handleSaveDraft}
+      drafts={drafts}
+      activeDraftId={activeDraftId}
+      deletingDraftId={deletingDraftId}
+      onLoadDraft={handleLoadDraft}
+      onDeleteDraft={handleDeleteDraft}
+      selectedSuggestion={selectedSuggestion}
+      onSuggestionSelect={(value) => {
+        setSelectedSuggestion(value);
+        setLastAction("Selected a video prompt suggestion.");
+      }}
+      onReplacePrompt={handleReplacePrompt}
+      onAppendPrompt={handleAppendPrompt}
+      advancedOpen={advancedOpen}
+      onToggleAdvancedOpen={() => setAdvancedOpen((prev) => !prev)}
+      resolution={resolution}
+      onResolutionChange={(value) => {
+        setResolution(value);
+        setActiveDraftId(null);
+      }}
+      draftMode={draftMode}
+      onDraftModeChange={(value) => {
+        setDraftMode(value);
+        setActiveDraftId(null);
+      }}
+      saveAudio={saveAudio}
+      onSaveAudioChange={(value) => {
+        setSaveAudio(value);
+        setActiveDraftId(null);
+      }}
+      promptUpsampling={promptUpsampling}
+      onPromptUpsamplingChange={(value) => {
+        setPromptUpsampling(value);
+        setActiveDraftId(null);
+      }}
+      disableSafetyFilter={disableSafetyFilter}
+      onDisableSafetyFilterChange={(value) => {
+        setDisableSafetyFilter(value);
+        setActiveDraftId(null);
+      }}
+      styleStrength={styleStrength}
+      onStyleStrengthChange={(value) => {
+        setStyleStrength(value);
+        setActiveDraftId(null);
+      }}
+      motionGuidance={motionGuidance}
+      onMotionGuidanceChange={(value) => {
+        setMotionGuidance(value);
+        setActiveDraftId(null);
+      }}
+      shotType={shotType}
+      onShotTypeChange={(value) => {
+        setShotType(value);
+        setActiveDraftId(null);
+      }}
+      fps={fps}
+      onFpsChange={(value) => {
+        setFps(value);
+        setActiveDraftId(null);
+      }}
+      takeCount={takeCount}
+      activeDraftTitle={activeDraftTitle}
+      hasPersistedSession={hasPersistedSession}
+      lastAction={lastAction}
+      onResetSession={handleResetSession}
+    />
+
+    <MobileVideoCreatorPage
+      onChangeMode={onChangeMode}
+      selectedModelId={selectedModelId}
+      selectedModel={selectedModel}
+      onModelChange={handleModelChange}
+      prompt={prompt}
+      onPromptChange={(value) => {
+        setPrompt(value);
+        setActiveDraftId(null);
+      }}
+      negativePrompt={negativePrompt}
+      onNegativePromptChange={(value) => {
+        setNegativePrompt(value);
+        setActiveDraftId(null);
+      }}
+      imageUrl={imageUrl}
+      sourceImageName={sourceImageName}
+      uploadingSourceImage={uploadingSourceImage}
+      onSourceImageUpload={handleSourceImageUpload}
+      onRemoveSourceImage={handleRemoveSourceImage}
+      endImageUrl={endImageUrl}
+      endImageName={endImageName}
+      uploadingEndImage={uploadingEndImage}
+      onEndImageUpload={handleEndImageUpload}
+      onRemoveEndImage={handleRemoveEndImage}
+      referenceImageUrls={referenceImageUrls}
+      referenceImageNames={referenceImageNames}
+      uploadingReferenceImage={uploadingReferenceImage}
+      onReferenceImageUpload={handleReferenceImageUpload}
+      onRemoveReferenceImage={handleRemoveReferenceImage}
+      audioUrl={audioUrl}
+      audioName={audioName}
+      uploadingAudio={uploadingAudio}
+      onAudioUpload={handleAudioUpload}
+      onRemoveAudio={handleRemoveAudio}
+      duration={duration}
+      onDurationChange={(value) => {
+        setDuration(value);
+        setActiveDraftId(null);
+      }}
+      aspectRatio={aspectRatio}
+      onAspectRatioChange={(value) => {
+        setAspectRatio(value);
+        setActiveDraftId(null);
+      }}
+      motionIntensity={motionIntensity}
+      onMotionIntensityChange={(value) => {
+        setMotionIntensity(value);
+        setActiveDraftId(null);
+      }}
+      cameraMove={cameraMove}
+      onCameraMoveChange={(value) => {
+        setCameraMove(value);
+        setActiveDraftId(null);
+      }}
+      videoCost={videoCost}
+      videoUrl={videoUrl}
+      loading={loading}
+      canGenerate={canGenerate}
+      onGenerate={handleGenerateVideo}
+      canGenerateAnotherTake={canGenerateAnotherTake}
+      onGenerateAnotherTake={handleGenerateAnotherTake}
+      draftTitle={draftTitle}
+      onDraftTitleChange={setDraftTitle}
+      savingDraft={savingDraft}
+      onSaveDraft={handleSaveDraft}
+      drafts={drafts}
+      activeDraftId={activeDraftId}
+      deletingDraftId={deletingDraftId}
+      onLoadDraft={handleLoadDraft}
+      onDeleteDraft={handleDeleteDraft}
+      selectedSuggestion={selectedSuggestion}
+      onSuggestionSelect={(value) => {
+        setSelectedSuggestion(value);
+        setLastAction("Selected a video prompt suggestion.");
+      }}
+      onReplacePrompt={handleReplacePrompt}
+      onAppendPrompt={handleAppendPrompt}
+      advancedOpen={advancedOpen}
+      onToggleAdvancedOpen={() => setAdvancedOpen((prev) => !prev)}
+      resolution={resolution}
+      onResolutionChange={(value) => {
+        setResolution(value);
+        setActiveDraftId(null);
+      }}
+      draftMode={draftMode}
+      onDraftModeChange={(value) => {
+        setDraftMode(value);
+        setActiveDraftId(null);
+      }}
+      saveAudio={saveAudio}
+      onSaveAudioChange={(value) => {
+        setSaveAudio(value);
+        setActiveDraftId(null);
+      }}
+      promptUpsampling={promptUpsampling}
+      onPromptUpsamplingChange={(value) => {
+        setPromptUpsampling(value);
+        setActiveDraftId(null);
+      }}
+      disableSafetyFilter={disableSafetyFilter}
+      onDisableSafetyFilterChange={(value) => {
+        setDisableSafetyFilter(value);
+        setActiveDraftId(null);
+      }}
+      styleStrength={styleStrength}
+      onStyleStrengthChange={(value) => {
+        setStyleStrength(value);
+        setActiveDraftId(null);
+      }}
+      motionGuidance={motionGuidance}
+      onMotionGuidanceChange={(value) => {
+        setMotionGuidance(value);
+        setActiveDraftId(null);
+      }}
+      shotType={shotType}
+      onShotTypeChange={(value) => {
+        setShotType(value);
+        setActiveDraftId(null);
+      }}
+      fps={fps}
+      onFpsChange={(value) => {
+        setFps(value);
+        setActiveDraftId(null);
+      }}
+      takeCount={takeCount}
+      activeDraftTitle={activeDraftTitle}
+      hasPersistedSession={hasPersistedSession}
+      lastAction={lastAction}
+      onResetSession={handleResetSession}
+    />
+
+    <section className="hidden">
       <div className="space-y-6">
         <VideoStudioStatusBar
           hasPrompt={prompt.trim().length >= 5}
@@ -684,32 +1171,7 @@ export function VideoStudioComposer() {
             >
               <VideoModelSelector
                 value={selectedModelId}
-                onChange={(value) => {
-                  const nextModel = resolveReplicateVideoModel(value);
-                  setSelectedModelId(value);
-                  setResolution((prev) =>
-                    prev === (selectedModel.defaultResolution ?? "720p")
-                      ? nextModel.defaultResolution ?? "720p"
-                      : prev
-                  );
-                  setAspectRatio((prev) =>
-                    prev === selectedModel.defaultAspectRatio
-                      ? nextModel.defaultAspectRatio
-                      : prev
-                  );
-                  setDuration((prev) =>
-                    prev === String(selectedModel.defaultDuration)
-                      ? String(nextModel.defaultDuration)
-                      : prev
-                  );
-                  if (!nextModel.supports.audioGeneration) {
-                    setSaveAudio(false);
-                  } else if (!selectedModel.supports.audioGeneration) {
-                    setSaveAudio(true);
-                  }
-                  setActiveDraftId(null);
-                  setLastAction(`Selected ${nextModel.label} for the next generation.`);
-                }}
+                onChange={handleModelChange}
               />
             </ControlGroup>
 
@@ -1212,5 +1674,6 @@ export function VideoStudioComposer() {
         </div>
       </div>
     </section>
+    </>
   );
 }
