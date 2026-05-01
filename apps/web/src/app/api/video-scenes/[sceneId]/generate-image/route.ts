@@ -6,7 +6,7 @@ import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import { processVideoScene } from "@/lib/generation/process-video-scene";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 
-export const maxDuration = 180;
+export const maxDuration = 300;
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Failed to queue scene image generation";

@@ -14,14 +14,21 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const INLINE_GENERATION_TIMEOUT_MS = 5 * 60 * 1000;
+const INLINE_IMAGE_POLL_INTERVAL_MS = 3000;
+const INLINE_VIDEO_POLL_INTERVAL_MS = 5000;
+
 export async function runGenerationJobInline(
   job: ProcessableGenerationJob
 ): Promise<InlineGenerationJobResult> {
   let currentJob = job;
-  const attempts = currentJob.type === "video" ? 60 : 30;
-  const delayMs = currentJob.type === "video" ? 5000 : 3000;
+  const pollIntervalMs =
+    currentJob.type === "video"
+      ? INLINE_VIDEO_POLL_INTERVAL_MS
+      : INLINE_IMAGE_POLL_INTERVAL_MS;
+  const deadline = Date.now() + INLINE_GENERATION_TIMEOUT_MS;
 
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
+  while (Date.now() < deadline) {
     const result = await processGenerationJob(currentJob);
 
     if (result.status !== "processing") {
@@ -29,7 +36,11 @@ export async function runGenerationJobInline(
     }
 
     currentJob = result.job as ProcessableGenerationJob;
-    await sleep(delayMs);
+    const remainingMs = deadline - Date.now();
+
+    if (remainingMs > 0) {
+      await sleep(Math.min(pollIntervalMs, remainingMs));
+    }
   }
 
   const failedJob =

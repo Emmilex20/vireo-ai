@@ -7,6 +7,14 @@ import { getImageProvider, getVideoProvider } from "@/lib/ai/providers/registry"
 import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { uploadRemoteAssetToCloudinary } from "@/lib/storage/cloudinary";
 
+const SCENE_GENERATION_TIMEOUT_MS = 5 * 60 * 1000;
+const SCENE_IMAGE_POLL_INTERVAL_MS = 3000;
+const SCENE_VIDEO_POLL_INTERVAL_MS = 5000;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function refundAndFailScene(params: {
   userId: string;
   sceneId: string;
@@ -60,7 +68,9 @@ export async function processVideoScene(params: {
       promptBoost: true
     });
 
-    for (let i = 0; i < 30; i += 1) {
+    const deadline = Date.now() + SCENE_GENERATION_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
       const status = await provider.getImageJobStatus(providerJob.providerJobId);
 
       if (status.status === "completed" && status.outputUrl) {
@@ -90,7 +100,11 @@ export async function processVideoScene(params: {
         });
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const remainingMs = deadline - Date.now();
+
+      if (remainingMs > 0) {
+        await sleep(Math.min(SCENE_IMAGE_POLL_INTERVAL_MS, remainingMs));
+      }
     }
 
     return refundAndFailScene({
@@ -128,7 +142,9 @@ export async function processVideoScene(params: {
       fps: 24
     });
 
-    for (let i = 0; i < 60; i += 1) {
+    const deadline = Date.now() + SCENE_GENERATION_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
       const status = await provider.getVideoJobStatus(providerJob.providerJobId);
 
       if (status.status === "completed" && status.outputUrl) {
@@ -158,7 +174,11 @@ export async function processVideoScene(params: {
         });
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      const remainingMs = deadline - Date.now();
+
+      if (remainingMs > 0) {
+        await sleep(Math.min(SCENE_VIDEO_POLL_INTERVAL_MS, remainingMs));
+      }
     }
 
     return refundAndFailScene({

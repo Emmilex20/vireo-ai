@@ -19,7 +19,7 @@ import {
   logBlockedPrompt
 } from "@vireon/db";
 
-export const maxDuration = 180;
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   try {
