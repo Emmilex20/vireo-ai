@@ -440,7 +440,7 @@ export function DesktopVideoCreatorPage({
                     {supportsReferences || supportsMultiShot ? (
                       <div className="rounded-xl border border-white/10 bg-[#0b0e10] p-3">
                         <div className="flex items-start justify-between gap-3">
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold text-white">
                               {supportsMultiShot ? "Multi-shot references" : "Reference images"}
                             </p>
@@ -448,13 +448,13 @@ export function DesktopVideoCreatorPage({
                               Add up to 4 visual references for identity, style, or shot continuity.
                             </p>
                           </div>
-                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 transition hover:bg-white/10 hover:text-white">
+                          <label className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white">
                             {uploadingReferenceImage ? (
                               <Loader2 className="size-3.5 animate-spin" />
                             ) : (
                               <Upload className="size-3.5" />
                             )}
-                            Add
+                            <span>Add</span>
                             <input
                               type="file"
                               accept="image/png,image/jpeg,image/webp"
@@ -1299,7 +1299,7 @@ function AudioUpload({
   return (
     <div className="rounded-xl border border-white/10 bg-[#0b0e10] p-3">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-white">Audio</p>
           <p className="mt-1 text-xs leading-5 text-white/45">
             Generate audio, or attach a sound reference when the model can use it.
@@ -1309,13 +1309,15 @@ function AudioUpload({
           type="button"
           onClick={() => onSaveAudioChange(!saveAudio)}
           className={cn(
-            "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+            "inline-flex h-9 w-[72px] shrink-0 items-center justify-center rounded-full border px-2 text-center text-[11px] font-semibold leading-none transition",
             saveAudio
               ? "border-[#2dd4bf]/35 bg-[#2dd4bf]/10 text-[#b7fff5]"
               : "border-white/10 bg-white/5 text-white/55"
           )}
         >
-          {saveAudio ? "Audio on" : "Audio off"}
+          <span className="whitespace-normal leading-tight">
+            {saveAudio ? "Audio on" : "Audio off"}
+          </span>
         </button>
       </div>
 
@@ -1329,9 +1331,11 @@ function AudioUpload({
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium text-white">
-            {audioName || "Upload audio reference"}
+            {audioName || "Upload audio"}
           </span>
-          <span className="mt-1 block text-xs text-white/45">MP3, WAV, M4A, or OGG</span>
+          <span className="mt-1 block truncate text-xs text-white/45">
+            Sound reference. MP3, WAV, M4A, or OGG
+          </span>
         </span>
         <input
           type="file"

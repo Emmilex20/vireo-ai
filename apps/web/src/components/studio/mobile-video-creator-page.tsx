@@ -413,15 +413,15 @@ export function MobileVideoCreatorPage({
                 {supportsReferences || supportsMultiShot ? (
                   <div className="rounded-2xl border border-white/10 bg-[#0b0e10] p-3">
                     <div className="flex items-center justify-between gap-3">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-white">
                           {supportsMultiShot ? "Multi-shot references" : "Reference images"}
                         </p>
                         <p className="text-xs text-white/45">Up to 4 images</p>
                       </div>
-                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white/8 px-3 py-2 text-xs text-white">
+                      <label className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-white/8 px-2.5 text-xs font-medium text-white">
                         {uploadingReferenceImage ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
-                        Add
+                        <span>Add</span>
                         <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(event) => void onReferenceImageUpload(event)} disabled={referenceImageUrls.length >= 4} />
                       </label>
                     </div>
@@ -448,7 +448,7 @@ export function MobileVideoCreatorPage({
                 {selectedModel.supports.audioGeneration ? (
                   <div className="rounded-2xl border border-white/10 bg-[#0b0e10] p-3">
                     <div className="flex items-center justify-between gap-3">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-white">Audio</p>
                         <p className="text-xs text-white/45">Generate or guide sound</p>
                       </div>
@@ -456,7 +456,7 @@ export function MobileVideoCreatorPage({
                         type="button"
                         onClick={() => onSaveAudioChange(!saveAudio)}
                         className={cn(
-                          "rounded-full border px-3 py-1.5 text-xs",
+                          "inline-flex h-9 w-14 shrink-0 items-center justify-center rounded-full border px-2 text-center text-xs font-semibold leading-none",
                           saveAudio
                             ? "border-[#2dd4bf]/35 bg-[#2dd4bf]/10 text-[#b7fff5]"
                             : "border-white/10 bg-white/5 text-white/55"
@@ -469,9 +469,9 @@ export function MobileVideoCreatorPage({
                       <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-white/8">
                         {uploadingAudio ? <Loader2 className="size-4 animate-spin text-white/60" /> : <Film className="size-4 text-white/60" />}
                       </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-white">{audioName || "Upload audio reference"}</span>
-                        <span className="text-xs text-white/45">MP3, WAV, M4A, OGG</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-white">{audioName || "Upload audio"}</span>
+                        <span className="block truncate text-xs text-white/45">Sound reference. MP3, WAV, M4A, OGG</span>
                       </span>
                       <input type="file" accept="audio/*" className="hidden" onChange={(event) => void onAudioUpload(event)} />
                     </label>
