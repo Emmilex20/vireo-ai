@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -9,8 +10,6 @@ import {
   ChevronDown,
   CircleHelp,
   Coins,
-  Sparkles,
-  Users,
 } from "lucide-react";
 import {
   EXCHANGE_RATE_PROVIDER_URL,
@@ -129,6 +128,7 @@ const plans: PricingPlan[] = [
 ];
 
 export function PricingPageClient() {
+  const router = useRouter();
   const { user } = useUser();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [subscriptionLoading, setSubscriptionLoading] = useState<string | null>(null);
@@ -184,7 +184,7 @@ export function PricingPageClient() {
       }
 
       if (data.authorizationUrl) {
-        window.location.href = data.authorizationUrl;
+        router.push(data.authorizationUrl);
         return;
       }
 
@@ -205,7 +205,7 @@ export function PricingPageClient() {
 
   async function handlePlanClick(planKey: PricingPlan["key"]) {
     if (planKey === "free") {
-      window.location.href = "/studio";
+      router.push("/studio");
       return;
     }
 
@@ -251,7 +251,7 @@ export function PricingPageClient() {
 
   return (
     <main className="min-h-screen bg-[#111417] px-3 py-4 text-white sm:px-6 lg:px-8">
-      <section className="mx-auto max-w-[1440px] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#171a1d] shadow-[0_28px_100px_rgba(0,0,0,0.34)]">
+      <section className="mx-auto max-w-360 overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#171a1d] shadow-[0_28px_100px_rgba(0,0,0,0.34)]">
         <div className="relative border-b border-white/10 px-4 py-6 sm:px-6 lg:px-8">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(45,212,191,0.14),transparent_30%),radial-gradient(circle_at_78%_0%,rgba(217,70,239,0.12),transparent_34%)]" />
 
@@ -428,7 +428,7 @@ function PlanCard({
 
   return (
     <article
-      className={`relative flex min-h-[38rem] flex-col overflow-hidden rounded-[1.15rem] border p-5 ${
+      className={`relative flex min-h-152 flex-col overflow-hidden rounded-[1.15rem] border p-5 ${
         plan.popular
           ? "border-fuchsia-400/25 bg-[linear-gradient(180deg,rgba(134,24,93,0.72),rgba(77,22,62,0.9))]"
           : "border-white/10 bg-[#15191c]"
