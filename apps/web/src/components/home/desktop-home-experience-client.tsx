@@ -5,25 +5,20 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AudioLines,
-  BookOpen,
   ChevronLeft,
   ChevronDown,
   Clapperboard,
   Compass,
-  FolderOpen,
   Gift,
-  Globe2,
-  Grid2x2,
   HelpCircle,
-  Home,
   ImageIcon,
-  Lightbulb,
   Sparkles,
   Users,
   type LucideIcon,
 } from "lucide-react";
 
 import { HeaderAuth } from "@/components/layout/header-auth";
+import { StudioHomeSidebar } from "@/components/studio/studio-home-sidebar";
 import type { HomeExperienceCard } from "./home-experience-data";
 
 type DesktopHomeExperienceClientProps = {
@@ -32,13 +27,6 @@ type DesktopHomeExperienceClientProps = {
   latestModelCards: HomeExperienceCard[];
   inspirationImageCards: HomeExperienceCard[];
   inspirationVideoCards: HomeExperienceCard[];
-};
-
-type DesktopNavItem = {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  full?: boolean;
 };
 
 type DesktopHeroCategory = {
@@ -66,32 +54,6 @@ type CharacterDropdownItem = {
   card?: HomeExperienceCard;
   icon?: LucideIcon;
 };
-
-const createLinks: DesktopNavItem[] = [
-  { label: "Video", href: "/studio", icon: Clapperboard, full: true },
-  { label: "Image", href: "/studio", icon: ImageIcon },
-  { label: "Character", href: "/creators", icon: Users },
-  { label: "World", href: "/explore", icon: Globe2 },
-  { label: "Audio", href: "/studio", icon: AudioLines },
-] as const;
-
-const sidebarSections = [
-  {
-    label: "Assets",
-    items: [
-      { label: "Character & World", href: "/creators", icon: Users },
-      { label: "Media", href: "/assets", icon: FolderOpen },
-    ],
-  },
-  {
-    label: "Inspire",
-    items: [
-      { label: "Template", href: "/templates", icon: Grid2x2 },
-      { label: "Tutorials", href: "/pricing", icon: BookOpen },
-      { label: "Blog", href: "/explore", icon: Lightbulb },
-    ],
-  },
-] as const;
 
 const heroCategories: DesktopHeroCategory[] = [
   { label: "Story", icon: Sparkles, href: "/video-projects" },
@@ -177,15 +139,6 @@ export function DesktopHomeExperienceClient({
         ? inspirationImageCards
         : inspirationVideoCards,
     [inspirationImageCards, inspirationTab, inspirationVideoCards]
-  );
-  const pinnedToolCards = useMemo(
-    () => [
-      suiteCards.find((card) => card.id === "suite-motion") ?? suiteCards[0],
-      suiteCards.find((card) => card.id === "suite-lip") ?? suiteCards[1] ?? suiteCards[0],
-      suiteCards.find((card) => card.id === "suite-edit-video") ?? suiteCards[2] ?? suiteCards[0],
-      suiteCards.find((card) => card.id === "suite-camera") ?? suiteCards[3] ?? suiteCards[0],
-    ],
-    [suiteCards]
   );
   const showcaseCards = useMemo(
     () =>
@@ -338,213 +291,15 @@ export function DesktopHomeExperienceClient({
         </div>
       </section>
 
-      <aside
-        className={`fixed bottom-0 left-0 top-12 z-40 overflow-hidden border-r border-white/10 bg-[#121416] transition-all duration-300 ${
-          isSidebarOpen ? "w-66" : "w-20.5"
-        }`}
-      >
-        <div className="flex h-full flex-col overflow-y-auto px-4 py-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <div
-            className={`flex items-center ${
-              isSidebarOpen ? "justify-between gap-3" : "justify-center"
-            }`}
-          >
-            {isSidebarOpen ? (
-              <Link href="/" className="flex min-w-0 items-center gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
-                  <Image
-                    src="/logo.png"
-                    alt="Vireon"
-                    width={36}
-                    height={36}
-                    className="size-full object-cover"
-                  />
-                </div>
-                <span className="truncate text-[17px] font-semibold tracking-tight text-white">
-                  Vireon
-                </span>
-              </Link>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen((value) => !value)}
-              className="flex size-9 items-center justify-center rounded-2xl border border-white/20 bg-transparent text-slate-300 transition hover:bg-white/5"
-              aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-            >
-              <Grid2x2 className="size-4" />
-            </button>
-          </div>
-
-          <div className={`mt-5 space-y-2.5 ${isSidebarOpen ? "" : "flex-1"}`}>
-            {isSidebarOpen ? (
-              <>
-                <Link
-                  href="/"
-                  className="flex items-center gap-3 rounded-[1.05rem] border border-fuchsia-400/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] px-4 py-3 text-white shadow-[0_0_0_1px_rgba(236,72,153,0.14),0_0_26px_rgba(217,70,239,0.34)]"
-                >
-                  <span className="flex size-7 items-center justify-center rounded-full bg-white text-black">
-                    <Home className="size-3.5" />
-                  </span>
-                  <span className="text-[14px] font-medium">Home</span>
-                </Link>
-              </>
-            ) : (
-              <div className="space-y-2.5 pt-1">
-                <CompactSidebarLink href="/" icon={Home} label="Home" active />
-                <CompactSidebarLink href="/studio" icon={Sparkles} label="Create" />
-                <CompactSidebarLink href="/assets" icon={FolderOpen} label="Assets" />
-                <CompactSidebarLink href="/explore" icon={Lightbulb} label="Inspire" />
-                <div className="mx-auto h-px w-8 bg-white/10" />
-                <CompactSidebarLink href="/studio" icon={Grid2x2} label="All Tools" />
-                {pinnedToolCards.map((card) => (
-                  <CompactSidebarThumb key={card.id} href={card.href} label={card.title} mediaUrl={card.mediaUrl} />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {isSidebarOpen ? (
-            <>
-              <div className="mt-6 space-y-2.5">
-                <p className="px-3 text-[11px] font-medium uppercase tracking-[0.24em] text-slate-500">
-                  Create
-                </p>
-                <div className="space-y-2">
-                  {createLinks
-                    .filter((item) => item.full)
-                    .map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          className="flex items-center gap-3 rounded-[0.95rem] border border-white/8 bg-white/4 px-4 py-2.5 text-slate-100 transition hover:bg-white/8"
-                        >
-                          <Icon className="size-4.5 text-slate-300" />
-                          <span className="text-[14px] font-medium">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  <div className="grid grid-cols-2 gap-2">
-                    {createLinks
-                      .filter((item) => !item.full)
-                      .map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.label}
-                            href={item.href}
-                            className="flex min-w-0 items-center gap-2.5 rounded-[0.95rem] border border-white/8 bg-white/4 px-4 py-2.5 text-slate-100 transition hover:bg-white/8"
-                          >
-                            <Icon className="size-4 text-slate-300" />
-                            <span className="truncate text-[13px] font-medium tracking-[-0.01em]">
-                              {item.label}
-                            </span>
-                          </Link>
-                        );
-                      })}
-                  </div>
-                </div>
-              </div>
-
-              {sidebarSections.map((section) => (
-                <div key={section.label} className="mt-6 space-y-2.5">
-                  <p className="px-3 text-[11px] font-medium uppercase tracking-[0.24em] text-slate-500">
-                    {section.label}
-                  </p>
-                  <div className="space-y-2">
-                    {section.items.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          className="flex items-center gap-3 rounded-2xl px-4 py-2 text-slate-300 transition hover:bg-white/5 hover:text-white"
-                        >
-                          <Icon className="size-4.5" />
-                          <span className="text-[14px] font-medium">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
-              <div className="mt-6 space-y-2.5">
-                <p className="px-3 text-[11px] font-medium uppercase tracking-[0.24em] text-slate-500">
-                  Pinned Tools
-                </p>
-                <div className="space-y-2">
-                  <Link
-                    href="/studio"
-                    className="flex items-center justify-between gap-3 rounded-2xl px-4 py-2 text-white transition hover:bg-white/5"
-                  >
-                    <span className="flex items-center gap-3">
-                      <Grid2x2 className="size-4.5 text-slate-300" />
-                      <span className="text-[14px] font-medium">All Tools</span>
-                    </span>
-                    <ChevronDown className="size-4 -rotate-90 text-slate-500" />
-                  </Link>
-
-                  {pinnedToolCards.map((card, index) => (
-                    <Link
-                      key={card.id}
-                      href={card.href}
-                      className={`flex items-center gap-3 rounded-[1.05rem] px-3 py-1.5 text-slate-300 transition hover:bg-white/5 hover:text-white ${
-                        index === 0
-                          ? "border border-fuchsia-400/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] text-white shadow-[0_0_0_1px_rgba(236,72,153,0.12),0_0_24px_rgba(217,70,239,0.35)]"
-                          : ""
-                      }`}
-                    >
-                      <div className="relative size-7 shrink-0 overflow-hidden rounded-md bg-white/6">
-                        {card.mediaUrl ? (
-                          <Image
-                            src={card.mediaUrl}
-                            alt={card.title}
-                            fill
-                            sizes="28px"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-primary">
-                            <Sparkles className="size-4" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[14px] font-medium">{card.title}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : null}
-        </div>
-      </aside>
-
-      {!isSidebarOpen ? (
-        <div className="fixed left-23.5 top-[4.1rem] z-40 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-white">
-              <Image
-                src="/logo.png"
-                alt="Vireon"
-                width={36}
-                height={36}
-                className="size-full object-cover"
-              />
-            </div>
-            <span className="text-[17px] font-semibold tracking-tight text-white">
-              Vireon
-            </span>
-          </Link>
-          <span className="h-5 w-px bg-white/10" />
-          <span className="text-[14px] font-medium text-white">Home</span>
-        </div>
-      ) : null}
+      <StudioHomeSidebar
+        open={isSidebarOpen}
+        onOpenChange={setIsSidebarOpen}
+        className="fixed bottom-0 left-0 top-12 z-40 h-auto"
+      />
 
       <div
         className={`pt-10 transition-[padding] duration-300 ${
-          isSidebarOpen ? "pl-73" : "pl-26"
+          isSidebarOpen ? "pl-58" : "pl-21"
         }`}
       >
         <div className="w-full px-5 pr-8 xl:px-6 xl:pr-10">
@@ -1009,76 +764,6 @@ export function DesktopHomeExperienceClient({
         </div>
       </div>
     </div>
-  );
-}
-
-function CompactSidebarLink({
-  href,
-  icon: Icon,
-  label,
-  active = false,
-}: {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`group flex flex-col items-center gap-2 rounded-2xl px-2 py-2 text-[11px] transition ${
-        active
-          ? "text-white"
-          : "text-slate-400 hover:bg-white/5 hover:text-white"
-      }`}
-      aria-label={label}
-    >
-      <span
-        className={`flex size-8 items-center justify-center rounded-2xl border ${
-          active
-            ? "border-fuchsia-400/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_0_0_1px_rgba(236,72,153,0.12),0_0_20px_rgba(217,70,239,0.28)]"
-            : "border-white/10 bg-white/5"
-        }`}
-      >
-        <Icon className="size-4" />
-      </span>
-      <span className="leading-none">{label}</span>
-    </Link>
-  );
-}
-
-function CompactSidebarThumb({
-  href,
-  label,
-  mediaUrl,
-}: {
-  href: string;
-  label: string;
-  mediaUrl?: string | null;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col items-center gap-2 rounded-2xl px-2 py-1.5 text-[11px] text-slate-400 transition hover:bg-white/5 hover:text-white"
-      aria-label={label}
-    >
-      <div className="relative size-7 overflow-hidden rounded-md border border-white/10 bg-white/5">
-        {mediaUrl ? (
-          <Image
-            src={mediaUrl}
-            alt={label}
-            fill
-            sizes="28px"
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-primary">
-            <Sparkles className="size-4" />
-          </div>
-        )}
-      </div>
-      <span className="leading-none">{label}</span>
-    </Link>
   );
 }
 

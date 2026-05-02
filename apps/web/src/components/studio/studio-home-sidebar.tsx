@@ -27,6 +27,7 @@ type StudioHomeSidebarProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChangeMode?: (mode: StudioMode) => void;
+  className?: string;
 };
 
 type DesktopNavItem = {
@@ -84,6 +85,7 @@ export function StudioHomeSidebar({
   open,
   onOpenChange,
   onChangeMode,
+  className,
 }: StudioHomeSidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -110,7 +112,8 @@ export function StudioHomeSidebar({
     <aside
       className={cn(
         "h-screen shrink-0 overflow-hidden border-r border-white/10 bg-[#121416] transition-all duration-300",
-        open ? "w-52" : "w-15"
+        open ? "w-52" : "w-15",
+        className
       )}
     >
       <div className="flex h-full flex-col overflow-y-auto px-2.5 py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
