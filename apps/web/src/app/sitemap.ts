@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { db } from "@vireon/db";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.com";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://getvireonai.com";
 
 type SitemapCreator = {
   username: string | null;
@@ -15,31 +15,6 @@ type SitemapAsset = {
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const creators = await db.user.findMany({
-    where: {
-      username: {
-        not: null
-      }
-    },
-    select: {
-      username: true,
-      updatedAt: true
-    },
-    take: 5000
-  });
-
-  const assets = await db.asset.findMany({
-    where: {
-      isPublic: true
-    },
-    select: {
-      id: true,
-      updatedAt: true,
-      createdAt: true
-    },
-    take: 5000
-  });
-
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${APP_URL}`,
@@ -90,6 +65,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3
     }
   ];
+
+  let creators: SitemapCreator[] = [];
+  let assets: SitemapAsset[] = [];
+
+  try {
+    [creators, assets] = await Promise.all([
+      db.user.findMany({
+        where: {
+          username: {
+            not: null
+          }
+        },
+        select: {
+          username: true,
+          updatedAt: true
+        },
+        take: 5000
+      }),
+      db.asset.findMany({
+        where: {
+          isPublic: true
+        },
+        select: {
+          id: true,
+          updatedAt: true,
+          createdAt: true
+        },
+        take: 5000
+      })
+    ]);
+  } catch (error) {
+    console.warn("Failed to build dynamic sitemap entries", error);
+  }
 
   const creatorPages: MetadataRoute.Sitemap = creators
     .filter((creator: SitemapCreator) => Boolean(creator.username))

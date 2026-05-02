@@ -6,7 +6,7 @@ import { inter, jakarta } from "@/lib/fonts";
 import { APP_DESCRIPTION, APP_NAME, SEO_KEYWORDS } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://vireon.ai"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://getvireonai.com"),
   applicationName: APP_NAME,
   title: {
     default: APP_NAME,
@@ -64,6 +64,9 @@ export const metadata: Metadata = {
     title: APP_NAME,
     description: APP_DESCRIPTION,
     images: ["/logo.png"]
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
   }
 };
 
