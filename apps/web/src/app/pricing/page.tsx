@@ -1,10 +1,10 @@
 import { PricingPageClient } from "@/components/billing/pricing-page-client";
-import { PublicSiteFrame } from "@/components/layout/public-site-frame";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default function PricingPage() {
   return (
-    <PublicSiteFrame>
+    <AppShell>
       <PricingPageClient />
-    </PublicSiteFrame>
+    </AppShell>
   );
 }

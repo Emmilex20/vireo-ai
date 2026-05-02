@@ -1,7 +1,20 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createPaymentAuditLog, grantCreditsForPayment } from "@vireon/db";
+import {
+  createPaymentAuditLog,
+  db,
+  grantCreditsForPayment,
+  grantSubscriptionRenewalCredits,
+} from "@vireon/db";
 import { getCreditPackByKey } from "@/lib/billing/credit-packs";
+import {
+  getNextSubscriptionPeriodEnd,
+  getSubscriptionAmountKobo,
+  getSubscriptionCreditsForCycle,
+  SUBSCRIPTION_PLANS,
+  type SubscriptionBillingCycle,
+  type SubscriptionPlanKey,
+} from "@/lib/billing/plans";
 
 export async function POST(req: Request) {
   try {
@@ -69,6 +82,118 @@ export async function POST(req: Request) {
         { error: "Payment does not belong to this user" },
         { status: 403 }
       );
+    }
+
+    if (metadata.productType === "subscription") {
+      const planKey = metadata.planKey as SubscriptionPlanKey | undefined;
+      const billingCycle: SubscriptionBillingCycle =
+        metadata.billingCycle === "annual" ? "annual" : "monthly";
+
+      if (!planKey || !SUBSCRIPTION_PLANS[planKey]) {
+        await createPaymentAuditLog({
+          reference: data.reference,
+          provider: "paystack",
+          eventType: "manual_verify",
+          status: "rejected",
+          reason: "Invalid subscription metadata",
+          rawPayload: verifyData,
+        });
+
+        return NextResponse.json(
+          { error: "Invalid subscription metadata" },
+          { status: 400 }
+        );
+      }
+
+      const metadataRate = Number(metadata.ngnPerUsd);
+
+      if (!metadataRate || !Number.isFinite(metadataRate)) {
+        await createPaymentAuditLog({
+          reference: data.reference,
+          provider: "paystack",
+          eventType: "manual_verify",
+          status: "rejected",
+          reason: "Missing subscription exchange rate metadata",
+          rawPayload: verifyData,
+        });
+
+        return NextResponse.json(
+          { error: "Missing subscription exchange rate metadata" },
+          { status: 400 }
+        );
+      }
+
+      const expectedAmount = getSubscriptionAmountKobo(
+        planKey,
+        billingCycle,
+        metadataRate
+      );
+
+      if (
+        Number(data.amount) !== expectedAmount ||
+        data.currency !== "NGN" ||
+        Number(metadata.amountKobo) !== expectedAmount
+      ) {
+        await createPaymentAuditLog({
+          reference: data.reference,
+          provider: "paystack",
+          eventType: "manual_verify",
+          status: "rejected",
+          reason: "Subscription payment metadata mismatch",
+          rawPayload: verifyData,
+        });
+
+        return NextResponse.json(
+          { error: "Subscription payment metadata mismatch" },
+          { status: 400 }
+        );
+      }
+
+      const plan = SUBSCRIPTION_PLANS[planKey];
+      const subscription = await db.subscription.upsert({
+        where: { userId },
+        update: {
+          plan: planKey,
+          status: "active",
+          creditsPerMonth: plan.credits,
+          currentPeriodEnd: getNextSubscriptionPeriodEnd(billingCycle),
+          paystackSubscriptionCode: null,
+          paystackEmailToken: null,
+        },
+        create: {
+          userId,
+          plan: planKey,
+          status: "active",
+          creditsPerMonth: plan.credits,
+          currentPeriodEnd: getNextSubscriptionPeriodEnd(billingCycle),
+          paystackSubscriptionCode: null,
+          paystackEmailToken: null,
+        },
+      });
+
+      const result = await grantSubscriptionRenewalCredits({
+        userId,
+        subscriptionId: subscription.id,
+        reference: data.reference,
+        plan: `${plan.name} ${billingCycle}`,
+        credits: getSubscriptionCreditsForCycle(planKey, billingCycle),
+        rawPayload: verifyData,
+      });
+
+      await createPaymentAuditLog({
+        reference: data.reference,
+        provider: "paystack",
+        eventType: "manual_verify",
+        status: "accepted",
+        reason: "Subscription payment accepted",
+        rawPayload: verifyData,
+      });
+
+      return NextResponse.json({
+        success: true,
+        credited: result.granted,
+        credits: result.granted ? result.credits : 0,
+      });
     }
 
     if (metadata.productType !== "credit_pack") {

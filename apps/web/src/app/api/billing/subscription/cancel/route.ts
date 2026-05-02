@@ -27,39 +27,34 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!subscription.paystackSubscriptionCode || !subscription.paystackEmailToken) {
-    return NextResponse.json(
-      { error: "Subscription cannot be cancelled automatically yet." },
-      { status: 400 }
-    );
-  }
+  if (subscription.paystackSubscriptionCode && subscription.paystackEmailToken) {
+    if (!process.env.PAYSTACK_SECRET_KEY) {
+      return NextResponse.json(
+        { error: "PAYSTACK_SECRET_KEY is not set" },
+        { status: 500 }
+      );
+    }
 
-  if (!process.env.PAYSTACK_SECRET_KEY) {
-    return NextResponse.json(
-      { error: "PAYSTACK_SECRET_KEY is not set" },
-      { status: 500 }
-    );
-  }
+    const res = await fetch("https://api.paystack.co/subscription/disable", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        code: subscription.paystackSubscriptionCode,
+        token: subscription.paystackEmailToken
+      })
+    });
 
-  const res = await fetch("https://api.paystack.co/subscription/disable", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      code: subscription.paystackSubscriptionCode,
-      token: subscription.paystackEmailToken
-    })
-  });
+    const data = await res.json();
 
-  const data = await res.json();
-
-  if (!res.ok || !data.status) {
-    return NextResponse.json(
-      { error: data.message || "Failed to cancel Paystack subscription" },
-      { status: 400 }
-    );
+    if (!res.ok || !data.status) {
+      return NextResponse.json(
+        { error: data.message || "Failed to cancel Paystack subscription" },
+        { status: 400 }
+      );
+    }
   }
 
   await db.subscription.update({

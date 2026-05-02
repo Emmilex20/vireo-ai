@@ -7,7 +7,14 @@ import {
   grantSubscriptionRenewalCredits
 } from "@vireon/db"
 import { getCreditPackByKey } from "@/lib/billing/credit-packs"
-import { SUBSCRIPTION_PLANS } from "@/lib/billing/plans"
+import {
+  getNextSubscriptionPeriodEnd,
+  getSubscriptionAmountKobo,
+  getSubscriptionCreditsForCycle,
+  SUBSCRIPTION_PLANS,
+  type SubscriptionBillingCycle,
+  type SubscriptionPlanKey
+} from "@/lib/billing/plans"
 import { logError } from "@/lib/monitoring/logger"
 
 function getNextMonthlyPeriodEnd() {
@@ -147,6 +154,120 @@ export async function POST(req: Request) {
     }
 
     if (eventType !== "charge.success") {
+      return NextResponse.json({ received: true })
+    }
+
+    if (metadata.productType === "subscription") {
+      const userId = metadata.userId
+      const planKey = metadata.planKey as SubscriptionPlanKey | undefined
+      const billingCycle: SubscriptionBillingCycle =
+        metadata.billingCycle === "annual" ? "annual" : "monthly"
+
+      if (!userId || !planKey) {
+        await createPaymentAuditLog({
+          reference: data.reference,
+          provider: "paystack",
+          eventType,
+          status: "rejected",
+          reason: "Missing subscription metadata",
+          rawPayload: event,
+        })
+
+        return NextResponse.json({ received: true })
+      }
+
+      const plan = SUBSCRIPTION_PLANS[planKey]
+
+      if (!plan) {
+        await createPaymentAuditLog({
+          reference: data.reference,
+          provider: "paystack",
+          eventType,
+          status: "rejected",
+          reason: "Invalid subscription plan metadata",
+          rawPayload: event,
+        })
+
+        return NextResponse.json({ received: true })
+      }
+
+      const metadataRate = Number(metadata.ngnPerUsd)
+
+      if (!metadataRate || !Number.isFinite(metadataRate)) {
+        await createPaymentAuditLog({
+          reference: data.reference,
+          provider: "paystack",
+          eventType,
+          status: "rejected",
+          reason: "Missing subscription exchange rate metadata",
+          rawPayload: event,
+        })
+
+        return NextResponse.json({ received: true })
+      }
+
+      const expectedAmount = getSubscriptionAmountKobo(
+        planKey,
+        billingCycle,
+        metadataRate
+      )
+
+      if (
+        Number(data.amount) !== expectedAmount ||
+        data.currency !== "NGN" ||
+        Number(metadata.amountKobo) !== expectedAmount
+      ) {
+        await createPaymentAuditLog({
+          reference: data.reference,
+          provider: "paystack",
+          eventType,
+          status: "rejected",
+          reason: "Subscription payment metadata mismatch",
+          rawPayload: event,
+        })
+
+        return NextResponse.json({ received: true })
+      }
+
+      const subscription = await db.subscription.upsert({
+        where: { userId },
+        update: {
+          plan: planKey,
+          status: "active",
+          creditsPerMonth: plan.credits,
+          currentPeriodEnd: getNextSubscriptionPeriodEnd(billingCycle),
+          paystackSubscriptionCode: null,
+          paystackEmailToken: null
+        },
+        create: {
+          userId,
+          plan: planKey,
+          status: "active",
+          creditsPerMonth: plan.credits,
+          currentPeriodEnd: getNextSubscriptionPeriodEnd(billingCycle),
+          paystackSubscriptionCode: null,
+          paystackEmailToken: null
+        }
+      })
+
+      await grantSubscriptionRenewalCredits({
+        userId,
+        subscriptionId: subscription.id,
+        reference: data.reference,
+        plan: `${plan.name} ${billingCycle}`,
+        credits: getSubscriptionCreditsForCycle(planKey, billingCycle),
+        rawPayload: event
+      })
+
+      await createPaymentAuditLog({
+        reference: data.reference,
+        provider: "paystack",
+        eventType,
+        status: "accepted",
+        reason: "Subscription payment accepted",
+        rawPayload: event,
+      })
+
       return NextResponse.json({ received: true })
     }
 

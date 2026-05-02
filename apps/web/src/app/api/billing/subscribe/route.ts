@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@vireon/db";
-import { SUBSCRIPTION_PLANS } from "@/lib/billing/plans";
+import {
+  getSubscriptionAmountKobo,
+  getSubscriptionCreditsForCycle,
+  getSubscriptionPriceUSD,
+  SUBSCRIPTION_PLANS,
+  type SubscriptionBillingCycle,
+  type SubscriptionPlanKey,
+} from "@/lib/billing/plans";
+import { getUsdToNgnRate } from "@/lib/billing/exchange-rates";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { planKey, email } = await req.json();
+    const { planKey, email, billingCycle = "monthly" } = await req.json();
     const existingSubscription = await db.subscription.findFirst({
       where: {
         userId,
@@ -31,18 +39,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const plan =
-      SUBSCRIPTION_PLANS[planKey as keyof typeof SUBSCRIPTION_PLANS];
+    const resolvedPlanKey = planKey as SubscriptionPlanKey;
+    const resolvedBillingCycle =
+      billingCycle === "annual" ? "annual" : "monthly";
+    const plan = SUBSCRIPTION_PLANS[resolvedPlanKey];
 
     if (!plan) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
-    }
-
-    if (!plan.paystackPlanCode) {
-      return NextResponse.json(
-        { error: "Paystack plan code is not configured" },
-        { status: 500 }
-      );
     }
 
     if (!process.env.PAYSTACK_SECRET_KEY) {
@@ -58,7 +61,22 @@ export async function POST(req: Request) {
       email ||
       user?.emailAddresses?.[0]?.emailAddress ||
       `${userId}@vireon.local`;
+    const exchangeRate = await getUsdToNgnRate();
+    const amountKobo = getSubscriptionAmountKobo(
+      resolvedPlanKey,
+      resolvedBillingCycle,
+      exchangeRate.rate
+    );
+    const totalPriceUSD = getSubscriptionPriceUSD(
+      resolvedPlanKey,
+      resolvedBillingCycle
+    );
+    const creditsForCycle = getSubscriptionCreditsForCycle(
+      resolvedPlanKey,
+      resolvedBillingCycle
+    );
 
+    const reference = `vireon_sub_${userId}_${Date.now()}`;
     const response = await fetch(
       "https://api.paystack.co/transaction/initialize",
       {
@@ -69,11 +87,22 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           email: resolvedEmail,
-          plan: plan.paystackPlanCode,
-          callback_url: `${appUrl}/billing`,
+          amount: amountKobo,
+          currency: "NGN",
+          reference,
+          callback_url: `${appUrl}/billing/success?reference=${reference}`,
           metadata: {
             userId,
-            planKey
+            productType: "subscription",
+            planKey: resolvedPlanKey,
+            billingCycle: resolvedBillingCycle,
+            planName: plan.name,
+            creditsPerMonth: plan.credits,
+            creditsForCycle,
+            amountKobo,
+            usdAmount: totalPriceUSD,
+            ngnPerUsd: exchangeRate.rate,
+            exchangeRateSource: exchangeRate.source
           }
         })
       }

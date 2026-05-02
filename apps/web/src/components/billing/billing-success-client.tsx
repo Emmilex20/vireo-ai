@@ -68,6 +68,13 @@ export function BillingSuccessClient({ reference }: { reference?: string }) {
           setMessage(`Payment status: ${verifyData.status}`);
           return;
         }
+
+        if (verifyData.success) {
+          setStatus("credited");
+          setCredits(verifyData.credits ?? 0);
+          window.dispatchEvent(new Event("vireon:credits-updated"));
+          return;
+        }
       }
 
       if (attempts >= 10) {

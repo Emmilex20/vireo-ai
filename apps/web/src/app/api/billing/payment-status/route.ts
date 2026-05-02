@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getPaymentByReference } from "@vireon/db";
+import { db, getPaymentByReference } from "@vireon/db";
 
 export async function GET(req: Request) {
   const { userId } = await auth();
@@ -20,11 +20,16 @@ export async function GET(req: Request) {
   }
 
   const payment = await getPaymentByReference({ userId, reference });
+  const subscriptionRenewal = payment
+    ? null
+    : await db.subscriptionRenewal.findUnique({
+        where: { reference },
+      });
 
   return NextResponse.json({
-    found: Boolean(payment),
-    status: payment?.status ?? "pending",
-    creditedAt: payment?.creditedAt ?? null,
-    credits: payment?.credits ?? 0,
+    found: Boolean(payment || subscriptionRenewal),
+    status: payment?.status ?? (subscriptionRenewal ? "success" : "pending"),
+    creditedAt: payment?.creditedAt ?? subscriptionRenewal?.createdAt ?? null,
+    credits: payment?.credits ?? subscriptionRenewal?.creditsGranted ?? 0,
   });
 }
