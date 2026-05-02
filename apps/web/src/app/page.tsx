@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
 import { MobileHomeExperience } from "@/components/home/mobile-home-experience";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
+import { SEO_KEYWORDS } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Vireon AI - AI Image, Video, and Multi-Scene Creation",
+  title: "Vireon AI - AI Image Generator, AI Video Generator & Creator Studio",
   description:
-    "Create AI images, animate them into videos, and build multi-scene AI video projects with Vireon AI.",
+    "Create AI images, generate AI videos, animate images into motion, and build multi-scene visual projects with Vireon AI. Explore GPT Image, Kling, Veo, Flux, Recraft, Seedance, and more creator workflows.",
+  keywords: SEO_KEYWORDS,
+  alternates: {
+    canonical: "/"
+  },
   openGraph: {
-    title: "Vireon AI - AI Image, Video, and Multi-Scene Creation",
+    title: "Vireon AI - AI Image Generator, AI Video Generator & Creator Studio",
     description:
-      "Generate images, videos, and multi-scene AI stories from prompts.",
-    type: "website"
+      "Generate images, videos, cinematic motion, and multi-scene AI stories from prompts with Vireon AI.",
+    type: "website",
+    url: "/"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vireon AI",
+    title: "Vireon AI - AI Image & Video Generator",
     description:
-      "Create AI images, videos, and multi-scene projects with Vireon AI."
+      "Create AI images, AI videos, image-to-video clips, and multi-scene projects with Vireon AI."
   }
 };
 

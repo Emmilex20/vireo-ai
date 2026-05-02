@@ -3,7 +3,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
 import { inter, jakarta } from "@/lib/fonts";
-import { APP_DESCRIPTION, APP_NAME } from "@/lib/constants";
+import { APP_DESCRIPTION, APP_NAME, SEO_KEYWORDS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://vireon.ai"),
@@ -13,6 +13,11 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`
   },
   description: APP_DESCRIPTION,
+  keywords: SEO_KEYWORDS,
+  category: "AI image and video generation",
+  alternates: {
+    canonical: "/"
+  },
   manifest: "/site.webmanifest",
   icons: {
     icon: [
@@ -44,6 +49,7 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
     siteName: APP_NAME,
     type: "website",
+    url: "/",
     images: [
       {
         url: "/logo.png",
