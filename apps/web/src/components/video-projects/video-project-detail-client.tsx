@@ -2,6 +2,8 @@
 
 import { ArrowDown, ArrowUp, Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { PROJECT_EXPORT_COSTS } from "@/lib/billing/project-export-costs";
+import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { StoryboardTimeline } from "./storyboard-timeline";
 
 type Scene = {
@@ -410,10 +412,10 @@ export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
           {exporting
             ? "Queuing export..."
             : project.exportStatus === "failed"
-              ? "Retry export"
+              ? `Retry export - ${PROJECT_EXPORT_COSTS.combinedVideo} credits`
               : project.exportUrl
-                ? "Export again"
-                : "Export combined video"}
+                ? `Export again - ${PROJECT_EXPORT_COSTS.combinedVideo} credits`
+                : `Export combined video - ${PROJECT_EXPORT_COSTS.combinedVideo} credits`}
         </button>
 
         <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
@@ -719,10 +721,10 @@ export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
                         {generatingSceneId === scene.id
                           ? "Generating..."
                           : scene.status === "image_failed"
-                            ? "Retry scene image"
+                            ? `Retry scene image - ${SCENE_GENERATION_COSTS.image} credits`
                             : scene.imageUrl
-                              ? "Regenerate scene image"
-                              : "Generate scene image"}
+                              ? `Regenerate scene image - ${SCENE_GENERATION_COSTS.image} credits`
+                              : `Generate scene image - ${SCENE_GENERATION_COSTS.image} credits`}
                       </button>
 
                       <button
@@ -734,10 +736,10 @@ export function VideoProjectDetailClient({ projectId }: { projectId: string }) {
                         {generatingSceneId === scene.id
                           ? "Generating..."
                           : scene.status === "video_failed"
-                            ? "Retry scene video"
+                            ? `Retry scene video - ${SCENE_GENERATION_COSTS.video} credits`
                             : scene.videoUrl
-                              ? "Regenerate scene video"
-                              : "Generate scene video"}
+                              ? `Regenerate scene video - ${SCENE_GENERATION_COSTS.video} credits`
+                              : `Generate scene video - ${SCENE_GENERATION_COSTS.video} credits`}
                       </button>
                     </div>
                   </div>

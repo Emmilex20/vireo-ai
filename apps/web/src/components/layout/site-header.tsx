@@ -19,8 +19,8 @@ export function SiteHeader({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:h-16 lg:px-8 lg:py-0">
-        <Link href="/" className="flex min-w-0 items-center gap-3">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 py-0 sm:min-h-16 sm:gap-3 sm:px-6 sm:py-3 lg:h-16 lg:px-8 lg:py-0">
+        <Link href="/" className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
             <Image
               src="/logo.png"
@@ -33,7 +33,7 @@ export function SiteHeader({ className }: { className?: string }) {
           </div>
 
           <div className="min-w-0 flex-col leading-none">
-            <span className="block truncate font-(family-name:--font-heading) text-[1.1rem] font-bold tracking-tight text-white sm:text-lg">
+            <span className="block truncate font-(family-name:--font-heading) text-base font-bold tracking-tight text-white sm:text-lg">
               Vireon
             </span>
             <span className="mt-1 hidden truncate text-[11px] text-slate-400 sm:block">

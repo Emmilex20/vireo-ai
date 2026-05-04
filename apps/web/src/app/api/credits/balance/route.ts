@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@vireon/db";
+import { getUserCreditBalance } from "@/lib/credits/credit-service";
 
 export async function GET() {
   const { userId } = await auth();
@@ -9,10 +9,11 @@ export async function GET() {
     return NextResponse.json({ credits: 0 });
   }
 
-  const wallet = await db.creditWallet.findUnique({
-    where: { userId },
-    select: { balance: true },
-  });
+  const balance = await getUserCreditBalance(userId);
 
-  return NextResponse.json({ credits: wallet?.balance ?? 0 });
+  return NextResponse.json({
+    credits: balance.availableCredits,
+    availableCredits: balance.availableCredits,
+    reservedCredits: balance.reservedCredits,
+  });
 }

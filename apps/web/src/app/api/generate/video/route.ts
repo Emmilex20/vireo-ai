@@ -2,13 +2,20 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import {
   createVideoJob,
-  deductCredits,
   failVideoJob,
-  logBlockedPrompt
+  logBlockedPrompt,
+  updateGenerationJobProvider
 } from "@vireon/db";
 import { getVideoProvider } from "@/lib/ai/providers/registry";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
+import {
+  calculateGenerationCredits,
+} from "@/lib/credits/pricing";
+import {
+  InsufficientCreditsError,
+  reserveCredits,
+} from "@/lib/credits/credit-service";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
@@ -17,10 +24,7 @@ import {
   isReplicateVideoModelId,
   resolveReplicateVideoModel,
 } from "@/lib/ai/providers/replicate-video-models";
-import {
-  getVideoGenerationCost,
-  isSupportedVideoDuration,
-} from "@/lib/video-generation-config";
+import { isSupportedVideoDuration } from "@/lib/video-generation-config";
 
 export const maxDuration = 300;
 
@@ -159,13 +163,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const videoCost = getVideoGenerationCost({
+    const videoQuote = calculateGenerationCredits({
+      generationType: "video",
       modelId: selectedModel.id,
-      duration: normalizedDuration,
-      styleStrength,
-      motionGuidance,
-      fps,
+      prompt,
+      durationSeconds: normalizedDuration,
+      resolution,
+      numberOfOutputs: 1,
+      imageToVideo: Boolean(imageUrl),
+      imageUrl,
+      endImageUrl,
+      referenceImageUrls,
+      audioUrl,
     });
+    const videoCost = videoQuote.credits;
 
     const safety = checkPromptSafety(prompt, negativePrompt);
 
@@ -221,31 +232,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const providerJob = await provider.createVideoJob({
-      prompt,
-      negativePrompt,
-      modelId: selectedModel.id,
-      resolution,
-      draft,
-      saveAudio,
-      promptUpsampling,
-      disableSafetyFilter,
-      noOp,
-      seed,
-      duration: normalizedDuration,
-      aspectRatio,
-      motionIntensity,
-      cameraMove,
-      styleStrength,
-      motionGuidance,
-      shotType,
-      fps,
-      imageUrl,
-      endImageUrl: supportsEndFrame ? endImageUrl : undefined,
-      referenceImageUrls: supportsReferences ? referenceImageUrls : undefined,
-      audioUrl: selectedModel.supports.audioGeneration ? audioUrl : undefined
-    });
-
     const job = await createVideoJob({
       userId,
       modelId: selectedModel.id,
@@ -255,7 +241,6 @@ export async function POST(req: Request) {
       sourceAssetId,
       credits: videoCost,
       providerName: provider.name,
-      providerJobId: providerJob.providerJobId,
       duration: normalizedDuration,
       aspectRatio,
       motionIntensity,
@@ -267,11 +252,16 @@ export async function POST(req: Request) {
     });
 
     try {
-      const [wallet] = await deductCredits({
+      const { wallet } = await reserveCredits({
         userId,
         amount: videoCost,
-        description: "Video generation",
-        generationJobId: job.id,
+        generationId: job.id,
+        reason: "Video generation",
+        metadata: {
+          quote: videoQuote,
+          modelId: selectedModel.id,
+          generationType: "video",
+        },
       });
 
       await sendLowCreditsEmailIfNeeded({
@@ -279,19 +269,72 @@ export async function POST(req: Request) {
         balance: wallet.balance
       });
 
+      const providerJob = await provider.createVideoJob({
+        prompt,
+        negativePrompt,
+        modelId: selectedModel.id,
+        resolution,
+        draft,
+        saveAudio,
+        promptUpsampling,
+        disableSafetyFilter,
+        noOp,
+        seed,
+        duration: normalizedDuration,
+        aspectRatio,
+        motionIntensity,
+        cameraMove,
+        styleStrength,
+        motionGuidance,
+        shotType,
+        fps,
+        imageUrl,
+        endImageUrl: supportsEndFrame ? endImageUrl : undefined,
+        referenceImageUrls: supportsReferences ? referenceImageUrls : undefined,
+        audioUrl: selectedModel.supports.audioGeneration ? audioUrl : undefined
+      });
+
+      const queuedJob = await updateGenerationJobProvider({
+        jobId: job.id,
+        providerName: provider.name,
+        providerJobId: providerJob.providerJobId,
+      });
+
       if (workersMode) {
         const { enqueueGenerationJob } = await import(
           "@/lib/queue/generation-queue"
         );
         await enqueueGenerationJob(job.id);
+        return NextResponse.json({
+          success: true,
+          jobId: queuedJob.id,
+          status: queuedJob.status,
+          providerName: queuedJob.providerName,
+          providerJobId: queuedJob.providerJobId,
+          meta: {
+            duration: normalizedDuration,
+            aspectRatio: aspectRatio ?? "16:9",
+            motionIntensity: motionIntensity ?? "medium",
+            cameraMove: cameraMove ?? "Slow Push In",
+            styleStrength: styleStrength ?? "medium",
+            motionGuidance: motionGuidance ?? 6,
+            shotType: shotType ?? "Wide Shot",
+            fps: fps ?? 24,
+            resolution: resolution ?? null,
+            draft: draft ?? false,
+            modelId: selectedModel.id,
+            credits: videoCost,
+            creditBreakdown: videoQuote.breakdown,
+          },
+        });
       } else {
         const finalJob = await runGenerationJobInline({
           id: job.id,
           userId: job.userId,
           type: job.type,
           status: job.status,
-          providerName: job.providerName,
-          providerJobId: job.providerJobId,
+          providerName: queuedJob.providerName,
+          providerJobId: queuedJob.providerJobId,
           prompt: job.prompt,
           negativePrompt: job.negativePrompt,
           aspectRatio: job.aspectRatio,
@@ -328,6 +371,7 @@ export async function POST(req: Request) {
             draft: draft ?? false,
             modelId: selectedModel.id,
             credits: videoCost,
+            creditBreakdown: videoQuote.breakdown,
           },
         });
       }
@@ -341,32 +385,24 @@ export async function POST(req: Request) {
       throw error;
     }
 
-    return NextResponse.json({
-      success: true,
-      jobId: job.id,
-      status: job.status,
-      providerName: job.providerName,
-      providerJobId: job.providerJobId,
-      meta: {
-        duration: normalizedDuration,
-        aspectRatio: aspectRatio ?? "16:9",
-        motionIntensity: motionIntensity ?? "medium",
-        cameraMove: cameraMove ?? "Slow Push In",
-        styleStrength: styleStrength ?? "medium",
-        motionGuidance: motionGuidance ?? 6,
-        shotType: shotType ?? "Wide Shot",
-        fps: fps ?? 24,
-        resolution: resolution ?? null,
-        draft: draft ?? false,
-        modelId: selectedModel.id,
-        credits: videoCost,
-      },
-    });
+    throw new Error("Failed to queue video generation");
   } catch (error: unknown) {
-    if (error instanceof Error && error.message === "INSUFFICIENT_CREDITS") {
+    if (
+      error instanceof InsufficientCreditsError ||
+      (error instanceof Error && error.message === "INSUFFICIENT_CREDITS")
+    ) {
+      const requiredCredits =
+        error instanceof InsufficientCreditsError ? error.requiredCredits : 0;
+      const availableCredits =
+        error instanceof InsufficientCreditsError ? error.availableCredits : 0;
       return NextResponse.json(
-        { error: "Not enough credits" },
-        { status: 400 }
+        {
+          error: "INSUFFICIENT_CREDITS",
+          requiredCredits,
+          availableCredits,
+          message: `You need ${requiredCredits} credits to run this generation.`,
+        },
+        { status: 402 }
       );
     }
 

@@ -113,6 +113,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
   );
   const [sessionHydrated, setSessionHydrated] = useState(false);
   const [lastAction, setLastAction] = useState<string | null>(null);
+  const [quotedImageCost, setQuotedImageCost] = useState<number | null>(null);
 
   const canGenerate = useMemo(() => {
     return prompt.trim().length >= 5 && !loading;
@@ -195,6 +196,31 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
       }),
     [guidance, parsedSeed, qualityMode, selectedModelId, steps]
   );
+  const displayImageCost = quotedImageCost ?? imageCost;
+
+  async function fetchImageQuote(setup: StudioGenerationSetup) {
+    const res = await fetch("/api/credits/quote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        generationType: "image",
+        modelId: setup.modelId,
+        prompt: setup.prompt,
+        referenceImageUrl: setup.referenceImageUrl || undefined,
+        qualityMode: setup.qualityMode,
+        numberOfOutputs: 1,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to quote image credits");
+    }
+
+    setQuotedImageCost(data.requiredCredits);
+    return data.requiredCredits as number;
+  }
 
   const hasPersistedSession = useMemo(() => {
     if (!sessionHydrated) return false;
@@ -343,6 +369,50 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
     draftTitle,
   ]);
 
+  useEffect(() => {
+    if (!sessionHydrated || prompt.trim().length < 5) {
+      setQuotedImageCost(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const res = await fetch("/api/credits/quote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            generationType: "image",
+            modelId: selectedModelId,
+            prompt,
+            referenceImageUrl: referenceImageUrl || undefined,
+            qualityMode,
+            numberOfOutputs: 1,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setQuotedImageCost(data.requiredCredits);
+        }
+      } catch {
+      }
+    }, 350);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    sessionHydrated,
+    prompt,
+    selectedModelId,
+    referenceImageUrl,
+    qualityMode,
+  ]);
+
   function buildCurrentSetup(): StudioGenerationSetup {
     return {
       prompt,
@@ -368,6 +438,9 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
     setImage(null);
 
     try {
+      const requiredCredits = await fetchImageQuote(setup);
+      setLastAction(`Estimated cost: ${requiredCredits} credits.`);
+
       const res = await fetch("/api/generate/image", {
         method: "POST",
         body: JSON.stringify({
@@ -389,7 +462,11 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
       const data = await res.json();
 
       if (!res.ok) {
-        window.alert(data.error || "Failed to generate image");
+        window.alert(
+          data.error === "INSUFFICIENT_CREDITS"
+            ? data.message || "You need more credits to run this generation."
+            : data.error || "Failed to generate image"
+        );
         setLoading(false);
         setGenerationProgress(0);
         window.dispatchEvent(new Event("vireon:credits-updated"));
@@ -764,7 +841,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
           setQualityMode(value);
           setActiveDraftId(null);
         }}
-        imageCost={imageCost}
+      imageCost={displayImageCost}
         image={image}
         loading={loading}
         generationProgress={generationProgress}
@@ -849,7 +926,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
           setQualityMode(value);
           setActiveDraftId(null);
         }}
-        imageCost={imageCost}
+      imageCost={displayImageCost}
         image={image}
         loading={loading}
         generationProgress={generationProgress}

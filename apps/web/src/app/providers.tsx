@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { ThemeProvider } from "next-themes";
 import {
   QueryClient,
   QueryClientProvider
@@ -21,15 +20,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
-      disableTransitionOnChange
-    >
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
   );
 }

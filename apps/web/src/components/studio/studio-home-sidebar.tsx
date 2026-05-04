@@ -45,7 +45,7 @@ function comingSoonHref(feature: string) {
 const createLinks: DesktopNavItem[] = [
   { label: "Video", href: "/studio", icon: Clapperboard, full: true, mode: "video" },
   { label: "Image", href: "/studio", icon: ImageIcon, mode: "image" },
-  { label: "Character", href: comingSoonHref("Character Studio"), icon: Users },
+  { label: "Character", href: "/character", icon: Users },
   { label: "World", href: comingSoonHref("World Builder"), icon: Globe2 },
   { label: "Audio", href: comingSoonHref("Audio Studio"), icon: AudioLines },
 ];
@@ -160,6 +160,7 @@ export function StudioHomeSidebar({
               <CompactSidebarLink href="/studio" icon={Sparkles} label="Create" active={isHrefActive("/studio")} />
               <CompactSidebarLink href="/assets" icon={FolderOpen} label="Assets" active={isHrefActive("/assets")} />
               <CompactSidebarLink href="/pricing" icon={CreditCard} label="Pricing" active={isHrefActive("/pricing")} />
+              <CompactSidebarLink href="/character" icon={Users} label="Character" active={isHrefActive("/character")} />
               <CompactSidebarLink href={comingSoonHref("Inspire")} icon={Lightbulb} label="Inspire" active={isHrefActive(comingSoonHref("Inspire"))} />
               <div className="mx-auto h-px w-8 bg-white/10" />
               <CompactSidebarLink href={comingSoonHref("All Tools")} icon={Grid2x2} label="All Tools" active={isHrefActive(comingSoonHref("All Tools"))} />

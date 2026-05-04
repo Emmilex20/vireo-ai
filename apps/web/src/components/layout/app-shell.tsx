@@ -67,6 +67,14 @@ const navItems = [
     icon: Grid2x2
   },
   {
+    href: "/character",
+    label: "Character",
+    title: "Character Studio",
+    description: "Create reusable identities for images and videos",
+    activeDescription: "Reusable character workflow",
+    icon: Users
+  },
+  {
     href: "/pricing",
     label: "Pricing",
     title: "Pricing",
@@ -103,7 +111,7 @@ const studioMobileNavSections: Array<{
     items: [
       { href: "/studio", label: "Video", icon: Video, mode: "video" },
       { href: "/studio", label: "Image", icon: ImageIcon, mode: "image" },
-      { href: comingSoonHref("Character Studio"), label: "Character", icon: Users },
+      { href: "/character", label: "Character", icon: Users },
       { href: comingSoonHref("World Builder"), label: "World", icon: Globe2 },
       { href: comingSoonHref("Audio Studio"), label: "Audio", icon: AudioLines },
     ],

@@ -77,7 +77,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className="dark" suppressHydrationWarning>
         <body
           className={`${inter.variable} ${jakarta.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
         >

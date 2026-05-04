@@ -59,7 +59,7 @@ const heroCategories: DesktopHeroCategory[] = [
   { label: "Story", icon: Sparkles, href: "/video-projects" },
   { label: "Video", icon: Clapperboard, href: "/studio" },
   { label: "Image", icon: ImageIcon, href: "/studio" },
-  { label: "Character", icon: Users, href: "/creators" },
+  { label: "Character", icon: Users, href: "/character" },
   { label: "World", icon: Compass, href: "/explore", accent: "New" },
   { label: "Audio", icon: AudioLines, href: "/studio" },
 ] as const;
@@ -186,7 +186,7 @@ export function DesktopHomeExperienceClient({
 
     return characterDropdownLabels.map((label, index) => ({
       label,
-      href: index === 0 ? "/creators" : "/studio",
+      href: index === 0 ? "/character" : "/studio",
       card: sourceCards[index % Math.max(sourceCards.length, 1)],
       icon: index === 0 ? Sparkles : undefined,
     }));

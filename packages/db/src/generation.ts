@@ -116,6 +116,20 @@ export async function createVideoJob(params: {
   }
 }
 
+export async function updateGenerationJobProvider(params: {
+  jobId: string
+  providerName: string
+  providerJobId: string
+}) {
+  return db.generationJob.update({
+    where: { id: params.jobId },
+    data: {
+      providerName: params.providerName,
+      providerJobId: params.providerJobId,
+    },
+  })
+}
+
 export async function completeImageJob(params: {
   jobId: string
   outputUrl: string

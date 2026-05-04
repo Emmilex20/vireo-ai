@@ -7,16 +7,22 @@ import {
   resolveReplicateImageModel,
 } from "@/lib/ai/providers/replicate-image-models";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
-import { getImageGenerationCost } from "@/lib/image-generation-config";
 import { isWorkersMode } from "@/lib/runtime/background-mode";
 import { checkRedisRateLimit } from "@/lib/security/redis-rate-limit";
 import { checkPromptSafety } from "@/lib/security/prompt-safety";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import {
+  calculateGenerationCredits,
+} from "@/lib/credits/pricing";
+import {
+  InsufficientCreditsError,
+  reserveCredits,
+} from "@/lib/credits/credit-service";
+import {
   createImageJob,
-  deductCredits,
   failImageJob,
-  logBlockedPrompt
+  logBlockedPrompt,
+  updateGenerationJobProvider
 } from "@vireon/db";
 
 export const maxDuration = 300;
@@ -134,27 +140,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const imageCost = getImageGenerationCost({
+    const imageQuote = calculateGenerationCredits({
+      generationType: "image",
       modelId: selectedModel.id,
-      qualityMode,
-      seed,
-      steps,
-      guidance,
-    });
-
-    const providerJob = await provider.createImageJob({
       prompt,
-      negativePrompt,
-      modelId: selectedModel.id,
       referenceImageUrl,
-      style,
-      aspectRatio,
       qualityMode,
-      promptBoost,
-      seed,
-      steps,
-      guidance,
+      numberOfOutputs: 1,
     });
+    const imageCost = imageQuote.credits;
 
     const job = await createImageJob({
       userId,
@@ -164,7 +158,6 @@ export async function POST(req: Request) {
       sourceImageUrl: referenceImageUrl,
       credits: imageCost,
       providerName: provider.name,
-      providerJobId: providerJob.providerJobId,
       style,
       aspectRatio,
       qualityMode,
@@ -175,11 +168,16 @@ export async function POST(req: Request) {
     });
 
     try {
-      const [wallet] = await deductCredits({
+      const { wallet } = await reserveCredits({
         userId,
         amount: imageCost,
-        description: "Image generation",
-        generationJobId: job.id,
+        generationId: job.id,
+        reason: "Image generation",
+        metadata: {
+          quote: imageQuote,
+          modelId: selectedModel.id,
+          generationType: "image",
+        },
       });
 
       await sendLowCreditsEmailIfNeeded({
@@ -187,19 +185,59 @@ export async function POST(req: Request) {
         balance: wallet.balance
       });
 
+      const providerJob = await provider.createImageJob({
+        prompt,
+        negativePrompt,
+        modelId: selectedModel.id,
+        referenceImageUrl,
+        style,
+        aspectRatio,
+        qualityMode,
+        promptBoost,
+        seed,
+        steps,
+        guidance,
+      });
+
+      const queuedJob = await updateGenerationJobProvider({
+        jobId: job.id,
+        providerName: provider.name,
+        providerJobId: providerJob.providerJobId,
+      });
+
       if (workersMode) {
         const { enqueueGenerationJob } = await import(
           "@/lib/queue/generation-queue"
         );
         await enqueueGenerationJob(job.id);
+        return NextResponse.json({
+          success: true,
+          jobId: queuedJob.id,
+          status: queuedJob.status,
+          providerName: queuedJob.providerName,
+          providerJobId: queuedJob.providerJobId,
+          meta: {
+            modelId: selectedModel.id,
+            referenceImageUrl: referenceImageUrl ?? null,
+            style: style ?? "Cinematic",
+            aspectRatio: aspectRatio ?? selectedModel.defaultAspectRatio,
+            qualityMode: qualityMode ?? "high",
+            promptBoost: promptBoost ?? true,
+            seed: seed ?? null,
+            steps: steps ?? 30,
+            guidance: guidance ?? 7.5,
+            credits: imageCost,
+            creditBreakdown: imageQuote.breakdown,
+          },
+        });
       } else {
         const finalJob = await runGenerationJobInline({
           id: job.id,
           userId: job.userId,
           type: job.type,
           status: job.status,
-          providerName: job.providerName,
-          providerJobId: job.providerJobId,
+          providerName: queuedJob.providerName,
+          providerJobId: queuedJob.providerJobId,
           prompt: job.prompt,
           negativePrompt: job.negativePrompt,
           sourceImageUrl: job.sourceImageUrl,
@@ -232,6 +270,7 @@ export async function POST(req: Request) {
             steps: steps ?? 30,
             guidance: guidance ?? 7.5,
             credits: imageCost,
+            creditBreakdown: imageQuote.breakdown,
           },
         });
       }
@@ -245,30 +284,24 @@ export async function POST(req: Request) {
       throw error;
     }
 
-    return NextResponse.json({
-      success: true,
-      jobId: job.id,
-      status: job.status,
-      providerName: job.providerName,
-      providerJobId: job.providerJobId,
-      meta: {
-        modelId: selectedModel.id,
-        referenceImageUrl: referenceImageUrl ?? null,
-        style: style ?? "Cinematic",
-        aspectRatio: aspectRatio ?? selectedModel.defaultAspectRatio,
-        qualityMode: qualityMode ?? "high",
-        promptBoost: promptBoost ?? true,
-        seed: seed ?? null,
-        steps: steps ?? 30,
-        guidance: guidance ?? 7.5,
-        credits: imageCost,
-      },
-    });
+    throw new Error("Failed to queue image generation");
   } catch (error: unknown) {
-    if (error instanceof Error && error.message === "INSUFFICIENT_CREDITS") {
+    if (
+      error instanceof InsufficientCreditsError ||
+      (error instanceof Error && error.message === "INSUFFICIENT_CREDITS")
+    ) {
+      const requiredCredits =
+        error instanceof InsufficientCreditsError ? error.requiredCredits : 0;
+      const availableCredits =
+        error instanceof InsufficientCreditsError ? error.availableCredits : 0;
       return NextResponse.json(
-        { error: "Not enough credits" },
-        { status: 400 }
+        {
+          error: "INSUFFICIENT_CREDITS",
+          requiredCredits,
+          availableCredits,
+          message: `You need ${requiredCredits} credits to run this generation.`,
+        },
+        { status: 402 }
       );
     }
 

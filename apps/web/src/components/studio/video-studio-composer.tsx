@@ -142,6 +142,7 @@ export function VideoStudioComposer({
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [lastUsedSetup, setLastUsedSetup] = useState<VideoGenerationSetup | null>(null);
   const [takeCount, setTakeCount] = useState(0);
+  const [quotedVideoCost, setQuotedVideoCost] = useState<number | null>(null);
   const selectedModel = useMemo(
     () => resolveReplicateVideoModel(selectedModelId),
     [selectedModelId]
@@ -161,6 +162,39 @@ export function VideoStudioComposer({
       }),
     [duration, fps, motionGuidance, selectedModelId, styleStrength]
   );
+  const displayVideoCost = quotedVideoCost ?? videoCost;
+
+  async function fetchVideoQuote(setup: VideoGenerationSetup) {
+    const res = await fetch("/api/credits/quote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        generationType: "video",
+        modelId: setup.modelId,
+        prompt: setup.prompt,
+        resolution: setup.resolution,
+        durationSeconds: Number(setup.duration),
+        imageUrl: setup.imageUrl || undefined,
+        endImageUrl: setup.endImageUrl || undefined,
+        referenceImageUrls: setup.referenceImageUrls?.length
+          ? setup.referenceImageUrls
+          : undefined,
+        audioUrl: setup.audioUrl || undefined,
+        numberOfOutputs: 1,
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to quote video credits");
+    }
+
+    setQuotedVideoCost(data.requiredCredits);
+    return data.requiredCredits as number;
+  }
 
   const canGenerate = useMemo(() => prompt.trim().length >= 5 && !loading, [prompt, loading]);
   const canGenerateAnotherTake = useMemo(
@@ -330,6 +364,62 @@ export function VideoStudioComposer({
     defaultModel.id,
     initialModelFromSlug?.id,
     sessionHydrated,
+  ]);
+
+  useEffect(() => {
+    if (!sessionHydrated || prompt.trim().length < 5) {
+      setQuotedVideoCost(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const res = await fetch("/api/credits/quote", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            generationType: "video",
+            modelId: selectedModelId,
+            prompt,
+            resolution,
+            durationSeconds: Number(duration),
+            imageUrl: imageUrl || undefined,
+            endImageUrl: endImageUrl || undefined,
+            referenceImageUrls: referenceImageUrls.length
+              ? referenceImageUrls
+              : undefined,
+            audioUrl: audioUrl || undefined,
+            numberOfOutputs: 1,
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setQuotedVideoCost(data.requiredCredits);
+        }
+      } catch {
+      }
+    }, 350);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    sessionHydrated,
+    selectedModelId,
+    prompt,
+    resolution,
+    duration,
+    imageUrl,
+    endImageUrl,
+    referenceImageUrls,
+    audioUrl,
   ]);
 
   useEffect(() => {
@@ -639,6 +729,9 @@ export function VideoStudioComposer({
     setLastAction(isTake ? `Started take ${takeCount + 1}.` : "Started a new video generation.");
 
     try {
+      const requiredCredits = await fetchVideoQuote(setup);
+      setLastAction(`Estimated cost: ${requiredCredits} credits.`);
+
       const res = await fetch("/api/generate/video", {
         method: "POST",
         headers: {
@@ -674,7 +767,11 @@ export function VideoStudioComposer({
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "Failed to generate video");
+        alert(
+          data.error === "INSUFFICIENT_CREDITS"
+            ? data.message || "You need more credits to run this generation."
+            : data.error || "Failed to generate video"
+        );
         setLoading(false);
         setGenerationProgress(0);
         window.dispatchEvent(new Event("vireon:credits-updated"));
@@ -990,7 +1087,7 @@ export function VideoStudioComposer({
         setCameraMove(value);
         setActiveDraftId(null);
       }}
-      videoCost={videoCost}
+        videoCost={displayVideoCost}
       videoUrl={videoUrl}
       loading={loading}
       generationProgress={generationProgress}
@@ -1124,7 +1221,7 @@ export function VideoStudioComposer({
         setCameraMove(value);
         setActiveDraftId(null);
       }}
-      videoCost={videoCost}
+      videoCost={displayVideoCost}
       videoUrl={videoUrl}
       loading={loading}
       generationProgress={generationProgress}

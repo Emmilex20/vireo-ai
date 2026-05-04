@@ -11,6 +11,7 @@ import {
   getVideoProviderByName
 } from "@/lib/ai/providers/registry";
 import { sendGenerationFailedEmailNotification } from "@/lib/email/notifications";
+import { captureReservedCredits } from "@/lib/credits/credit-service";
 import { uploadRemoteAssetToCloudinary } from "@/lib/storage/cloudinary";
 
 export type ProcessableGenerationJob = {
@@ -81,6 +82,13 @@ export async function processGenerationJob(
         storageStatus: storageResult.stored ? "stored" : "fallback",
         storageReason: storageResult.reason,
         storagePublicId: storageResult.publicId
+      });
+
+      await captureReservedCredits({
+        userId: completedJob.userId,
+        amount: completedJob.creditsUsed,
+        generationId: completedJob.id,
+        reason: "Image generation completed"
       });
 
       return {
@@ -161,6 +169,13 @@ export async function processGenerationJob(
         storageStatus: storageResult.stored ? "stored" : "fallback",
         storageReason: storageResult.reason,
         storagePublicId: storageResult.publicId
+      });
+
+      await captureReservedCredits({
+        userId: completedJob.userId,
+        amount: completedJob.creditsUsed,
+        generationId: completedJob.id,
+        reason: "Video generation completed"
       });
 
       return {

@@ -108,3 +108,67 @@ export async function deductCredits(params: {
     }),
   ])
 }
+
+export async function deductCreditsForGenerationJobs(params: {
+  userId: string
+  jobs: {
+    generationJobId: string
+    amount: number
+    description?: string
+  }[]
+  description?: string
+}) {
+  if (params.jobs.length === 0) {
+    throw new Error("NO_GENERATION_JOBS")
+  }
+
+  const totalAmount = params.jobs.reduce((total, job) => total + job.amount, 0)
+
+  return db.$transaction(async (tx) => {
+    const wallet = await tx.creditWallet.findUnique({
+      where: { userId: params.userId },
+    })
+
+    if (!wallet) throw new Error("Wallet not found")
+
+    if (wallet.balance < totalAmount) {
+      throw new Error("INSUFFICIENT_CREDITS")
+    }
+
+    const updatedWallet = await tx.creditWallet.update({
+      where: { userId: params.userId },
+      data: {
+        balance: {
+          decrement: totalAmount,
+        },
+      },
+    })
+
+    const transaction = await tx.creditTransaction.create({
+      data: {
+        walletId: wallet.id,
+        userId: params.userId,
+        amount: -totalAmount,
+        type: "generation_debit",
+        description: params.description,
+      },
+    })
+
+    const ledgerEntries = await Promise.all(
+      params.jobs.map((job) =>
+        tx.creditLedger.create({
+          data: {
+            userId: params.userId,
+            generationJobId: job.generationJobId,
+            type: "deduction",
+            amount: -job.amount,
+            description:
+              job.description ?? params.description ?? "Credit deduction",
+          },
+        })
+      )
+    )
+
+    return [updatedWallet, transaction, ...ledgerEntries] as const
+  })
+}
