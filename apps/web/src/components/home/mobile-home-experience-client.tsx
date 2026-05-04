@@ -33,11 +33,11 @@ type MobileHomeExperienceClientProps = {
 };
 
 const quickActions = [
-  { label: "Image", icon: ImageIcon, href: "/studio" },
   { label: "Video", icon: Clapperboard, href: "/studio" },
+  { label: "Image", icon: ImageIcon, href: "/studio" },
   { label: "Character", icon: Users, href: "/character" },
   { label: "World", icon: Compass, href: "/explore" },
-  { label: "Audio", icon: AudioLines, href: "/studio" },
+  { label: "Audio", icon: AudioLines, href: "/coming-soon?feature=Audio%20Studio" },
   { label: "Story", icon: Film, href: "/video-projects" },
 ] as const;
 
@@ -100,7 +100,44 @@ export function MobileHomeExperienceClient({
       mediaType: source?.mediaType ?? (model.badge === "Video" ? "video" : "image"),
     };
   });
-  const loopingModelCards = [...modelCarouselCards, ...modelCarouselCards];
+  const quickStartCards = [
+    {
+      label: "Create Image",
+      href: "/studio",
+      icon: ImageIcon,
+      media: spotlightCards[0] ?? inspirationImageCards[0],
+    },
+    {
+      label: "Create Video",
+      href: "/studio",
+      icon: Clapperboard,
+      media: inspirationVideoCards[0] ?? spotlightCards[1],
+    },
+    {
+      label: "Character Studio",
+      href: "/character",
+      icon: Users,
+      media: inspirationImageCards[1] ?? spotlightCards[2],
+    },
+    {
+      label: "Talking Video",
+      href: "/character",
+      icon: AudioLines,
+      media: inspirationVideoCards[1] ?? spotlightCards[3],
+    },
+    {
+      label: "Motion Sync",
+      href: "/coming-soon?feature=Motion%20Sync",
+      icon: Film,
+      media: inspirationVideoCards[2] ?? spotlightCards[4],
+    },
+    {
+      label: "Smart Shot",
+      href: "/studio",
+      icon: Sparkles,
+      media: suiteCards[0] ?? spotlightCards[5],
+    },
+  ];
 
   return (
     <div className="space-y-5 overflow-x-hidden pb-1 sm:hidden">
@@ -137,57 +174,75 @@ export function MobileHomeExperienceClient({
       ) : null}
 
       <section className="space-y-4">
-        <div className="space-y-3">
-          <h1 className="font-heading text-[2.45rem] font-bold leading-[0.95] tracking-tight text-white">
-            What would you like
-            <br />
-            to{" "}
-            <span className="bg-[linear-gradient(90deg,#f0abfc,#f472b6,#c084fc)] bg-clip-text text-transparent">
-              create
-            </span>{" "}
-            today?
+        <div className="space-y-1.5">
+          <h1 className="font-heading text-2xl font-bold leading-tight tracking-tight text-white">
+            Create with Vireon
           </h1>
-          <p className="max-w-sm text-[15px] leading-6 text-slate-400">
-            Start with a focused tool, borrow inspiration from real creator
-            work, and move straight into the studio.
+          <p className="max-w-sm text-sm leading-5 text-slate-400">
+            Image, video, characters, audio and cinematic tools in one studio.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          {quickActions.slice(0, 2).map((action) => {
-            const Icon = action.icon;
-            return (
+        <div className="-mx-3 overflow-x-auto px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex w-max gap-2">
+            {quickActions.map((action, index) => (
               <Link
                 key={action.label}
                 href={action.href}
-                className="min-h-[138px] rounded-[1.45rem] border border-white/10 bg-[#17181c] p-4 shadow-[0_14px_34px_rgba(0,0,0,0.22)]"
+                className={`inline-flex h-10 items-center rounded-2xl border px-4 text-sm font-medium transition ${
+                  index === 0
+                    ? "border-primary/45 bg-primary/12 text-primary shadow-[0_0_22px_rgba(16,185,129,0.16)]"
+                    : "border-white/10 bg-white/5 text-slate-300"
+                }`}
               >
-                <div className="flex size-11 items-center justify-center rounded-[1rem] bg-white/6 text-white">
-                  <Icon className="size-5" />
-                </div>
-                <div className="mt-4 text-center text-[1.4rem] font-semibold text-white">
-                  {action.label}
-                </div>
+                {action.label}
               </Link>
-            );
-          })}
+            ))}
+          </div>
+        </div>
 
-          {quickActions.slice(2).map((action) => {
-            const Icon = action.icon;
+        <div className="grid grid-cols-2 gap-3">
+          {quickStartCards.map((card) => {
+            const Icon = card.icon;
+            const media = card.media;
             return (
               <Link
-                key={action.label}
-                href={action.href}
-                className="min-h-[118px] rounded-[1.25rem] border border-white/10 bg-[#17181c] px-3.5 py-3.5 shadow-[0_10px_28px_rgba(0,0,0,0.2)]"
+                key={card.label}
+                href={card.href}
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-[#17181c] p-2 shadow-[0_12px_30px_rgba(0,0,0,0.24)]"
               >
-                <div className="flex flex-col items-center gap-2.5 text-center">
-                  <div className="flex size-10 items-center justify-center rounded-[1rem] bg-white/6 text-white">
-                    <Icon className="size-4.5" />
-                  </div>
-                  <div className="text-lg font-medium text-white">
-                    {action.label}
-                  </div>
+                <div className="relative aspect-[0.82] overflow-hidden rounded-[1rem] bg-white/6">
+                  {media?.mediaUrl ? (
+                    media.mediaType === "video" ? (
+                      <video
+                        src={media.mediaUrl}
+                        muted
+                        autoPlay
+                        loop
+                        playsInline
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={media.mediaUrl}
+                        alt={card.label}
+                        fill
+                        sizes="50vw"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    )
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.28),transparent_42%),linear-gradient(145deg,#12201b,#15171d)] text-primary">
+                      <Icon className="size-8" />
+                    </div>
+                  )}
+                  <span className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-xl bg-black/72 text-primary backdrop-blur">
+                    <Sparkles className="size-4" />
+                  </span>
                 </div>
+                <p className="px-1 pb-1 pt-2 text-sm font-semibold leading-5 text-white">
+                  {card.label}
+                </p>
               </Link>
             );
           })}
@@ -196,7 +251,7 @@ export function MobileHomeExperienceClient({
 
       <section className="-mx-1 overflow-hidden">
         <div className="mb-3 flex items-center justify-between px-1">
-          <h2 className="font-heading text-[1.55rem] font-semibold tracking-tight text-white">
+          <h2 className="font-heading text-xl font-semibold tracking-tight text-white">
             Latest models
           </h2>
           <Link
@@ -207,13 +262,12 @@ export function MobileHomeExperienceClient({
           </Link>
         </div>
 
-        <div className="overflow-hidden px-1 pb-1">
-          <div className="flex w-max gap-3 motion-safe:animate-[mobileModelsMarquee_32s_linear_infinite] motion-reduce:translate-x-0">
-          {loopingModelCards.map((card, index) => (
+        <div className="grid grid-cols-2 gap-3 px-1 pb-1">
+          {modelCarouselCards.map((card, index) => (
             <Link
               key={`${card.id}-${index}`}
               href={card.href}
-              className="group relative block h-58 w-[82vw] max-w-80 flex-none overflow-hidden rounded-[1.55rem] border border-white/10 bg-[#12161f]"
+              className="group relative block aspect-[0.86] overflow-hidden rounded-2xl border border-white/10 bg-[#12161f]"
             >
               {card.mediaUrl ? (
                 card.mediaType === "video" ? (
@@ -230,7 +284,7 @@ export function MobileHomeExperienceClient({
                     src={card.mediaUrl}
                     alt={card.title}
                     fill
-                    sizes="88vw"
+                    sizes="50vw"
                     className="object-cover"
                   />
                 )
@@ -240,32 +294,31 @@ export function MobileHomeExperienceClient({
 
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.2)_45%,rgba(0,0,0,0.86)_100%)]" />
 
-              <div className="absolute left-3 top-3 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">
+              <div className="absolute left-2 top-2 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-md">
                 {card.badge}
               </div>
 
-              <div className="absolute inset-x-0 bottom-0 p-3.5">
-                <div className="max-w-[88%]">
-                  <p className="text-[1.45rem] font-semibold leading-[1.04] text-white">
+              <div className="absolute inset-x-0 bottom-0 p-2.5">
+                <div>
+                  <p className="line-clamp-2 text-sm font-semibold leading-4 text-white">
                     {card.title}
                   </p>
-                  <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-slate-200">
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-slate-200">
                     {card.subtitle}
                   </p>
-                  <div className="mt-3 inline-flex rounded-full bg-white/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+                  <div className="mt-2 inline-flex rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">
                     Try now
                   </div>
                 </div>
               </div>
             </Link>
           ))}
-          </div>
         </div>
       </section>
 
       <section className="space-y-3.5">
         <div className="flex items-center justify-between">
-          <h2 className="font-heading text-[1.85rem] font-semibold tracking-tight text-white">
+          <h2 className="font-heading text-xl font-semibold tracking-tight text-white">
             Vireon Suite
           </h2>
           <Link
@@ -281,9 +334,9 @@ export function MobileHomeExperienceClient({
             <Link
               key={card.id}
               href={card.href}
-              className="group flex items-center gap-3.5 rounded-[1.5rem] border border-primary/70 bg-[#0d1110] p-3.5 shadow-[0_12px_34px_rgba(0,0,0,0.22)]"
+              className="group flex items-center gap-3 rounded-2xl border border-primary/60 bg-[#0d1110] p-3 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
             >
-              <div className="relative size-22 shrink-0 overflow-hidden rounded-[1.15rem] bg-white/5">
+              <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-[1rem] bg-white/5">
                 {card.mediaUrl ? (
                   card.mediaType === "video" ? (
                     <video
@@ -299,7 +352,7 @@ export function MobileHomeExperienceClient({
                       src={card.mediaUrl}
                       alt={card.title}
                       fill
-                      sizes="88px"
+                      sizes="72px"
                       className="object-cover"
                     />
                   )
@@ -311,10 +364,10 @@ export function MobileHomeExperienceClient({
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-[1.55rem] font-semibold leading-tight text-white">
+                <p className="text-lg font-semibold leading-tight text-white">
                   {accentLastWord(card.title)}
                 </p>
-                <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-slate-400">
+                <p className="mt-1 line-clamp-2 text-xs leading-4 text-slate-400">
                   {card.subtitle}
                 </p>
               </div>
@@ -326,7 +379,7 @@ export function MobileHomeExperienceClient({
       {featuredModelCard ? (
         <section className="space-y-3.5">
           <div className="flex items-center justify-between">
-            <h2 className="font-heading text-[1.85rem] font-semibold tracking-tight text-white">
+            <h2 className="font-heading text-xl font-semibold tracking-tight text-white">
               Latest AI Models
             </h2>
           <Link
@@ -337,8 +390,8 @@ export function MobileHomeExperienceClient({
           </Link>
           </div>
 
-          <article className="rounded-[1.55rem] border border-primary/70 bg-[#111316] p-2.5 shadow-[0_16px_42px_rgba(0,0,0,0.26)]">
-            <div className="relative h-48 overflow-hidden rounded-[1.25rem] border border-white/10">
+          <article className="rounded-2xl border border-primary/60 bg-[#111316] p-2 shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
+            <div className="relative h-36 overflow-hidden rounded-[1rem] border border-white/10">
               {featuredModelCard.mediaUrl ? (
                 featuredModelCard.mediaType === "video" ? (
                   <video
@@ -359,21 +412,21 @@ export function MobileHomeExperienceClient({
                   />
                 )
               ) : (
-                <div className="h-48 w-full bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.25),transparent_42%),linear-gradient(135deg,#123c2f,#0f1722)]" />
+                <div className="h-36 w-full bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.25),transparent_42%),linear-gradient(135deg,#123c2f,#0f1722)]" />
               )}
-              <div className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-full bg-white text-black shadow-lg">
-                <ArrowUpRight className="size-4.5" />
+              <div className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-white text-black shadow-lg">
+                <ArrowUpRight className="size-4" />
               </div>
             </div>
 
-            <div className="px-2 pb-2 pt-3.5">
+            <div className="px-1.5 pb-1.5 pt-2.5">
               <div className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
                 {latestModels[inspirationTab === "image" ? 0 : 1].badge}
               </div>
-              <h3 className="mt-2.5 text-[1.65rem] font-semibold leading-tight text-primary">
+              <h3 className="mt-2 text-lg font-semibold leading-tight text-primary">
                 {latestModels[inspirationTab === "image" ? 0 : 1].title}
               </h3>
-              <p className="mt-1.5 text-base leading-6 text-slate-300">
+              <p className="mt-1 line-clamp-2 text-xs leading-4 text-slate-300">
                 {latestModels[inspirationTab === "image" ? 0 : 1].subtitle}
               </p>
             </div>
@@ -383,7 +436,7 @@ export function MobileHomeExperienceClient({
 
       <section className="space-y-3.5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-heading text-[1.85rem] font-semibold tracking-tight text-white">
+          <h2 className="font-heading text-xl font-semibold tracking-tight text-white">
             Inspirations
           </h2>
 
@@ -396,7 +449,7 @@ export function MobileHomeExperienceClient({
                   key={tab}
                   type="button"
                   onClick={() => setInspirationTab(tab)}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition ${
+                  className={`inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs transition ${
                     active
                       ? "bg-white text-black"
                       : "text-slate-300"
@@ -421,7 +474,7 @@ export function MobileHomeExperienceClient({
             >
               <div
                 className={`relative overflow-hidden ${
-                  index % 5 === 4 ? "h-56" : "h-32"
+                  index % 5 === 4 ? "h-44" : "h-28"
                 }`}
               >
                 {card.mediaUrl ? (
@@ -447,8 +500,8 @@ export function MobileHomeExperienceClient({
                   <div className="h-full w-full bg-[linear-gradient(160deg,#1e293b,#111827)]" />
                 )}
               </div>
-              <div className="p-3">
-                <p className="line-clamp-2 text-base font-medium leading-5 text-white">
+              <div className="p-2.5">
+                <p className="line-clamp-2 text-sm font-medium leading-4 text-white">
                   {card.title}
                 </p>
                 {card.creator ? (
@@ -460,16 +513,6 @@ export function MobileHomeExperienceClient({
         </div>
       </section>
 
-      <style jsx>{`
-        @keyframes mobileModelsMarquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(calc(-50% - 0.375rem));
-          }
-        }
-      `}</style>
     </div>
   );
 }

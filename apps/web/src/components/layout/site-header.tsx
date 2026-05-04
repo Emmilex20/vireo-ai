@@ -19,9 +19,9 @@ export function SiteHeader({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 py-0 sm:min-h-16 sm:gap-3 sm:px-6 sm:py-3 lg:h-16 lg:px-8 lg:py-0">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 py-0 sm:min-h-16 sm:gap-3 sm:px-6 sm:py-3 lg:h-16 lg:px-8 lg:py-0">
         <Link href="/" className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
+          <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5 ring-1 ring-white/10 sm:size-10 sm:rounded-2xl">
             <Image
               src="/logo.png"
               alt="Vireon AI"

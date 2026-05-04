@@ -413,62 +413,71 @@ export function CharacterPageClient({ hasCharacters }: CharacterPageClientProps)
   }
 
   return (
-    <div className="relative h-full min-h-0 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#07090b]">
+    <div className="relative h-full min-h-0 overflow-hidden rounded-2xl border border-white/10 bg-[#050607] sm:rounded-[1.35rem]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_6%,rgba(16,185,129,0.14),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(217,70,239,0.13),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.025),transparent_18%)]" />
-      <div className={cn("relative grid h-full min-h-0 gap-2 p-2 lg:grid-cols-[minmax(24rem,32rem)_1fr]", modalOpen ? "blur-sm" : "")}>
-        <section className="flex min-h-0 flex-col overflow-hidden rounded-[1.1rem] border border-white/10 bg-[#101315]/92 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+      <div className={cn("relative grid h-full min-h-0 gap-2 p-2 sm:p-2 lg:grid-cols-[minmax(24rem,32rem)_1fr]", modalOpen ? "blur-sm" : "")}>
+        <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl bg-[#080a0b] p-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.32)] sm:rounded-[1.1rem] sm:border sm:border-white/10 sm:bg-[#101315]/92 sm:p-4">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-xs font-medium text-slate-400">
+            <div className="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                className="flex size-8 items-center justify-center rounded-full text-slate-300 transition hover:bg-white/8 hover:text-white sm:hidden"
+                aria-label="Back"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <div className="min-w-0">
+              <div className="hidden text-xs font-medium text-slate-400 sm:block">
                 Create <span className="mx-1 text-slate-600">/</span>{" "}
                 <span className="text-slate-200">Character</span>
               </div>
-              <div className="mt-4 flex items-center gap-3">
-                <span className="flex size-9 items-center justify-center rounded-full bg-white text-black">
+              <div className="flex items-center gap-2 sm:mt-4 sm:gap-3">
+                <span className="flex size-8 items-center justify-center rounded-full bg-white text-black sm:size-9">
                   <UserRound className="size-4" />
                 </span>
-                <h1 className="font-heading text-xl font-bold text-white">
+                <h1 className="font-heading text-lg font-bold text-white sm:text-xl">
                   Character
                 </h1>
+              </div>
               </div>
             </div>
             <button
               type="button"
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-white/8 px-3 text-sm font-bold text-white transition hover:bg-white/12"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-bold text-slate-300 underline-offset-4 transition hover:bg-white/8 hover:text-white hover:underline sm:h-10 sm:gap-2 sm:rounded-xl sm:bg-white/8 sm:px-3 sm:text-sm sm:text-white sm:no-underline"
             >
-              <BookOpen className="size-4" />
+              <BookOpen className="size-3.5 sm:size-4" />
               Tutorials
             </button>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:gap-3">
             <button
               type="button"
               onClick={() => openModal("chooser")}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-5 text-left transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white/[0.06]"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white/[0.07] sm:p-5"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.18),transparent_58%)] opacity-0 transition group-hover:opacity-100" />
-              <div className="relative flex min-h-28 flex-col items-center justify-center text-center">
-                <span className="flex size-14 items-center justify-center rounded-full border border-white/12 bg-black/25 text-white">
-                  <UserRound className="size-7" />
+              <div className="relative flex min-h-24 flex-col items-center justify-center text-center sm:min-h-28">
+                <span className="flex size-12 items-center justify-center rounded-full border border-white/14 bg-black/25 text-white sm:size-14">
+                  <UserRound className="size-6 sm:size-7" />
                 </span>
-                <span className="mt-4 inline-flex items-center gap-2 text-base font-black text-white">
+                <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-black leading-tight text-white sm:mt-4 sm:gap-2 sm:text-base">
                   Create Character
-                  <Plus className="size-4 rounded-full bg-white text-black" />
+                  <Plus className="size-3.5 rounded-full bg-white text-black sm:size-4" />
                 </span>
               </div>
             </button>
 
             <button
               type="button"
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-5 text-left transition hover:-translate-y-0.5 hover:border-fuchsia-400/35 hover:bg-white/[0.06]"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-3 text-left transition hover:-translate-y-0.5 hover:border-fuchsia-400/35 hover:bg-white/[0.07] sm:p-5"
             >
-              <div className="relative flex min-h-28 flex-col items-center justify-center text-center">
+              <div className="relative flex min-h-24 flex-col items-center justify-center text-center sm:min-h-28">
                 <div className="flex -space-x-3">
                   {heroFrames.slice(0, 4).map((frame, index) => (
                     <span
                       key={frame}
-                      className="relative size-11 overflow-hidden rounded-full border-2 border-[#151719] bg-white/10"
+                      className="relative size-9 overflow-hidden rounded-full border-2 border-[#151719] bg-white/10 sm:size-11"
                     >
                       <Image
                         src={frame}
@@ -480,7 +489,7 @@ export function CharacterPageClient({ hasCharacters }: CharacterPageClientProps)
                     </span>
                   ))}
                 </div>
-                <span className="mt-4 inline-flex items-center gap-2 text-base font-black text-white">
+                <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-black leading-tight text-white sm:mt-4 sm:gap-2 sm:text-base">
                   Browse Library
                   <span className="flex size-4 items-center justify-center rounded-full bg-white text-black">
                     <ChevronRightMini />
@@ -496,28 +505,28 @@ export function CharacterPageClient({ hasCharacters }: CharacterPageClientProps)
             </div>
           ) : null}
 
-          <div className="mt-7 flex items-center justify-between">
+          <div className="mt-5 flex items-center justify-between sm:mt-7">
             <h2 className="text-sm font-black text-white">Quick Starts</h2>
-            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary sm:px-3 sm:text-xs">
               5 workflows
             </span>
           </div>
 
-          <div className="mt-3 grid min-h-0 flex-1 auto-rows-min gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
+          <div className="mt-3 grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-2.5 overflow-y-auto pb-20 pr-1 sm:gap-3 sm:pb-0">
             {quickStarts.map((item) => (
               <button
                 key={item.title}
                 type="button"
                 onClick={() => openModal(item.action)}
-                className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-1.5 text-left transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.06]"
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-[#181a1d] p-1.5 text-left shadow-[0_10px_26px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.06] sm:bg-white/[0.035]"
               >
-                <div className="relative aspect-[1.12/1] overflow-hidden rounded-xl bg-white/5">
+                <div className="relative aspect-[0.82] overflow-hidden rounded-xl bg-white/5">
                   <Image
                     src={item.image}
                     alt={item.title}
                     fill
-                    sizes="(min-width: 1024px) 15rem, (min-width: 640px) 45vw, 90vw"
-                    className="object-cover transition duration-500 group-hover:scale-105"
+                    sizes="(min-width: 1024px) 15rem, (min-width: 640px) 45vw, 50vw"
+                    className="object-cover object-center transition duration-500 group-hover:scale-105"
                   />
                   <div className={cn("absolute inset-0 bg-gradient-to-t", item.tone)} />
                   {item.badge ? (
@@ -531,14 +540,18 @@ export function CharacterPageClient({ hasCharacters }: CharacterPageClientProps)
                     </span>
                   ) : null}
                   {item.title === "Motion Sync" || item.title === "Character Video" ? (
-                    <span className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-xl bg-black/65 text-fuchsia-300 backdrop-blur">
-                      <Play className="size-4 fill-current" />
+                    <span className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-xl bg-black/70 text-fuchsia-300 backdrop-blur sm:right-3 sm:top-3 sm:size-9">
+                      <Play className="size-3.5 fill-current sm:size-4" />
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-xl bg-black/65 text-white/80 backdrop-blur">
+                      <Star className="size-4" />
+                    </span>
+                  )}
                 </div>
-                <div className="px-2 pb-2 pt-3">
-                  <h3 className="text-base font-black text-white">{item.title}</h3>
-                  <p className="mt-1 text-xs font-medium text-slate-400">
+                <div className="px-1.5 pb-2 pt-2 sm:px-2 sm:pt-2.5">
+                  <h3 className="text-[13px] font-black leading-tight text-white sm:text-base">{item.title}</h3>
+                  <p className="mt-1 line-clamp-1 text-xs font-medium text-slate-400">
                     {item.subtitle}
                   </p>
                 </div>
@@ -554,7 +567,7 @@ export function CharacterPageClient({ hasCharacters }: CharacterPageClientProps)
           </div>
         </section>
 
-        <section className="flex min-h-0 flex-col overflow-hidden rounded-[1.1rem] border border-white/10 bg-[#0d1013]/94">
+        <section className="hidden min-h-0 flex-col overflow-hidden rounded-[1.1rem] border border-white/10 bg-[#0d1013]/94 sm:flex">
           <div className="flex flex-col gap-3 border-b border-white/8 px-4 py-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -705,7 +718,7 @@ export function CharacterPageClient({ hasCharacters }: CharacterPageClientProps)
       </div>
 
       {modalOpen ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/62 px-4 py-6 backdrop-blur-md">
+        <div className="fixed inset-0 z-[70] grid items-start justify-items-center overflow-y-auto bg-black/70 px-2 py-3 backdrop-blur-md sm:place-items-center sm:px-4 sm:py-6">
           {modalView === "chooser" ? (
             <CreateCharacterChooser
               onClose={closeModal}
@@ -955,24 +968,24 @@ function CreateCharacterChooser({
   onBuild: () => void;
 }) {
   return (
-    <div className="w-full max-w-5xl overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#141719] shadow-[0_30px_120px_rgba(0,0,0,0.62)]">
-      <div className="relative px-5 pb-8 pt-14 text-center sm:px-8 sm:pb-10">
+    <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-y-auto rounded-2xl border border-white/10 bg-[#111315] shadow-[0_30px_120px_rgba(0,0,0,0.62)] sm:rounded-[1.35rem]">
+      <div className="relative px-4 pb-4 pt-11 text-center sm:px-8 sm:pb-10 sm:pt-14">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-5 top-5 flex size-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/5 hover:text-white"
+          className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/5 hover:text-white sm:right-5 sm:top-5 sm:size-9"
           aria-label="Close"
         >
-          <X className="size-5" />
+          <X className="size-4.5 sm:size-5" />
         </button>
-        <h2 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h2 className="font-heading text-2xl font-bold tracking-tight text-white sm:text-4xl">
           Create a <span className="text-fuchsia-400">character</span>
         </h2>
-        <p className="mt-3 text-sm font-medium text-slate-400">
+        <p className="mx-auto mt-2 max-w-[17rem] text-xs font-medium leading-5 text-slate-400 sm:mt-3 sm:max-w-none sm:text-sm">
           Make a reusable character you can bring into future images and videos.
         </p>
 
-        <div className="mx-auto mt-10 grid max-w-4xl gap-4 md:grid-cols-3">
+        <div className="mx-auto mt-6 grid max-w-4xl grid-cols-2 gap-2.5 sm:mt-10 sm:gap-4 md:grid-cols-3">
           {choiceCards.map((card) => {
             const Icon = card.icon;
             const isImage = card.id === "image";
@@ -991,28 +1004,28 @@ function CreateCharacterChooser({
                         ? onBuild
                         : undefined
                 }
-                className="group relative overflow-hidden rounded-[1.05rem] border border-white/8 bg-white/[0.035] p-2 text-left transition hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/[0.055]"
+                className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.035] p-2 text-left transition hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/[0.055] sm:rounded-[1.05rem]"
               >
                 {card.badge ? (
-                  <span className="absolute left-2 top-2 z-10 rounded-br-xl rounded-tl-xl bg-yellow-200 px-3 py-1 text-xs font-black uppercase tracking-tight text-black">
+                  <span className="absolute left-1.5 top-1.5 z-10 rounded-br-xl rounded-tl-xl bg-yellow-200 px-2 py-0.5 text-[10px] font-black uppercase tracking-tight text-black sm:left-2 sm:top-2 sm:px-3 sm:py-1 sm:text-xs">
                     {card.badge}
                   </span>
                 ) : null}
-                <div className={cn("relative aspect-[1.05/1] overflow-hidden rounded-xl bg-gradient-to-br", card.accent)}>
+                <div className={cn("relative aspect-[1.04/1] overflow-hidden rounded-xl bg-gradient-to-br", card.accent)}>
                   <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:18px_18px]" />
-                  <div className="absolute inset-5 grid place-items-center rounded-3xl border border-white/10 bg-black/18">
-                    <Icon className="size-16 text-white drop-shadow-[0_12px_30px_rgba(236,72,153,0.35)]" />
+                  <div className="absolute inset-3 grid place-items-center rounded-2xl border border-white/10 bg-black/18 sm:inset-5 sm:rounded-3xl">
+                    <Icon className="size-9 text-white drop-shadow-[0_12px_30px_rgba(236,72,153,0.35)] sm:size-16" />
                   </div>
                   {isImage ? (
-                    <div className="absolute bottom-6 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-fuchsia-500 px-4 py-2 text-xs font-bold text-white shadow-[0_12px_30px_rgba(217,70,239,0.4)]">
+                    <div className="absolute bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-fuchsia-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_12px_30px_rgba(217,70,239,0.4)] sm:bottom-6 sm:px-4 sm:py-2 sm:text-xs">
                       Create
                       <Sparkles className="size-3.5" />
                     </div>
                   ) : null}
                 </div>
-                <div className="px-1 pb-2 pt-4 text-center">
-                  <h3 className="text-base font-bold text-white">{card.title}</h3>
-                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                <div className="px-1 pb-1 pt-2.5 text-center sm:pb-2 sm:pt-4">
+                  <h3 className="truncate text-sm font-bold text-white sm:text-base">{card.title}</h3>
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-slate-500 sm:text-xs sm:leading-5">
                     {card.subtitle}
                   </p>
                 </div>
@@ -1059,10 +1072,10 @@ function DescribeCharacterModal({
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-5 top-5 z-10 flex size-13 items-center justify-center rounded-xl bg-white/7 text-slate-300 transition hover:bg-white/12 hover:text-white"
+        className="absolute right-4 top-4 z-40 flex size-11 items-center justify-center rounded-xl bg-white/7 text-slate-300 transition hover:bg-white/12 hover:text-white sm:right-5 sm:top-5 sm:size-13"
         aria-label="Close"
       >
-        <X className="size-6" />
+        <X className="size-5 sm:size-6" />
       </button>
 
       <div className="relative z-10 mx-auto flex h-full max-w-4xl flex-col items-center px-4 pt-14 sm:px-8 sm:pt-20">
@@ -1427,23 +1440,29 @@ function BuildCharacterModal({
   }
 
   return (
-    <div className="relative h-[min(54rem,calc(100vh-1.5rem))] w-full max-w-[118rem] overflow-hidden rounded-[1rem] border border-white/10 bg-[#111315] shadow-[0_30px_120px_rgba(0,0,0,0.68)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(244,114,255,0.52),rgba(147,51,234,0.18)_18%,transparent_39%),linear-gradient(180deg,rgba(16,18,22,0.12),#111315_72%)]" />
-      <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.28),transparent_45%)] blur-xl" />
+    <div className="relative h-[calc(100dvh-1.5rem)] w-full max-w-[21.5rem] overflow-hidden rounded-[1rem] border border-white/10 bg-[#0f1113] shadow-[0_30px_120px_rgba(0,0,0,0.68)] sm:h-[min(54rem,calc(100vh-1.5rem))] sm:max-w-[118rem]">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_6%,rgba(255,104,245,0.95),rgba(183,65,213,0.34)_24%,rgba(55,22,70,0.18)_40%,transparent_58%),linear-gradient(180deg,rgba(25,16,31,0.36),#101214_70%)] sm:bg-[radial-gradient(circle_at_50%_0%,rgba(244,114,255,0.52),rgba(147,51,234,0.18)_18%,transparent_39%),linear-gradient(180deg,rgba(16,18,22,0.12),#111315_72%)]" />
+      <div className="absolute inset-x-0 top-0 h-[18rem] bg-[radial-gradient(ellipse_at_50%_8%,rgba(255,255,255,0.48),rgba(244,114,255,0.28)_30%,transparent_64%)] blur-xl sm:h-96 sm:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.28),transparent_45%)]" />
+      <div className="absolute inset-x-4 top-[16.5rem] h-px bg-gradient-to-r from-transparent via-white/15 to-transparent sm:hidden" />
 
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-5 top-5 z-20 flex size-13 items-center justify-center rounded-xl bg-white/7 text-slate-300 transition hover:bg-white/12 hover:text-white"
+        className="absolute right-5 top-7 z-40 flex size-8 items-center justify-center rounded-full bg-white/10 text-slate-200 transition hover:bg-white/14 hover:text-white sm:right-5 sm:top-5 sm:size-13 sm:rounded-xl sm:bg-white/7"
         aria-label="Close"
       >
-        <X className="size-6" />
+        <X className="size-4.5 sm:size-6" />
       </button>
 
-      <div className="relative z-10 flex h-full flex-col items-center px-4 pb-8 pt-6 sm:px-8">
+      <div className="relative z-10 flex h-full flex-col px-4 pb-4 pt-5 sm:items-center sm:px-8 sm:pb-8 sm:pt-6">
         <BuilderStepper stepIndex={stepIndex} />
 
-        <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center pt-10">
+        <div
+          className={cn(
+            "flex min-h-0 w-full flex-1 flex-col sm:items-center sm:justify-center sm:pt-10",
+            step === "check" ? "pt-[7.75rem]" : "pt-[12.5rem]"
+          )}
+        >
           {stepIndex > 0 ? (
             <SelectedChips selections={selections} />
           ) : null}
@@ -1453,7 +1472,10 @@ function BuildCharacterModal({
               <button
                 type="button"
                 onClick={goBack}
-                className="absolute left-0 top-1/2 z-10 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/8 text-slate-300 shadow-[0_18px_44px_rgba(0,0,0,0.42)] transition hover:bg-white/14 hover:text-white lg:flex"
+                className={cn(
+                  "absolute left-0 top-0 z-10 flex size-8 items-center justify-center rounded-xl bg-white/8 text-slate-300 shadow-[0_18px_44px_rgba(0,0,0,0.42)] transition hover:bg-white/14 hover:text-white sm:hidden lg:left-0 lg:top-1/2 lg:flex lg:size-11 lg:-translate-y-1/2",
+                  stepIndex === 0 ? "pointer-events-none opacity-0" : ""
+                )}
                 aria-label="Previous step"
               >
                 <ChevronLeft className="size-5" />
@@ -1461,28 +1483,28 @@ function BuildCharacterModal({
               <button
                 type="button"
                 onClick={skipStep}
-                className="absolute right-4 top-0 rounded-xl bg-white/8 px-4 py-2 text-sm font-bold text-slate-300 shadow-[0_16px_44px_rgba(0,0,0,0.35)] transition hover:bg-white/14 hover:text-white"
+                className="absolute right-0 top-0 rounded-xl bg-white/8 px-3 py-2 text-xs font-bold text-slate-300 shadow-[0_16px_44px_rgba(0,0,0,0.35)] transition hover:bg-white/14 hover:text-white sm:right-4 sm:px-4 sm:text-sm"
               >
                 Skip
               </button>
 
-              <h2 className="text-center text-xl font-black text-white">
+              <h2 className="px-10 text-center text-base font-black text-white sm:text-xl">
                 {step === "vibe"
                   ? "Select Look Vibe"
                   : step === "gender"
                     ? "Select Gender"
                     : step === "ethnicity"
-                      ? "Select Ethnicity"
+                    ? "Select Ethnicity"
                       : "Select Age Range"}
               </h2>
               <div className="mx-auto mt-3 h-px w-full max-w-3xl bg-gradient-to-r from-transparent via-white/18 to-transparent" />
 
               <div
                 className={cn(
-                  "mx-auto mt-8 grid max-w-5xl gap-3 sm:gap-4",
+                  "-mx-4 mt-8 flex gap-2.5 overflow-x-auto px-4 pb-2 [scrollbar-color:rgba(255,255,255,0.28)_transparent] [scrollbar-width:thin] sm:mx-auto sm:grid sm:max-w-5xl sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0",
                   step === "gender"
-                    ? "grid-cols-1 sm:grid-cols-3 lg:max-w-3xl"
-                    : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+                    ? "sm:grid-cols-3 lg:max-w-3xl"
+                    : "sm:grid-cols-3 lg:grid-cols-5"
                 )}
               >
                 {currentOptions.map((option) => (
@@ -1547,20 +1569,20 @@ function BuildCharacterModal({
 
 function BuilderStepper({ stepIndex }: { stepIndex: number }) {
   return (
-    <div className="relative mt-1 w-full max-w-2xl rounded-full border border-white/25 bg-white/9 px-7 py-5 shadow-[0_0_65px_rgba(217,70,239,0.42)] backdrop-blur-md">
-      <div className="absolute left-14 right-14 top-8 h-0.5 bg-white/16" />
-      <div className="relative grid grid-cols-5 gap-2">
+    <div className="relative mt-1 w-full rounded-full border border-white/22 bg-white/10 px-5 py-3.5 shadow-[0_0_54px_rgba(217,70,239,0.34)] backdrop-blur-md sm:max-w-2xl sm:px-7 sm:py-5 sm:shadow-[0_0_65px_rgba(217,70,239,0.42)]">
+      <div className="absolute left-10 right-10 top-6 h-0.5 bg-white/18 sm:left-14 sm:right-14 sm:top-8 sm:bg-white/16" />
+      <div className="relative grid grid-cols-5 gap-1 sm:gap-2">
         {builderSteps.map((item, index) => {
           const active = index <= stepIndex;
           return (
-            <div key={item.id} className="flex flex-col items-center gap-2">
+            <div key={item.id} className="flex flex-col items-center gap-1.5 sm:gap-2">
               <span
                 className={cn(
                   "size-2.5 rounded-full transition",
                   active ? "bg-white shadow-[0_0_20px_rgba(255,255,255,0.75)]" : "bg-white/25"
                 )}
               />
-              <span className="text-center text-xs font-black text-white">
+              <span className="text-center text-[10px] font-black leading-tight text-white sm:text-xs">
                 {item.label}
               </span>
             </div>
@@ -1583,13 +1605,13 @@ function SelectedChips({
   if (!chips.length) return null;
 
   return (
-    <div className="mb-8 flex max-w-3xl flex-wrap justify-center gap-2 border-b border-white/14 pb-3">
+    <div className="mb-7 flex max-w-3xl flex-wrap justify-center gap-2 border-b border-white/14 pb-3 sm:mb-8">
       {chips.map((chip) => (
         <div
           key={chip.key}
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-pink-100 px-2.5 pr-4 text-base font-black text-zinc-950 shadow-[0_0_28px_rgba(244,114,182,0.75)]"
+          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-pink-100 px-2 pr-3 text-sm font-black text-zinc-950 shadow-[0_0_24px_rgba(244,114,182,0.68)] sm:h-11 sm:gap-2 sm:px-2.5 sm:pr-4 sm:text-base sm:shadow-[0_0_28px_rgba(244,114,182,0.75)]"
         >
-          <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-sky-300 text-xs text-white">
+          <span className="flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-sky-300 text-[10px] text-white sm:size-8 sm:text-xs">
             {chip.label.slice(0, 1)}
           </span>
           {chip.label}
@@ -1613,19 +1635,19 @@ function BuilderOptionCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "group rounded-[1.15rem] border bg-white/[0.025] p-1.5 text-left transition hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.045]",
+        "group w-[7.25rem] flex-none rounded-2xl border bg-white/[0.035] p-1.5 text-left transition hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.055] sm:w-auto sm:rounded-[1.15rem] sm:bg-white/[0.025]",
         selected
           ? "border-fuchsia-500 bg-fuchsia-500/10 shadow-[0_0_30px_rgba(217,70,239,0.65)]"
           : "border-white/10"
       )}
     >
-      <div className={cn("relative h-[12.5rem] overflow-hidden rounded-[0.9rem] bg-gradient-to-br", option.tone)}>
+      <div className={cn("relative h-[9.4rem] overflow-hidden rounded-[0.9rem] bg-gradient-to-br sm:h-[12.5rem]", option.tone)}>
         <Image
           src={option.image}
           alt={`${option.label} character style`}
           fill
-          sizes="(min-width: 1024px) 190px, (min-width: 640px) 30vw, 45vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
+          sizes="(min-width: 1024px) 190px, (min-width: 640px) 30vw, 36vw"
+          className="object-cover object-center transition duration-500 group-hover:scale-105"
         />
         <div className={cn("absolute inset-0 bg-gradient-to-t from-black/70 via-black/8 to-white/8", option.tone)} />
         {selected ? (
@@ -1636,7 +1658,7 @@ function BuilderOptionCard({
       </div>
       <div
         className={cn(
-          "px-2 py-2.5 text-center text-sm font-black transition",
+          "px-1.5 py-2 text-center text-xs font-black leading-tight transition sm:px-2 sm:py-2.5 sm:text-sm",
           selected ? "text-white" : "text-slate-300 group-hover:text-white"
         )}
       >
@@ -1656,8 +1678,8 @@ function CustomEthnicityCard({
   onApply: () => void;
 }) {
   return (
-    <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.025] p-1.5">
-      <div className="relative h-[12.5rem] overflow-hidden rounded-[0.9rem] bg-white/[0.055]">
+    <div className="w-[7.25rem] flex-none rounded-2xl border border-white/10 bg-white/[0.035] p-1.5 sm:w-auto sm:rounded-[1.15rem] sm:bg-white/[0.025]">
+      <div className="relative h-[9.4rem] overflow-hidden rounded-[0.9rem] bg-white/[0.055] sm:h-[12.5rem]">
         {value ? (
           <textarea
             value={value}
@@ -1679,7 +1701,7 @@ function CustomEthnicityCard({
       <button
         type="button"
         onClick={onApply}
-        className="w-full py-2.5 text-sm font-bold text-slate-400 transition hover:text-white"
+        className="w-full py-2 text-xs font-bold text-slate-400 transition hover:text-white sm:py-2.5 sm:text-sm"
       >
         {value ? "Apply" : "Custom"}
       </button>
@@ -1717,24 +1739,24 @@ function BuilderCheckPanel({
       <button
         type="button"
         onClick={onBack}
-        className="absolute -left-24 top-16 hidden size-10 items-center justify-center rounded-xl bg-white/7 text-slate-300 transition hover:bg-white/12 hover:text-white lg:flex"
+        className="absolute left-0 top-0 flex size-8 items-center justify-center rounded-xl bg-white/7 text-slate-300 transition hover:bg-white/12 hover:text-white lg:-left-24 lg:top-16 lg:size-10"
         aria-label="Previous step"
       >
         <ChevronLeft className="size-5" />
       </button>
-      <h2 className="text-center text-lg font-bold text-white">
+      <h2 className="px-10 text-center text-base font-bold text-white sm:text-lg">
         Additional Description{" "}
         <span className="rounded-full bg-white/8 px-2 py-1 text-xs font-semibold text-slate-400">
           Optional
         </span>
       </h2>
 
-      <div className="relative mx-auto mt-8 max-w-xl">
+      <div className="relative mx-auto mt-5 max-w-xl sm:mt-8">
         <textarea
           value={extraDescription}
           onChange={(event) => onDescriptionChange(event.target.value)}
           placeholder="Sample: brown curly short hair, a few wrinkles on his forehead, and a full beard."
-          className="h-38 w-full resize-none rounded-xl border border-white/8 bg-[#25282b] px-4 py-4 text-sm leading-6 text-white outline-none placeholder:text-slate-500 focus:border-primary/50"
+          className="h-33 w-full resize-none rounded-xl border border-white/8 bg-[#25282b] px-4 py-4 text-sm leading-6 text-white outline-none placeholder:text-slate-500 focus:border-primary/50 sm:h-38"
         />
         <button
           type="button"
@@ -1746,8 +1768,8 @@ function BuilderCheckPanel({
         </button>
       </div>
 
-      <div className="mx-auto mt-4 flex max-w-xl flex-col gap-2 sm:flex-row">
-        <div className="flex h-13 items-center rounded-xl border border-white/8 bg-[#17191d] px-3 text-white">
+      <div className="mx-auto mt-3 flex max-w-xl flex-row gap-2 sm:mt-4">
+        <div className="flex h-11 w-[7.25rem] shrink-0 items-center rounded-xl border border-white/8 bg-[#17191d] px-2 text-white sm:h-13 sm:w-auto sm:px-3">
           <button
             type="button"
             onClick={() => onChangeCount(Math.max(1, count - 1))}
@@ -1756,7 +1778,7 @@ function BuilderCheckPanel({
           >
             <Minus className="size-4" />
           </button>
-          <span className="min-w-12 text-center text-lg font-semibold tabular-nums">
+          <span className="min-w-10 text-center text-base font-semibold tabular-nums sm:min-w-12 sm:text-lg">
             {count}/4
           </span>
           <button
@@ -1772,7 +1794,7 @@ function BuilderCheckPanel({
           type="button"
           onClick={onGenerate}
           disabled={generating || !ready}
-          className="inline-flex h-13 flex-1 items-center justify-center gap-2 rounded-xl bg-fuchsia-500 px-6 text-sm font-black text-white shadow-[0_6px_0_rgba(134,25,143,0.9)] transition enabled:hover:bg-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-55"
+          className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-fuchsia-500 px-3 text-sm font-black text-white shadow-[0_5px_0_rgba(134,25,143,0.9)] transition enabled:hover:bg-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-55 sm:h-13 sm:gap-2 sm:px-6 sm:shadow-[0_6px_0_rgba(134,25,143,0.9)]"
         >
           {generating ? "Generating" : "Generate"}
           {generating ? (
@@ -1853,8 +1875,8 @@ function StartFromImageModal({
   const [backgroundStory, setBackgroundStory] = useState("");
 
   return (
-    <div className="w-full max-w-5xl overflow-hidden rounded-[1.1rem] border border-white/10 bg-[#151819] shadow-[0_30px_120px_rgba(0,0,0,0.62)]">
-      <div className="flex h-15 items-center justify-between border-b border-white/8 px-4 sm:px-5">
+    <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-y-auto rounded-2xl border border-white/10 bg-[#151819] shadow-[0_30px_120px_rgba(0,0,0,0.62)] sm:rounded-[1.1rem]">
+      <div className="flex h-13 items-center justify-between border-b border-white/8 px-3 sm:h-15 sm:px-5">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -1864,7 +1886,7 @@ function StartFromImageModal({
           >
             <ArrowLeft className="size-4" />
           </button>
-          <h2 className="text-lg font-bold text-white">Create Character</h2>
+          <h2 className="text-base font-bold text-white sm:text-lg">Create Character</h2>
         </div>
         <button
           type="button"
@@ -1876,11 +1898,11 @@ function StartFromImageModal({
         </button>
       </div>
 
-      <div className="grid gap-4 p-3 sm:p-4 lg:grid-cols-[1fr_20rem]">
+      <div className="grid gap-3 p-3 sm:gap-4 sm:p-4 lg:grid-cols-[1fr_20rem]">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="group relative min-h-[22rem] overflow-hidden rounded-[1rem] border border-dashed border-fuchsia-500/75 bg-[#101214] text-left transition hover:border-fuchsia-300/90 lg:min-h-[25rem]"
+          className="group relative min-h-[14.5rem] overflow-hidden rounded-[1rem] border border-dashed border-fuchsia-500/75 bg-[#101214] text-left transition hover:border-fuchsia-300/90 sm:min-h-[22rem] lg:min-h-[25rem]"
         >
           {imagePreview ? (
             <Image
@@ -1898,10 +1920,10 @@ function StartFromImageModal({
                   <TiltedImageIcon className="scale-110" />
                   <TiltedImageIcon className="rotate-12" />
                 </div>
-                <p className="mt-5 text-base font-bold text-white">
+                <p className="mt-4 text-sm font-bold text-white sm:mt-5 sm:text-base">
                   Add Front-Facing Image
                 </p>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-1.5 text-xs text-slate-500 sm:mt-2 sm:text-sm">
                   Click or drag to upload / choose from{" "}
                   <span className="underline underline-offset-3">History</span>
                 </p>
@@ -1917,7 +1939,7 @@ function StartFromImageModal({
           />
         </button>
 
-        <div className="rounded-[1rem] border border-white/8 bg-white/[0.055] p-4">
+        <div className="rounded-[1rem] border border-white/8 bg-white/[0.055] p-3 sm:p-4">
           <label className="block text-sm font-bold text-white" htmlFor="character-name">
             Name
           </label>
@@ -1927,22 +1949,22 @@ function StartFromImageModal({
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Enter character name"
-            className="mt-4 h-11 w-full rounded-lg border border-white/8 bg-white/7 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-primary/60"
+            className="mt-3 h-10 w-full rounded-lg border border-white/8 bg-white/7 px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-primary/60 sm:mt-4 sm:h-11 sm:px-4"
           />
 
-          <label className="mt-8 block text-sm font-bold text-white" htmlFor="character-story">
+          <label className="mt-5 block text-sm font-bold text-white sm:mt-8" htmlFor="character-story">
             Background Story{" "}
             <span className="rounded-full bg-white/8 px-2 py-1 text-xs font-semibold text-slate-400">
               Optional
             </span>
           </label>
-          <div className="relative mt-4">
+          <div className="relative mt-3 sm:mt-4">
             <textarea
               id="character-story"
               value={backgroundStory}
               onChange={(event) => setBackgroundStory(event.target.value)}
               placeholder="Tell us about your character's story..."
-              className="h-36 w-full resize-none rounded-lg border border-white/8 bg-white/7 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-primary/60"
+              className="h-24 w-full resize-none rounded-lg border border-white/8 bg-white/7 px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-primary/60 sm:h-36 sm:px-4 sm:py-4"
             />
             <button
               type="button"
@@ -1965,7 +1987,7 @@ function StartFromImageModal({
               })
             }
             disabled={!imagePreview || !imageFile || generating}
-            className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-fuchsia-600 text-sm font-bold text-white transition enabled:hover:bg-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-55"
+            className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-fuchsia-600 text-sm font-bold text-white transition enabled:hover:bg-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-55 sm:mt-5 sm:h-12"
           >
             {generating ? (
               <Loader2 className="size-4 animate-spin" />

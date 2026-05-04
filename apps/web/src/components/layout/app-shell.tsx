@@ -22,6 +22,7 @@ import { CreditsBadge } from "@/components/billing/credits-badge";
 import { NotificationNavBadge } from "@/components/notifications/notification-nav-badge";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { StudioHomeSidebar } from "@/components/studio/studio-home-sidebar";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -161,7 +162,6 @@ export function AppShell({ children }: AppShellProps) {
       : navItems.find(
           (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
         ) ?? defaultActiveItem;
-  const ActiveIcon = activeItem.icon;
 
   useEffect(() => {
     void fetch("/api/user/sync").catch(() => {});
@@ -192,40 +192,37 @@ export function AppShell({ children }: AppShellProps) {
             isStudioRoute ? "bg-[#080a0c]/95 lg:hidden" : ""
           )}
         >
-          <div className={cn("px-4 py-4 sm:px-6 lg:px-8", isStudioRoute ? "pb-3" : "")}>
-            <div className="flex items-start justify-between gap-3 lg:h-16 lg:items-center">
+          <div className={cn("px-3 py-2 sm:px-6 sm:py-4 lg:px-8", isStudioRoute ? "sm:pb-3" : "")}>
+            <div className="flex h-11 items-center justify-between gap-2 sm:h-auto sm:items-start sm:gap-3 lg:h-16 lg:items-center">
               <div className="min-w-0">
-                <Link href="/" className="flex items-center gap-3 lg:hidden">
-                  <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10">
+                <Link href="/" className="flex items-center gap-2.5 sm:gap-3 lg:hidden">
+                  <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5 ring-1 ring-white/10 sm:size-10 sm:rounded-2xl">
                     <Image
                       src="/logo.png"
                       alt="Vireon AI"
-                      width={40}
-                      height={40}
+                      width={36}
+                      height={36}
                       className="size-full object-cover"
                       priority
                     />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-heading text-base font-bold text-white">
-                      Vireon AI
-                    </div>
-                    <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] text-primary">
-                      <ActiveIcon className="size-3.5" />
-                      Active tool
+                    <div className="truncate font-heading text-base font-bold leading-none text-white">
+                      <span className="sm:hidden">Vireon</span>
+                      <span className="hidden sm:inline">Vireon AI</span>
                     </div>
                   </div>
                 </Link>
-                <h1 className="mt-3 font-heading text-lg font-semibold text-white lg:mt-0">
+                <h1 className="mt-3 hidden font-heading text-lg font-semibold text-white sm:block lg:mt-0">
                   {activeItem.title}
                 </h1>
-                <p className="max-w-[16rem] text-xs text-muted-foreground sm:max-w-none">
+                <p className="hidden max-w-[16rem] text-xs text-muted-foreground sm:block sm:max-w-none">
                   {activeItem.description}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 sm:gap-3 lg:hidden">
-                <div className="hidden sm:block" data-tour="credits">
+              <div className="flex items-center gap-1.5 sm:gap-3 lg:hidden">
+                <div className="scale-[0.84] sm:scale-100" data-tour="credits">
                   <CreditsBadge />
                 </div>
                 <div className="hidden sm:block">
@@ -233,12 +230,13 @@ export function AppShell({ children }: AppShellProps) {
                 </div>
                 <Link
                   href="/pricing"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-[0_0_18px_rgba(16,185,129,0.12)] transition hover:bg-primary/15"
+                  className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-primary px-3 text-xs font-bold text-primary-foreground shadow-[0_0_18px_rgba(16,185,129,0.12)] transition hover:bg-primary/90 sm:flex sm:size-10 sm:border sm:border-primary/20 sm:bg-primary/10 sm:p-0 sm:text-primary sm:hover:bg-primary/15"
                   aria-label="Open pricing"
                 >
-                  <CreditCard className="size-4" />
+                  <span className="sm:hidden">Upgrade</span>
+                  <CreditCard className="hidden size-4 sm:block" />
                 </Link>
-                <div className="rounded-full border border-white/10 bg-white/5 p-1">
+                <div className="rounded-full border border-white/10 bg-white/5 p-0.5 sm:p-1">
                   <UserButton
                     appearance={{
                       elements: {
@@ -267,7 +265,51 @@ export function AppShell({ children }: AppShellProps) {
               </div>
             </div>
 
-            <div className="mt-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+            <div className="mt-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:hidden [&::-webkit-scrollbar]:hidden">
+              <div className="flex min-w-max items-center gap-2">
+                {studioMobileNavSections[0].items.concat([
+                  { href: "/video-projects", label: "Story", icon: Video },
+                ]).map((item) => {
+                    const Icon = item.icon;
+                    const isActive =
+                      pathname === item.href ||
+                      (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+
+                    return (
+                      <Link
+                        key={`mobile-tool-${item.label}`}
+                        href={item.href}
+                        onClick={() => {
+                          if (item.mode) {
+                            sessionStorage.setItem(
+                              "vireon_studio_open_mode",
+                              item.mode
+                            );
+                            window.dispatchEvent(
+                              new CustomEvent("vireon:studio-mode", {
+                                detail: item.mode,
+                              })
+                            );
+                          }
+                        }}
+                        className={`relative inline-flex h-10 shrink-0 items-center gap-2 rounded-2xl border px-4 text-sm font-medium transition ${
+                          isActive
+                            ? "border-primary/25 bg-primary/10 text-primary shadow-[0_0_18px_rgba(16,185,129,0.12)]"
+                            : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        <Icon className="size-3.5" />
+                        <span className="max-w-36 truncate">{item.label}</span>
+                        {isActive ? (
+                          <span className="absolute inset-x-3 -bottom-1 h-0.5 rounded-full bg-primary" />
+                        ) : null}
+                      </Link>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div className="mt-4 hidden overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:block lg:hidden [&::-webkit-scrollbar]:hidden">
               <div className="flex min-w-max items-center gap-2">
                 {studioMobileNavSections.flatMap((section, sectionIndex) => {
                   const items = section.items.map((item) => {
@@ -323,8 +365,9 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </header>
 
-        <div>{children}</div>
+        <div className="pb-[4.5rem] md:pb-0">{children}</div>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }
