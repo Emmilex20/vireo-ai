@@ -12,8 +12,6 @@ import {
   Coins,
 } from "lucide-react";
 import {
-  EXCHANGE_RATE_PROVIDER_URL,
-  FALLBACK_NGN_PER_USD,
   SUBSCRIPTION_PLANS,
 } from "@/lib/billing/plans";
 
@@ -268,16 +266,7 @@ export function PricingPageClient() {
                 Every plan includes private creation, premium model access, and a monthly credit allowance for image, video, and story workflows.
               </p>
               <p className="mt-2 text-xs leading-5 text-slate-500">
-                Checkout is processed by Paystack in NGN using the latest available USD to NGN rate. If live rates are unavailable, we fall back to ₦{FALLBACK_NGN_PER_USD.toLocaleString()} per $1. Annual plans charge 12 months upfront. Rates by{" "}
-                <a
-                  href={EXCHANGE_RATE_PROVIDER_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-slate-300 underline-offset-4 hover:text-white hover:underline"
-                >
-                  ExchangeRate-API
-                </a>
-                .
+                Checkout is processed by Paystack in NGN using the latest available USD to NGN rate.
               </p>
             </div>
 
