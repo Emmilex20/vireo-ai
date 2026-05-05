@@ -59,13 +59,25 @@ const latestModels = [
   },
 ] as const;
 
+const OFFER_DISMISS_STORAGE_KEY = "vireon_home_offer_dismissed_until";
+const OFFER_DISMISS_COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+
+function shouldShowOfferBanner() {
+  if (typeof window === "undefined") {
+    return true;
+  }
+
+  const dismissedUntil = window.localStorage.getItem(OFFER_DISMISS_STORAGE_KEY);
+  return !dismissedUntil || Number(dismissedUntil) <= Date.now();
+}
+
 export function MobileHomeExperienceClient({
   spotlightCards,
   suiteCards,
   inspirationImageCards,
   inspirationVideoCards,
 }: MobileHomeExperienceClientProps) {
-  const [showOffer, setShowOffer] = useState(true);
+  const [showOffer, setShowOffer] = useState(shouldShowOfferBanner);
   const [inspirationTab, setInspirationTab] = useState<"image" | "video">(
     "image"
   );
@@ -139,6 +151,14 @@ export function MobileHomeExperienceClient({
     },
   ];
 
+  function dismissOffer() {
+    window.localStorage.setItem(
+      OFFER_DISMISS_STORAGE_KEY,
+      String(Date.now() + OFFER_DISMISS_COOLDOWN_MS)
+    );
+    setShowOffer(false);
+  }
+
   return (
     <div className="space-y-5 overflow-x-hidden pb-1 sm:hidden">
       {showOffer ? (
@@ -162,7 +182,7 @@ export function MobileHomeExperienceClient({
 
               <button
                 type="button"
-                onClick={() => setShowOffer(false)}
+                onClick={dismissOffer}
                 className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                 aria-label="Dismiss offer"
               >

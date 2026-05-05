@@ -110,6 +110,18 @@ const characterDropdownLabels = [
   "Character Video",
 ] as const;
 
+const OFFER_DISMISS_STORAGE_KEY = "vireon_home_offer_dismissed_until";
+const OFFER_DISMISS_COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+
+function shouldShowOfferBanner() {
+  if (typeof window === "undefined") {
+    return true;
+  }
+
+  const dismissedUntil = window.localStorage.getItem(OFFER_DISMISS_STORAGE_KEY);
+  return !dismissedUntil || Number(dismissedUntil) <= Date.now();
+}
+
 export function DesktopHomeExperienceClient({
   spotlightCards,
   suiteCards,
@@ -124,6 +136,7 @@ export function DesktopHomeExperienceClient({
   const [isVideoDropdownOpen, setIsVideoDropdownOpen] = useState(false);
   const [isImageDropdownOpen, setIsImageDropdownOpen] = useState(false);
   const [isCharacterDropdownOpen, setIsCharacterDropdownOpen] = useState(false);
+  const [showOffer, setShowOffer] = useState(shouldShowOfferBanner);
   const videoDropdownCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
@@ -267,38 +280,49 @@ export function DesktopHomeExperienceClient({
     []
   );
 
+  function dismissOffer() {
+    window.localStorage.setItem(
+      OFFER_DISMISS_STORAGE_KEY,
+      String(Date.now() + OFFER_DISMISS_COOLDOWN_MS)
+    );
+    setShowOffer(false);
+  }
+
   return (
     <div className="hidden lg:block">
-      <section className="fixed inset-x-0 top-0 z-50 bg-[linear-gradient(90deg,rgba(9,11,11,0.98),rgba(16,57,31,0.98)_50%,rgba(9,11,11,0.98))]">
-        <div className="relative flex h-12 items-center justify-center px-6 text-center">
-          <p className="text-[0.75rem] font-medium tracking-[0.01em] text-white/95">
-            Limited-time offer! Unlock a year of limitless creativity with annual
-            plans at <span className="text-[0.9rem] font-semibold text-white">50% off.</span>
-          </p>
-          <Link
-            href="/pricing"
-            className="absolute right-16 inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-4 text-[0.8rem] font-semibold text-primary-foreground transition hover:bg-primary/90"
-          >
-            View Plan
-          </Link>
-          <button
-            type="button"
-            className="absolute right-3 flex size-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/5 hover:text-white"
-            aria-label="Dismiss offer"
-          >
-            <ChevronLeft className="size-3.5 rotate-45" />
-          </button>
-        </div>
-      </section>
+      {showOffer ? (
+        <section className="fixed inset-x-0 top-0 z-50 bg-[linear-gradient(90deg,rgba(9,11,11,0.98),rgba(16,57,31,0.98)_50%,rgba(9,11,11,0.98))]">
+          <div className="relative flex h-12 items-center justify-center px-6 text-center">
+            <p className="text-[0.75rem] font-medium tracking-[0.01em] text-white/95">
+              Limited-time offer! Unlock a year of limitless creativity with annual
+              plans at <span className="text-[0.9rem] font-semibold text-white">50% off.</span>
+            </p>
+            <Link
+              href="/pricing"
+              className="absolute right-16 inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-4 text-[0.8rem] font-semibold text-primary-foreground transition hover:bg-primary/90"
+            >
+              View Plan
+            </Link>
+            <button
+              type="button"
+              onClick={dismissOffer}
+              className="absolute right-3 flex size-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/5 hover:text-white"
+              aria-label="Dismiss offer"
+            >
+              <ChevronLeft className="size-3.5 rotate-45" />
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       <StudioHomeSidebar
         open={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
-        className="fixed bottom-0 left-0 top-12 z-40 h-auto"
+        className={`fixed bottom-0 left-0 z-40 h-auto ${showOffer ? "top-12" : "top-0"}`}
       />
 
       <div
-        className={`pt-10 transition-[padding] duration-300 ${
+        className={`${showOffer ? "pt-10" : "pt-0"} transition-[padding] duration-300 ${
           isSidebarOpen ? "pl-58" : "pl-21"
         }`}
       >
