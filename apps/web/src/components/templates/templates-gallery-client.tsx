@@ -431,7 +431,7 @@ export function TemplatesGalleryClient() {
 
       {selectedTemplate && selectedMedia ? (
         <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-3 py-5 backdrop-blur-xl sm:px-6"
+          className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-black/70 px-3 py-4 backdrop-blur-xl sm:px-6 lg:items-center lg:py-5"
           role="dialog"
           aria-modal="true"
           aria-labelledby="template-preview-title"
@@ -447,10 +447,10 @@ export function TemplatesGalleryClient() {
           </button>
 
           <div
-            className="grid max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-3xl border border-white/10 bg-[#151719] shadow-[0_34px_110px_rgba(0,0,0,0.58)] lg:grid-cols-[minmax(0,1fr)_30rem]"
+            className="grid w-full max-w-6xl overflow-hidden rounded-3xl border border-white/10 bg-[#151719] shadow-[0_34px_110px_rgba(0,0,0,0.58)] lg:max-h-[92vh] lg:grid-cols-[minmax(0,1fr)_30rem]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex min-h-0 items-center justify-center bg-[#101112] p-4 sm:p-8">
+            <div className="flex min-h-0 items-center justify-center bg-[#101112] p-3 sm:p-8">
               <div className="relative w-full overflow-hidden rounded-2xl bg-black shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
                 {selectedTemplate.type === "video" ? (
                   <video
@@ -461,13 +461,13 @@ export function TemplatesGalleryClient() {
                     loop
                     playsInline
                     controls
-                    className="max-h-[62vh] w-full object-contain"
+                    className="max-h-[38dvh] w-full object-contain sm:max-h-[62vh]"
                   />
                 ) : (
                   <img
                     src={selectedMedia.previewUrl || selectedMedia.image}
                     alt={selectedTemplate.title}
-                    className="max-h-[62vh] w-full object-contain"
+                    className="max-h-[38dvh] w-full object-contain sm:max-h-[62vh]"
                   />
                 )}
 
@@ -481,7 +481,7 @@ export function TemplatesGalleryClient() {
               </div>
             </div>
 
-            <aside className="flex min-h-0 flex-col border-t border-white/10 bg-[#1b1d1f] p-5 lg:border-l lg:border-t-0 lg:p-7">
+            <aside className="flex min-h-0 flex-col border-t border-white/10 bg-[#1b1d1f] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:border-l lg:border-t-0 lg:p-7">
               <div>
                 <h2 id="template-preview-title" className="text-xl font-bold text-white">
                   {selectedTemplate.title}
@@ -489,7 +489,7 @@ export function TemplatesGalleryClient() {
                 <p className="mt-1 text-sm text-slate-500">Details</p>
               </div>
 
-              <div className="mt-7 space-y-8 overflow-y-auto pr-1">
+              <div className="mt-5 space-y-6 pr-1 lg:mt-7 lg:space-y-8 lg:overflow-y-auto">
                 <section>
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
@@ -541,7 +541,7 @@ export function TemplatesGalleryClient() {
                 </section>
               </div>
 
-              <div className="mt-6 border-t border-white/10 pt-4">
+              <div className="sticky bottom-0 -mx-4 mt-6 border-t border-white/10 bg-[#1b1d1f]/95 px-4 pt-4 backdrop-blur lg:static lg:mx-0 lg:bg-transparent lg:px-0">
                 <button
                   type="button"
                   onClick={() => handleUseTemplate(selectedTemplate)}
