@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
 import {
   getImageModelUiOptions,
+  isUnavailableReplicateImageModelId,
   isReplicateImageModelId,
   resolveReplicateImageModel,
 } from "@/lib/ai/providers/replicate-image-models";
@@ -82,6 +83,16 @@ export async function POST(req: Request) {
     if (!prompt || prompt.trim().length < 5) {
       return NextResponse.json(
         { error: "Prompt must be at least 5 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (isUnavailableReplicateImageModelId(modelId)) {
+      return NextResponse.json(
+        {
+          error:
+            "Kling O1 is currently available as a video model on Replicate, not an image generation model. Choose another image model or switch to Video.",
+        },
         { status: 400 }
       );
     }

@@ -126,6 +126,11 @@ export function AdminDashboardClient() {
             description="Monitor image/video jobs, failures, providers, and refunds."
           />
           <AdminLink
+            href="/admin/templates"
+            title="Templates"
+            description="Curate completed generations into reusable public image and video templates."
+          />
+          <AdminLink
             href="/admin/stuck-jobs"
             title="Stuck jobs"
             description="Review processing jobs and manually retry provider status checks."

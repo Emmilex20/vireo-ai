@@ -84,7 +84,7 @@ export function InternalExploreClient() {
 
   if (loading) {
     return (
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
         <div className="h-8 w-40 rounded bg-white/10" />
         <div className="mt-3 h-4 w-72 rounded bg-white/10" />
         <div className="mt-6 flex gap-3">
@@ -95,7 +95,7 @@ export function InternalExploreClient() {
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="h-80 rounded-[1.5rem] border border-white/10 bg-white/5"
+              className="h-80 rounded-3xl border border-white/10 bg-white/5"
             />
           ))}
         </div>
@@ -105,8 +105,8 @@ export function InternalExploreClient() {
 
   return (
     <>
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-        <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold text-white">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
+        <h1 className="font-heading text-3xl font-bold text-white">
           Gallery
         </h1>
         <p className="mt-2 text-muted-foreground">
@@ -116,7 +116,7 @@ export function InternalExploreClient() {
         <ExploreFeedTabs activeTab={activeTab} onChange={handleTabChange} />
 
         {posts.length === 0 ? (
-          <div className="mt-6 rounded-[1.5rem] border border-dashed border-white/10 bg-black/20 p-10 text-center">
+          <div className="mt-6 rounded-3xl border border-dashed border-white/10 bg-black/20 p-10 text-center">
             <p className="text-lg font-medium text-white">
               {activeTab === "following"
                 ? "No posts from followed creators yet"
@@ -133,14 +133,14 @@ export function InternalExploreClient() {
             {posts.map((post) => (
               <article
                 key={post.id}
-                className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5"
+                className="overflow-hidden rounded-3xl border border-white/10 bg-white/5"
               >
                 <button
                   type="button"
                   onClick={() => setSelectedPost(post)}
                   className="block w-full text-left"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-black/20">
+                  <div className="relative aspect-4/3 overflow-hidden bg-black/20">
                     {mediaTypeOf(post) === "video" ? (
                       <>
                         <video
@@ -196,7 +196,7 @@ export function InternalExploreClient() {
                     </div>
                   </div>
 
-                  <h2 className="mt-4 font-[family-name:var(--font-heading)] text-lg font-semibold text-white">
+                  <h2 className="mt-4 font-heading text-lg font-semibold text-white">
                     {post.asset.title || "Published image"}
                   </h2>
 

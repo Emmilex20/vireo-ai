@@ -67,7 +67,7 @@ export function CreatorProfileClient({
 
   if (loading) {
     return (
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
         <div className="h-24 w-24 rounded-full bg-white/10" />
         <div className="mt-4 h-8 w-56 rounded bg-white/10" />
         <div className="mt-3 h-4 w-72 rounded bg-white/10" />
@@ -77,8 +77,8 @@ export function CreatorProfileClient({
 
   if (!creator) {
     return (
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-10 text-center">
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-10 text-center">
+        <h1 className="font-heading text-2xl font-bold text-white">
           Creator not found
         </h1>
         <p className="mt-2 text-muted-foreground">
@@ -90,7 +90,7 @@ export function CreatorProfileClient({
 
   return (
     <div className="grid gap-8">
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-white/10 text-2xl text-white">
@@ -110,7 +110,7 @@ export function CreatorProfileClient({
             </div>
 
             <div>
-              <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold text-white">
+              <h1 className="font-heading text-3xl font-bold text-white">
                 {creator.fullName || "Unknown creator"}
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -172,8 +172,8 @@ export function CreatorProfileClient({
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-        <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
+        <h2 className="font-heading text-2xl font-bold text-white">
           Public creations
         </h2>
         <p className="mt-2 text-muted-foreground">
@@ -181,7 +181,7 @@ export function CreatorProfileClient({
         </p>
 
         {creator.posts.length === 0 ? (
-          <div className="mt-6 rounded-[1.5rem] border border-dashed border-white/10 bg-black/20 p-10 text-center">
+          <div className="mt-6 rounded-3xl border border-dashed border-white/10 bg-black/20 p-10 text-center">
             <p className="text-lg font-medium text-white">No public posts yet</p>
             <p className="mt-2 text-sm text-muted-foreground">
               This creator has not published anything yet.
@@ -192,9 +192,9 @@ export function CreatorProfileClient({
             {creator.posts.map((post) => (
               <article
                 key={post.id}
-                className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5"
+                className="overflow-hidden rounded-3xl border border-white/10 bg-white/5"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-black/20">
+                <div className="relative aspect-4/3 overflow-hidden bg-black/20">
                   <Image
                     src={post.asset.fileUrl}
                     alt={post.asset.title || "Creator asset"}
@@ -205,7 +205,7 @@ export function CreatorProfileClient({
                 </div>
 
                 <div className="p-4">
-                  <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold text-white">
+                  <h3 className="font-heading text-lg font-semibold text-white">
                     {post.asset.title || "Published image"}
                   </h3>
 

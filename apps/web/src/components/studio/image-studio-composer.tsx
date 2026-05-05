@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   getImageModelUiOptions,
+  normalizeReplicateImageModelId,
   listReplicateImageModels,
   type ReplicateImageModelId,
 } from "@/lib/ai/providers/replicate-image-models";
@@ -280,7 +281,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
 
           setPrompt(payload.prompt ?? "");
           setNegativePrompt(payload.negativePrompt ?? "");
-          const payloadModelId = payload.modelId ?? defaultModelId;
+          const payloadModelId = normalizeReplicateImageModelId(payload.modelId);
           setSelectedModelId(payloadModelId);
           setReferenceImageUrl(payload.referenceImageUrl ?? "");
           setReferenceImageName(payload.referenceImageUrl ? "History reference image" : "");
@@ -305,9 +306,9 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
 
         setPrompt(persisted.prompt ?? "");
         setNegativePrompt(persisted.negativePrompt ?? "");
-        const persistedModelId =
-          (persisted.modelId as ReplicateImageModelId | undefined) ??
-          defaultModelId;
+        const persistedModelId = normalizeReplicateImageModelId(
+          persisted.modelId
+        );
         setSelectedModelId(persistedModelId);
         setReferenceImageUrl(persisted.referenceImageUrl ?? "");
         setReferenceImageName(
@@ -753,7 +754,7 @@ export function ImageStudioComposer({ onChangeMode }: ImageStudioComposerProps =
   function handleLoadDraft(draft: PromptDraft) {
     setPrompt(draft.prompt);
     setNegativePrompt(draft.negativePrompt ?? "");
-    const draftModelId = draft.modelId ?? defaultModelId;
+    const draftModelId = normalizeReplicateImageModelId(draft.modelId);
     setSelectedModelId(draftModelId);
     setReferenceImageUrl("");
     setReferenceImageName("");

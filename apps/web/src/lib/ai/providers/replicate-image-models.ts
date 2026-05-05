@@ -12,7 +12,6 @@ const IMAGE_MODEL_IDS = [
   "google/nano-banana",
   "bytedance/seedream-4",
   "qwen/qwen-image-2",
-  "kwaivgi/kling-o1-image",
   "black-forest-labs/flux-kontext-pro",
   "openai/gpt-image-1.5",
   "black-forest-labs/flux-2-pro",
@@ -68,6 +67,7 @@ export type ReplicateImageModelConfig = {
 };
 
 const DEFAULT_IMAGE_MODEL: ReplicateImageModelId = "openai/gpt-image-2";
+const UNAVAILABLE_IMAGE_MODEL_IDS = new Set(["kwaivgi/kling-o1-image"]);
 const STANDARD_IMAGE_ASPECT_RATIOS = [
   "1:1",
   "3:2",
@@ -414,17 +414,6 @@ export const REPLICATE_IMAGE_MODELS: Record<
     supports: promptOnlySupport,
     buildInput: buildStandardImageInput,
   },
-  "kwaivgi/kling-o1-image": {
-    id: "kwaivgi/kling-o1-image",
-    label: "Kling O1",
-    description: "Multi-reference and visual input remix",
-    defaultAspectRatio: "16:9",
-    slug: "kling-o1",
-    provider: "Kling",
-    features: ["Reference", "2K"],
-    supports: referenceSupport,
-    buildInput: buildReferenceImageInput,
-  },
   "black-forest-labs/flux-kontext-pro": {
     id: "black-forest-labs/flux-kontext-pro",
     label: "Flux Kontext Pro",
@@ -652,6 +641,18 @@ export function isReplicateImageModelId(
   value: string
 ): value is ReplicateImageModelId {
   return value in REPLICATE_IMAGE_MODELS;
+}
+
+export function isUnavailableReplicateImageModelId(value?: string | null) {
+  return !!value && UNAVAILABLE_IMAGE_MODEL_IDS.has(value);
+}
+
+export function normalizeReplicateImageModelId(
+  modelId?: string | null
+): ReplicateImageModelId {
+  return modelId && isReplicateImageModelId(modelId)
+    ? modelId
+    : DEFAULT_IMAGE_MODEL;
 }
 
 export function resolveReplicateImageModel(

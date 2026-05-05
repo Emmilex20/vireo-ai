@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils"
 
 const items = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/explore", label: "Inspire", icon: Sparkles },
+  { href: "/templates", label: "Inspire", icon: Sparkles },
   { href: "/studio", label: "Create", icon: Plus },
   { href: "/video-projects", label: "Tools", icon: Grid2x2 },
   { href: "/profile", label: "Profile", icon: UserRound },

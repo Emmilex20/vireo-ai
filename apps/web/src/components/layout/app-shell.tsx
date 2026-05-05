@@ -17,12 +17,12 @@ import {
   Users,
   Video
 } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 import { CreditsBadge } from "@/components/billing/credits-badge";
 import { NotificationNavBadge } from "@/components/notifications/notification-nav-badge";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { StudioHomeSidebar } from "@/components/studio/studio-home-sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { VireonUserButton } from "@/components/layout/vireon-user-button";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -236,14 +236,8 @@ export function AppShell({ children }: AppShellProps) {
                   <span className="sm:hidden">Upgrade</span>
                   <CreditCard className="hidden size-4 sm:block" />
                 </Link>
-                <div className="rounded-full border border-white/10 bg-white/5 p-0.5 sm:p-1">
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: "h-8 w-8 sm:h-9 sm:w-9"
-                      }
-                    }}
-                  />
+                <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 p-0.5 sm:size-10 sm:p-1">
+                  <VireonUserButton avatarBox="h-8 w-8 sm:h-8 sm:w-8" />
                 </div>
               </div>
 
@@ -254,13 +248,7 @@ export function AppShell({ children }: AppShellProps) {
                 <NotificationNavBadge />
 
                 <div className="rounded-full border border-white/10 bg-white/5 p-1">
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: "h-9 w-9"
-                      }
-                    }}
-                  />
+                  <VireonUserButton avatarBox="h-9 w-9" />
                 </div>
               </div>
             </div>

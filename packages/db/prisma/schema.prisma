@@ -42,6 +42,7 @@ model User {
   subscription Subscription?
   subscriptionRenewals SubscriptionRenewal[]
   subscriptionCancelFeedback SubscriptionCancelFeedback[]
+  curatedTemplates Template[] @relation("TemplateAdmin")
   referredBy User? @relation("UserReferral", fields: [referredById], references: [id])
   referrals  User[] @relation("UserReferral")
 }
@@ -137,6 +138,7 @@ model GenerationJob {
   asset             Asset?
   character         Character?
   creditLedger      CreditLedger[]
+  templates         Template[]
 }
 
 model Character {
@@ -299,6 +301,36 @@ model Asset {
   comments      AssetComment[]
   notifications Notification[]
   moderationLogs ModerationAuditLog[]
+  templates      Template[]
+}
+
+model Template {
+  id                    String   @id @default(cuid())
+  title                 String
+  type                  String
+  category              String
+  prompt                String
+  negativePrompt        String?
+  previewUrl            String
+  thumbnailUrl          String?
+  sourceAssetId         String?
+  sourceGenerationJobId String?
+  modelId               String?
+  settings              Json?
+  status                String   @default("draft")
+  sortOrder             Int      @default(0)
+  createdByAdminId      String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  createdByAdmin      User?          @relation("TemplateAdmin", fields: [createdByAdminId], references: [id], onDelete: SetNull)
+  sourceAsset         Asset?         @relation(fields: [sourceAssetId], references: [id], onDelete: SetNull)
+  sourceGenerationJob GenerationJob? @relation(fields: [sourceGenerationJobId], references: [id], onDelete: SetNull)
+
+  @@index([status, sortOrder, createdAt])
+  @@index([type, status])
+  @@index([sourceAssetId])
+  @@index([sourceGenerationJobId])
 }
 
 model ModerationAuditLog {

@@ -255,7 +255,7 @@ export function MobileVideoCreatorPage({
 
   return (
     <section className="lg:hidden">
-      <div className="space-y-4 pb-28">
+      <div className="space-y-4 pb-48">
         <Panel className="overflow-hidden p-0">
           <div className="relative flex aspect-video items-center justify-center bg-[#0b0e10]">
             {videoUrl ? (
@@ -574,15 +574,15 @@ export function MobileVideoCreatorPage({
         </details>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#090b0d]/95 p-3 backdrop-blur">
-        <div className="flex gap-2">
-          <Button onClick={() => void onGenerate()} disabled={!canGenerate} className="h-12 flex-1 rounded-2xl bg-[#2dd4bf] font-semibold text-black hover:bg-[#5eead4]">
-            {loading ? "Generating..." : `Generate · ${videoCost}`}
+      <div className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-107.5 rounded-[1.35rem] border border-white/10 bg-[#101316]/94 p-2.5 shadow-[0_18px_55px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+        <div className="flex items-center gap-2">
+          <Button onClick={() => void onGenerate()} disabled={!canGenerate} className="h-12 min-w-0 flex-1 rounded-[1.1rem] bg-[#2dd4bf] text-sm font-bold text-black shadow-[0_12px_28px_rgba(45,212,191,0.18)] hover:bg-[#5eead4]">
+            {loading ? "Generating..." : `Generate video - ${videoCost} credits`}
           </Button>
-          <Button variant="outline" disabled={!canGenerateAnotherTake} onClick={() => void onGenerateAnotherTake()} className="h-12 rounded-2xl border-white/10 bg-white/5 px-4 text-white">
+          <Button variant="outline" disabled={!canGenerateAnotherTake} onClick={() => void onGenerateAnotherTake()} className="h-12 w-12 shrink-0 rounded-[1.1rem] border-white/10 bg-white/5 p-0 text-white" aria-label="Generate another take">
             <RotateCcw className="size-4" />
           </Button>
-          <Button variant="outline" onClick={onResetSession} className="h-12 rounded-2xl border-white/10 bg-white/5 px-4 text-white">
+          <Button variant="outline" onClick={onResetSession} className="hidden h-12 rounded-[1.1rem] border-white/10 bg-white/5 px-4 text-xs font-semibold text-white min-[390px]:inline-flex">
             Reset
           </Button>
         </div>

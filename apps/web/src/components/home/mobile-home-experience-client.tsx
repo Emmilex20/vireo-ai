@@ -142,12 +142,12 @@ export function MobileHomeExperienceClient({
   return (
     <div className="space-y-5 overflow-x-hidden pb-1 sm:hidden">
       {showOffer ? (
-        <section className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#101214] shadow-[0_16px_42px_rgba(0,0,0,0.34)]">
+        <section className="overflow-hidden rounded-3xl border border-white/10 bg-[#101214] shadow-[0_16px_42px_rgba(0,0,0,0.34)]">
           <div className="relative p-4">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.2),transparent_45%)]" />
             <div className="relative flex items-start justify-between gap-3">
               <div>
-                <p className="max-w-[17rem] text-sm leading-6 text-white">
+                <p className="max-w-68 text-sm leading-6 text-white">
                   Limited-time offer! Unlock a year of faster creation at 50%
                   off.
                 </p>
@@ -211,7 +211,7 @@ export function MobileHomeExperienceClient({
                 href={card.href}
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-[#17181c] p-2 shadow-[0_12px_30px_rgba(0,0,0,0.24)]"
               >
-                <div className="relative aspect-[0.82] overflow-hidden rounded-[1rem] bg-white/6">
+                <div className="relative aspect-[0.82] overflow-hidden rounded-2xl bg-white/6">
                   {media?.mediaUrl ? (
                     media.mediaType === "video" ? (
                       <video
@@ -336,7 +336,7 @@ export function MobileHomeExperienceClient({
               href={card.href}
               className="group flex items-center gap-3 rounded-2xl border border-primary/60 bg-[#0d1110] p-3 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
             >
-              <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-[1rem] bg-white/5">
+              <div className="relative size-18 shrink-0 overflow-hidden rounded-2xl bg-white/5">
                 {card.mediaUrl ? (
                   card.mediaType === "video" ? (
                     <video
@@ -391,7 +391,7 @@ export function MobileHomeExperienceClient({
           </div>
 
           <article className="rounded-2xl border border-primary/60 bg-[#111316] p-2 shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
-            <div className="relative h-36 overflow-hidden rounded-[1rem] border border-white/10">
+            <div className="relative h-36 overflow-hidden rounded-2xl border border-white/10">
               {featuredModelCard.mediaUrl ? (
                 featuredModelCard.mediaType === "video" ? (
                   <video

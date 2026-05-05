@@ -177,7 +177,7 @@ export default async function PublicAssetPage({ params }: Props) {
                 Public creation
               </div>
 
-              <h1 className="mt-4 font-(family-name:--font-heading) text-3xl font-bold text-white">
+              <h1 className="mt-4 font-heading text-3xl font-bold text-white">
                 {asset.title || "Untitled creation"}
               </h1>
 
@@ -259,7 +259,7 @@ export default async function PublicAssetPage({ params }: Props) {
                 <div className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
                   Keep exploring
                 </div>
-                <h2 className="mt-4 font-(family-name:--font-heading) text-2xl font-bold text-white">
+                <h2 className="mt-4 font-heading text-2xl font-bold text-white">
                   Related creations
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
@@ -311,7 +311,7 @@ export default async function PublicAssetPage({ params }: Props) {
                     </div>
 
                     <div className="p-4">
-                      <h3 className="line-clamp-2 font-(family-name:--font-heading) text-lg font-semibold text-white">
+                      <h3 className="line-clamp-2 font-heading text-lg font-semibold text-white">
                         {item.title || "Untitled creation"}
                       </h3>
 

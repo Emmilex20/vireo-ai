@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AssetCard } from "@/components/assets/asset-card";
@@ -85,6 +86,7 @@ export function FollowingFeedClient() {
       const typeMatch = filter === "all" || mediaTypeOf(asset) === filter;
       return typeMatch && matchesSearch(asset);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assets, filter, query]);
 
   function openAsset(asset: FeedAsset) {
@@ -124,13 +126,13 @@ export function FollowingFeedClient() {
 
   if (loading) {
     return (
-      <main className="mx-auto w-full max-w-[1400px] px-4 py-8">
+      <main className="mx-auto w-full max-w-350 px-4 py-8">
         <div className="h-10 w-64 rounded bg-white/10" />
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="h-72 rounded-[1.5rem] border border-white/10 bg-white/5"
+              className="h-72 rounded-3xl border border-white/10 bg-white/5"
             />
           ))}
         </div>
@@ -139,15 +141,15 @@ export function FollowingFeedClient() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+    <main className="mx-auto w-full max-w-350 px-4 py-8 sm:px-6">
+      <section className="rounded-4xl border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
               Following Feed
             </div>
 
-            <h1 className="mt-4 font-[family-name:var(--font-heading)] text-3xl font-bold text-white sm:text-4xl">
+            <h1 className="mt-4 font-heading text-3xl font-bold text-white sm:text-4xl">
               Creations from creators you follow
             </h1>
 
@@ -186,7 +188,7 @@ export function FollowingFeedClient() {
         </div>
 
         {filteredAssets.length === 0 ? (
-          <div className="mt-8 rounded-[1.5rem] border border-dashed border-white/10 bg-black/20 p-10 text-center">
+          <div className="mt-8 rounded-3xl border border-dashed border-white/10 bg-black/20 p-10 text-center">
             <p className="text-lg font-medium text-white">
               No following feed results found
             </p>
@@ -234,14 +236,16 @@ export function FollowingFeedClient() {
                 {asset.creator?.username ? (
                   <a
                     href={`/u/${asset.creator.username}`}
-                    className="mt-3 flex items-center gap-3 rounded-[1rem] border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
+                    className="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 transition hover:bg-white/5"
                   >
                     <div className="flex size-9 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
                       {asset.creator.avatarUrl ? (
-                        <img
+                        <Image
                           src={asset.creator.avatarUrl}
                           alt={asset.creator.displayName || asset.creator.username}
-                          className="h-full w-full object-cover"
+                          width={36}
+                          height={36}
+                          className="size-full object-cover"
                         />
                       ) : (
                         <span className="text-xs font-semibold text-white">

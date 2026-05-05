@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Coins } from "lucide-react";
-import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { VireonUserButton } from "@/components/layout/vireon-user-button";
 
 export function HeaderAuth() {
   const { isLoaded, userId } = useAuth();
@@ -93,14 +94,7 @@ export function HeaderAuth() {
       </Link>
 
       <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#1a1d21] shadow-[0_12px_24px_rgba(0,0,0,0.22)] sm:size-11">
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "h-8 w-8 sm:h-9 sm:w-9",
-              userButtonTrigger: "h-full w-full rounded-full p-0"
-            }
-          }}
-        />
+        <VireonUserButton avatarBox="h-8 w-8 sm:h-9 sm:w-9" />
       </div>
     </div>
   );
