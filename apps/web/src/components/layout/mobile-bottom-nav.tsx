@@ -7,6 +7,7 @@ import {
   AudioLines,
   Clapperboard,
   Compass,
+  FolderOpen,
   Grid2x2,
   Home,
   ImageIcon,
@@ -23,7 +24,7 @@ const items = [
   { href: "/templates", label: "Inspire", icon: Sparkles },
   { href: "/studio", label: "Create", icon: Plus },
   { href: "/video-projects", label: "Tools", icon: Grid2x2 },
-  { href: "/profile", label: "Profile", icon: UserRound },
+  { href: "/assets", label: "Assets", icon: FolderOpen },
 ]
 
 const createItems = [

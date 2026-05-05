@@ -447,7 +447,7 @@ export function TemplatesGalleryClient() {
           </button>
 
           <div
-            className="grid w-full max-w-6xl overflow-hidden rounded-3xl border border-white/10 bg-[#151719] shadow-[0_34px_110px_rgba(0,0,0,0.58)] lg:max-h-[92vh] lg:grid-cols-[minmax(0,1fr)_30rem]"
+            className="grid max-h-[calc(100dvh-2rem)] w-full max-w-6xl touch-pan-y overflow-y-auto overscroll-contain rounded-3xl border border-white/10 bg-[#151719] shadow-[0_34px_110px_rgba(0,0,0,0.58)] lg:max-h-[92vh] lg:grid-cols-[minmax(0,1fr)_30rem] lg:overflow-hidden"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex min-h-0 items-center justify-center bg-[#101112] p-3 sm:p-8">
