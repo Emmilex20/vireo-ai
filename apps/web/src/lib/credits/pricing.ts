@@ -1,4 +1,4 @@
-export type GenerationType = "image" | "video";
+export type GenerationType = "image" | "video" | "audio";
 export type ModelTier = "cheap" | "standard" | "premium";
 export type CreditResolution = "low" | "medium" | "high" | "hd";
 
@@ -37,6 +37,7 @@ export const CREDIT_PRICING = {
   base: {
     image: 5,
     video: 40,
+    audio: 5,
   },
   modelMultipliers: {
     cheap: 0.85,
@@ -96,6 +97,8 @@ const PREMIUM_MODEL_HINTS = [
   "seedance-2",
   "flux-2-max",
   "nano-banana-pro",
+  "elevenlabs/v3",
+  "speech-2.8-hd",
 ];
 
 const CHEAP_MODEL_HINTS = [
@@ -106,6 +109,7 @@ const CHEAP_MODEL_HINTS = [
   "p-video",
   "z-image",
   "openart",
+  "turbo",
 ];
 
 export function inferModelTier(modelId?: string | null): ModelTier {
@@ -149,7 +153,7 @@ export function calculateGenerationCredits(
   }
 
   const durationMultiplier =
-    generationType === "video"
+    generationType === "video" || generationType === "audio"
       ? Math.min(
           Math.max(
             (input.durationSeconds ?? CREDIT_PRICING.durationBaseSeconds) /

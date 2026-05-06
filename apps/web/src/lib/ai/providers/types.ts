@@ -49,6 +49,23 @@ export type VideoGenerationInput = {
   audioUrl?: string;
 };
 
+export type AudioGenerationInput = {
+  prompt: string;
+  modelId?: string;
+  voice?: string;
+  voiceId?: string;
+  speed?: number;
+  stability?: number;
+  similarityBoost?: number;
+  style?: number;
+  languageCode?: string;
+  emotion?: string;
+  pitch?: number;
+  volume?: number;
+  format?: string;
+  sampleRate?: number;
+};
+
 export type ImageProvider = {
   name: string;
   createImageJob(input: ImageGenerationInput): Promise<ProviderJobResult>;
@@ -59,4 +76,10 @@ export type VideoProvider = {
   name: string;
   createVideoJob(input: VideoGenerationInput): Promise<ProviderJobResult>;
   getVideoJobStatus(providerJobId: string): Promise<ProviderJobStatus>;
+};
+
+export type AudioProvider = {
+  name: string;
+  createAudioJob(input: AudioGenerationInput): Promise<ProviderJobResult>;
+  getAudioJobStatus(providerJobId: string): Promise<ProviderJobStatus>;
 };

@@ -1,5 +1,6 @@
 import { mockImageProvider } from "./mock-image-provider";
 import { mockVideoProvider } from "./mock-video-provider";
+import { replicateAudioProvider } from "./replicate-audio-provider";
 import { replicateImageProvider } from "./replicate-image-provider";
 import { replicateVideoProvider } from "./replicate-video-provider";
 
@@ -19,6 +20,10 @@ export function getVideoProvider() {
   return mockVideoProvider;
 }
 
+export function getAudioProvider() {
+  return replicateAudioProvider;
+}
+
 export function getImageProviderByName(name?: string | null) {
   if (name === replicateImageProvider.name) return replicateImageProvider;
   if (name === mockImageProvider.name) return mockImageProvider;
@@ -31,4 +36,10 @@ export function getVideoProviderByName(name?: string | null) {
   if (name === mockVideoProvider.name) return mockVideoProvider;
 
   return getVideoProvider();
+}
+
+export function getAudioProviderByName(name?: string | null) {
+  if (name === replicateAudioProvider.name) return replicateAudioProvider;
+
+  return getAudioProvider();
 }

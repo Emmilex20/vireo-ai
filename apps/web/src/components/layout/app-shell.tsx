@@ -76,6 +76,14 @@ const navItems = [
     icon: Users
   },
   {
+    href: "/audio",
+    label: "Audio",
+    title: "Audio Studio",
+    description: "Create voice-overs and reusable audio concepts",
+    activeDescription: "Voice-over workflow",
+    icon: AudioLines
+  },
+  {
     href: "/pricing",
     label: "Pricing",
     title: "Pricing",
@@ -114,7 +122,7 @@ const studioMobileNavSections: Array<{
       { href: "/studio", label: "Image", icon: ImageIcon, mode: "image" },
       { href: "/character", label: "Character", icon: Users },
       { href: comingSoonHref("World Builder"), label: "World", icon: Globe2 },
-      { href: comingSoonHref("Audio Studio"), label: "Audio", icon: AudioLines },
+      { href: "/audio", label: "Audio", icon: AudioLines },
     ],
   },
   {

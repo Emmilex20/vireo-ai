@@ -37,7 +37,7 @@ const quickActions = [
   { label: "Image", icon: ImageIcon, href: "/studio" },
   { label: "Character", icon: Users, href: "/character" },
   { label: "World", icon: Compass, href: "/explore" },
-  { label: "Audio", icon: AudioLines, href: "/coming-soon?feature=Audio%20Studio" },
+  { label: "Audio", icon: AudioLines, href: "/audio" },
   { label: "Story", icon: Film, href: "/video-projects" },
 ] as const;
 

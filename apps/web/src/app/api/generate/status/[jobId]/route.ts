@@ -34,6 +34,9 @@ export async function GET(
     storageReason: job.storageReason,
     storagePublicId: job.storagePublicId,
     prompt: job.prompt,
+    modelId: job.modelId,
+    creditsUsed: job.creditsUsed,
+    settings: job.settings,
     createdAt: job.createdAt
   });
 }

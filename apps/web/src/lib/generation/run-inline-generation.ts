@@ -1,6 +1,8 @@
 import {
+  completeAudioJob,
   completeImageJob,
   completeVideoJob,
+  failAudioJob,
   failImageJob,
   failVideoJob
 } from "@vireon/db";
@@ -17,6 +19,7 @@ function sleep(ms: number) {
 const INLINE_GENERATION_TIMEOUT_MS = 5 * 60 * 1000;
 const INLINE_IMAGE_POLL_INTERVAL_MS = 3000;
 const INLINE_VIDEO_POLL_INTERVAL_MS = 5000;
+const INLINE_AUDIO_POLL_INTERVAL_MS = 3000;
 
 export async function runGenerationJobInline(
   job: ProcessableGenerationJob
@@ -25,6 +28,8 @@ export async function runGenerationJobInline(
   const pollIntervalMs =
     currentJob.type === "video"
       ? INLINE_VIDEO_POLL_INTERVAL_MS
+      : currentJob.type === "audio"
+        ? INLINE_AUDIO_POLL_INTERVAL_MS
       : INLINE_IMAGE_POLL_INTERVAL_MS;
   const deadline = Date.now() + INLINE_GENERATION_TIMEOUT_MS;
 
@@ -49,6 +54,11 @@ export async function runGenerationJobInline(
           currentJob.id,
           "Video generation timed out while running without workers."
         )
+      : currentJob.type === "audio"
+        ? await failAudioJob(
+            currentJob.id,
+            "Audio generation timed out while running without workers."
+          )
       : await failImageJob(
           currentJob.id,
           "Image generation timed out while running without workers."
@@ -60,7 +70,9 @@ export async function runGenerationJobInline(
 }
 
 export type InlineGenerationJobResult =
+  | Awaited<ReturnType<typeof completeAudioJob>>
   | Awaited<ReturnType<typeof completeImageJob>>
   | Awaited<ReturnType<typeof completeVideoJob>>
+  | Awaited<ReturnType<typeof failAudioJob>>
   | Awaited<ReturnType<typeof failImageJob>>
   | Awaited<ReturnType<typeof failVideoJob>>;

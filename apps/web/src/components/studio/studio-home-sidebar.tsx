@@ -47,7 +47,7 @@ const createLinks: DesktopNavItem[] = [
   { label: "Image", href: "/studio", icon: ImageIcon, mode: "image" },
   { label: "Character", href: "/character", icon: Users },
   { label: "World", href: comingSoonHref("World Builder"), icon: Globe2 },
-  { label: "Audio", href: comingSoonHref("Audio Studio"), icon: AudioLines },
+  { label: "Audio", href: "/audio", icon: AudioLines },
 ];
 
 const sidebarSections = [

@@ -30,7 +30,7 @@ const items = [
 const createItems = [
   { href: "/studio", label: "Image", icon: ImageIcon, mode: "image" },
   { href: "/studio", label: "Video", icon: Clapperboard, mode: "video" },
-  { href: "/coming-soon?feature=Audio%20Studio", label: "Audio", icon: AudioLines },
+  { href: "/audio", label: "Audio", icon: AudioLines },
   { href: "/character", label: "Character", icon: UserRound },
   { href: "/explore", label: "World", icon: Compass },
 ]

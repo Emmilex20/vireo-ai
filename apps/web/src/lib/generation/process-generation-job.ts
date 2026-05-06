@@ -1,12 +1,15 @@
 import {
+  completeAudioJob,
   completeImageJob,
   completeVideoJob,
+  failAudioJob,
   failImageJob,
   failVideoJob,
   markGenerationFailover
 } from "@vireon/db";
 import { getFallbackProviderName } from "@/lib/ai/providers/failover";
 import {
+  getAudioProviderByName,
   getImageProviderByName,
   getVideoProviderByName
 } from "@/lib/ai/providers/registry";
@@ -39,12 +42,15 @@ export type ProcessableGenerationJob = {
   fps?: number | null;
   sourceImageUrl?: string | null;
   sourceAssetId?: string | null;
+  settings?: unknown;
 };
 
 type ProcessedGenerationJob =
   | ProcessableGenerationJob
+  | Awaited<ReturnType<typeof completeAudioJob>>
   | Awaited<ReturnType<typeof completeImageJob>>
   | Awaited<ReturnType<typeof completeVideoJob>>
+  | Awaited<ReturnType<typeof failAudioJob>>
   | Awaited<ReturnType<typeof failImageJob>>
   | Awaited<ReturnType<typeof failVideoJob>>;
 
@@ -188,6 +194,60 @@ export async function processGenerationJob(
       const failedJob = await failVideoJob(
         job.id,
         status.error || "Video provider generation failed"
+      );
+
+      await sendGenerationFailedEmailNotification(job.userId);
+
+      return {
+        status: "failed",
+        job: failedJob
+      };
+    }
+
+    return {
+      status: "processing",
+      job
+    };
+  }
+
+  if (job.type === "audio") {
+    const provider = getAudioProviderByName(job.providerName);
+    const status = await provider.getAudioJobStatus(job.providerJobId);
+
+    if (status.status === "completed" && status.outputUrl) {
+      const storageResult = await uploadRemoteAssetToCloudinary({
+        url: status.outputUrl,
+        folder: "vireon/audio",
+        resourceType: "video"
+      });
+
+      const completedJob = await completeAudioJob({
+        jobId: job.id,
+        outputUrl: storageResult.url,
+        storageProvider: storageResult.stored ? "cloudinary" : "provider",
+        storageUrl: storageResult.url,
+        storageStatus: storageResult.stored ? "stored" : "fallback",
+        storageReason: storageResult.reason,
+        storagePublicId: storageResult.publicId
+      });
+
+      await captureReservedCredits({
+        userId: completedJob.userId,
+        amount: completedJob.creditsUsed,
+        generationId: completedJob.id,
+        reason: "Audio generation completed"
+      });
+
+      return {
+        status: "completed",
+        job: completedJob
+      };
+    }
+
+    if (status.status === "failed") {
+      const failedJob = await failAudioJob(
+        job.id,
+        status.error || "Audio provider generation failed"
       );
 
       await sendGenerationFailedEmailNotification(job.userId);

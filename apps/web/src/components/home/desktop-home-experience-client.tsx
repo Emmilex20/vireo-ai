@@ -61,7 +61,7 @@ const heroCategories: DesktopHeroCategory[] = [
   { label: "Image", icon: ImageIcon, href: "/studio" },
   { label: "Character", icon: Users, href: "/character" },
   { label: "World", icon: Compass, href: "/explore", accent: "New" },
-  { label: "Audio", icon: AudioLines, href: "/studio" },
+  { label: "Audio", icon: AudioLines, href: "/audio" },
 ] as const;
 
 const showcaseMeta = [

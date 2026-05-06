@@ -129,6 +129,7 @@ model GenerationJob {
   fps               Int?
   sourceImageUrl    String?
   sourceAssetId     String?
+  settings          Json?
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

@@ -30,7 +30,12 @@ export async function GET() {
 
       return {
         ...historyItem,
-        mediaType: historyItem.type === "video" ? "video" : "image",
+        mediaType:
+          historyItem.type === "video"
+            ? "video"
+            : historyItem.type === "audio"
+              ? "audio"
+              : "image",
         modelId: historyItem.modelId ?? null,
 
         // image fields
@@ -60,6 +65,7 @@ export async function GET() {
           historyItem.type === "video" ? historyItem.sourceAssetId : null,
         failureReason: historyItem.failureReason,
         refundedAt: historyItem.refundedAt,
+        settings: historyItem.settings,
       };
     }),
   });
