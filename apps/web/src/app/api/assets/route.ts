@@ -86,9 +86,10 @@ export async function DELETE(req: Request) {
       generationJob?.storageProvider === "cloudinary" &&
       generationJob.storagePublicId
     ) {
+      const mediaType = inferMediaType(asset);
       const result = await deleteCloudinaryAsset({
         publicId: generationJob.storagePublicId,
-        resourceType: inferMediaType(asset),
+        resourceType: mediaType === "image" ? "image" : "video",
       });
 
       if (!result.deleted) {

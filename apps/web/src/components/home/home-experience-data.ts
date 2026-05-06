@@ -14,6 +14,8 @@ export type HomeExperienceCard = {
 };
 
 function normalizePost(post: PublicPost): HomeExperienceCard {
+  const mediaType = inferMediaType(post.asset);
+
   return {
     id: post.id,
     title:
@@ -26,7 +28,7 @@ function normalizePost(post: PublicPost): HomeExperienceCard {
       "See what creators are making with prompts, motion, and scene-driven ideas.",
     href: `/a/${post.asset.id}`,
     mediaUrl: post.asset.thumbnailUrl || post.asset.fileUrl,
-    mediaType: inferMediaType(post.asset),
+    mediaType: mediaType === "video" ? "video" : "image",
     creator: post.user?.username || post.user?.displayName || "creator",
   };
 }

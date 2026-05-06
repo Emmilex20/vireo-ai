@@ -95,25 +95,29 @@ export async function ExploreFeed() {
       </div>
 
       <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {featuredPosts.map((post) => (
-          <ExploreCard
-            key={post.id}
-            title={
-              post.caption ||
-              post.asset.title ||
-              post.asset.prompt ||
-              "Published creation"
-            }
-            creator={post.user?.displayName || post.user?.username || "creator"}
-            creatorUsername={post.user?.username || undefined}
-            likes={post.likesCount ?? 0}
-            views={`${post.commentsCount ?? 0} comments`}
-            height="medium"
-            mediaUrl={post.asset.fileUrl}
-            mediaType={inferMediaType(post.asset)}
-            href={`/a/${post.asset.id}`}
-          />
-        ))}
+        {featuredPosts.map((post) => {
+          const mediaType = inferMediaType(post.asset);
+
+          return (
+            <ExploreCard
+              key={post.id}
+              title={
+                post.caption ||
+                post.asset.title ||
+                post.asset.prompt ||
+                "Published creation"
+              }
+              creator={post.user?.displayName || post.user?.username || "creator"}
+              creatorUsername={post.user?.username || undefined}
+              likes={post.likesCount ?? 0}
+              views={`${post.commentsCount ?? 0} comments`}
+              height="medium"
+              mediaUrl={post.asset.fileUrl}
+              mediaType={mediaType === "video" ? "video" : "image"}
+              href={`/a/${post.asset.id}`}
+            />
+          );
+        })}
       </div>
     </section>
   );
