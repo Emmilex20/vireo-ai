@@ -4,7 +4,7 @@
 import Image from "next/image";
 import {
   ArrowDownToLine,
-  CheckCircle2,
+  AudioLines,
   Clapperboard,
   Eye,
   FolderOpen,
@@ -20,10 +20,11 @@ import { getSafeMediaUrl } from "@/lib/media/urls";
 import { AssetDetailModal } from "./asset-detail-modal";
 import { HistoryCard } from "./history-card";
 
-type MediaFilter = "all" | "image" | "video";
+type MediaType = "image" | "video" | "audio";
+type MediaFilter = "all" | MediaType;
 type SortMode = "newest" | "oldest";
 type StatusFilter = "all" | "completed" | "processing" | "failed";
-type LibraryTab = "image" | "video";
+type LibraryTab = MediaType;
 
 type Asset = {
   id: string;
@@ -32,14 +33,14 @@ type Asset = {
   fileUrl: string;
   createdAt: string;
   isPublic?: boolean;
-  mediaType: "image" | "video";
+  mediaType: MediaType;
   sourceImageUrl?: string | null;
   sourceAssetId?: string | null;
 };
 
 type HistoryItem = {
   id: string;
-  mediaType?: "image" | "video";
+  mediaType?: MediaType;
   modelId?: string | null;
   prompt?: string | null;
   negativePrompt?: string | null;
@@ -133,8 +134,10 @@ export function AssetsPageClient() {
     loadData();
   }, []);
 
-  function mediaTypeOf(item: { mediaType?: "image" | "video" }) {
-    return item.mediaType === "video" ? "video" : "image";
+  function mediaTypeOf(item: { mediaType?: MediaType | string | null }): MediaType {
+    if (item.mediaType === "video") return "video";
+    if (item.mediaType === "audio") return "audio";
+    return "image";
   }
 
   function matchesSearch(item: {
@@ -176,6 +179,11 @@ export function AssetsPageClient() {
     [assets]
   );
 
+  const audioAssets = useMemo(
+    () => assets.filter((asset) => mediaTypeOf(asset) === "audio"),
+    [assets]
+  );
+
   const filteredAssets = useMemo(() => {
     const result = assets.filter((asset) => {
       const typeMatch = filter === "all" || mediaTypeOf(asset) === filter;
@@ -195,6 +203,11 @@ export function AssetsPageClient() {
     [filteredAssets]
   );
 
+  const filteredAudioAssets = useMemo(
+    () => filteredAssets.filter((asset) => mediaTypeOf(asset) === "audio"),
+    [filteredAssets]
+  );
+
   const filteredHistory = useMemo(() => {
     const result = history.filter((item) => {
       const typeMatch = filter === "all" || mediaTypeOf(item) === filter;
@@ -208,7 +221,6 @@ export function AssetsPageClient() {
 
   const mobilePreviewAssets = filteredAssets.slice(0, 4);
   const mobileHistory = filteredHistory.slice(0, 3);
-  const completedHistoryCount = history.filter((item) => item.status === "completed").length;
   const failedHistoryCount = history.filter((item) => item.status === "failed").length;
 
   function openLibrary(tab: LibraryTab = "image") {
@@ -405,7 +417,7 @@ export function AssetsPageClient() {
               <StatTile icon={LayoutGrid} label="Total" value={assets.length} />
               <StatTile icon={ImageIcon} label="Images" value={imageAssets.length} />
               <StatTile icon={Clapperboard} label="Videos" value={videoAssets.length} />
-              <StatTile icon={CheckCircle2} label="Done" value={completedHistoryCount} />
+              <StatTile icon={AudioLines} label="Audio" value={audioAssets.length} />
             </div>
           </div>
         </div>
@@ -437,6 +449,11 @@ export function AssetsPageClient() {
                 label={`Videos ${videoAssets.length}`}
                 active={filter === "video"}
                 onClick={() => setFilter("video")}
+              />
+              <FilterButton
+                label={`Audio ${audioAssets.length}`}
+                active={filter === "audio"}
+                onClick={() => setFilter("audio")}
               />
               <FilterButton
                 label="Newest"
@@ -477,7 +494,11 @@ export function AssetsPageClient() {
           {filteredAssets.length > 4 ? (
             <button
               type="button"
-              onClick={() => openLibrary(filter === "video" ? "video" : "image")}
+              onClick={() =>
+                openLibrary(
+                  filter === "video" ? "video" : filter === "audio" ? "audio" : "image"
+                )
+              }
               className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 text-sm font-semibold text-primary transition hover:bg-primary/15 md:hidden"
             >
               View all
@@ -605,6 +626,7 @@ export function AssetsPageClient() {
         onTabChange={setLibraryTab}
         images={filteredImageAssets}
         videos={filteredVideoAssets}
+        audio={filteredAudioAssets}
         onOpen={(asset) => {
           setLibraryOpen(false);
           openAsset(asset);
@@ -695,7 +717,10 @@ function AssetTile({
 }) {
   const safeFileUrl = getSafeMediaUrl(asset.fileUrl);
   const isVideo = asset.mediaType === "video";
-  const title = asset.title || (isVideo ? "Generated video" : "Generated image");
+  const isAudio = asset.mediaType === "audio";
+  const title =
+    asset.title ||
+    (isAudio ? "Generated audio" : isVideo ? "Generated video" : "Generated image");
 
   return (
     <article
@@ -711,7 +736,20 @@ function AssetTile({
       className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#11161c] shadow-[0_18px_60px_rgba(0,0,0,0.24)] outline-none transition hover:-translate-y-0.5 hover:border-primary/25 hover:bg-[#141a21] focus-visible:border-primary/50"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-black/30">
-        {isVideo ? (
+        {isAudio ? (
+          <div className="relative z-10 flex h-full flex-col justify-between bg-[radial-gradient(circle_at_30%_18%,rgba(236,72,153,0.34),transparent_34%),radial-gradient(circle_at_72%_45%,rgba(16,185,129,0.22),transparent_32%),linear-gradient(145deg,#111827,#05070a)] p-4">
+            <div className="flex items-center justify-center pt-6">
+              <AudioWaveform />
+            </div>
+            <audio
+              src={safeFileUrl ?? asset.fileUrl}
+              controls
+              preload="metadata"
+              onClick={(event) => event.stopPropagation()}
+              className="relative z-20 h-9 w-full rounded-full opacity-90"
+            />
+          </div>
+        ) : isVideo ? (
           <video
             src={safeFileUrl ?? asset.fileUrl}
             muted
@@ -739,10 +777,16 @@ function AssetTile({
           </div>
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03),rgba(0,0,0,0.12)_42%,rgba(0,0,0,0.72))]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03),rgba(0,0,0,0.12)_42%,rgba(0,0,0,0.72))]" />
         <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-          {isVideo ? <Clapperboard className="size-3.5" /> : <ImageIcon className="size-3.5" />}
-          {isVideo ? "Video" : "Image"}
+          {isAudio ? (
+            <AudioLines className="size-3.5" />
+          ) : isVideo ? (
+            <Clapperboard className="size-3.5" />
+          ) : (
+            <ImageIcon className="size-3.5" />
+          )}
+          {isAudio ? "Audio" : isVideo ? "Video" : "Image"}
         </span>
         <span
           className={`absolute right-3 top-3 rounded-full border px-2.5 py-1 text-xs font-semibold backdrop-blur ${
@@ -802,6 +846,22 @@ function AssetTile({
   );
 }
 
+function AudioWaveform() {
+  const bars = [22, 38, 58, 84, 112, 138, 96, 70, 48, 32];
+
+  return (
+    <div className="flex h-28 items-center justify-center gap-2 opacity-80">
+      {bars.map((height, index) => (
+        <span
+          key={`${height}-${index}`}
+          className="w-3 rounded-full bg-gradient-to-b from-fuchsia-300 via-primary/70 to-slate-500/50 shadow-[0_0_24px_rgba(16,185,129,0.2)]"
+          style={{ height }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function HistoryCardTile({
   item,
   mediaType,
@@ -809,7 +869,7 @@ function HistoryCardTile({
   onReuseVideo,
 }: {
   item: HistoryItem;
-  mediaType: "image" | "video";
+  mediaType: MediaType;
   onReuseImage: (item: ReuseImageItem) => void;
   onReuseVideo: (item: ReuseVideoItem) => void;
 }) {
@@ -854,6 +914,7 @@ function LibraryModal({
   onTabChange,
   images,
   videos,
+  audio,
   onOpen,
   onTogglePublish,
   publishingAssetId,
@@ -864,13 +925,14 @@ function LibraryModal({
   onTabChange: (tab: LibraryTab) => void;
   images: Asset[];
   videos: Asset[];
+  audio: Asset[];
   onOpen: (asset: Asset) => void;
   onTogglePublish: (assetId: string, nextValue: boolean) => void;
   publishingAssetId: string | null;
 }) {
   if (!open) return null;
 
-  const items = tab === "image" ? images : videos;
+  const items = tab === "image" ? images : tab === "video" ? videos : audio;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70 p-0 backdrop-blur-xl sm:items-center sm:p-5">
@@ -898,7 +960,7 @@ function LibraryModal({
             </button>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/25 p-1">
+          <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-black/25 p-1">
             <TabButton
               label={`Images ${images.length}`}
               active={tab === "image"}
@@ -909,6 +971,11 @@ function LibraryModal({
               active={tab === "video"}
               onClick={() => onTabChange("video")}
             />
+            <TabButton
+              label={`Audio ${audio.length}`}
+              active={tab === "audio"}
+              onClick={() => onTabChange("audio")}
+            />
           </div>
         </div>
 
@@ -916,7 +983,7 @@ function LibraryModal({
           {items.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] p-8 text-center">
               <p className="text-base font-semibold text-white">
-                No {tab === "image" ? "images" : "videos"} here yet
+                No {tab === "image" ? "images" : tab === "video" ? "videos" : "audio"} here yet
               </p>
               <p className="mt-2 text-sm text-slate-400">
                 Finished generations will appear here automatically.
@@ -975,7 +1042,13 @@ function EmptyState({
   kind: "assets" | "history";
 }) {
   const mediaLabel =
-    filter === "all" ? "media" : filter === "image" ? "image" : "video";
+    filter === "all"
+      ? "media"
+      : filter === "image"
+        ? "image"
+        : filter === "video"
+          ? "video"
+          : "audio";
 
   return (
     <div className="rounded-3xl border border-dashed border-white/10 bg-black/20 p-10 text-center">

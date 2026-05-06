@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Copy, Download, ExternalLink, Share2, Trash2, UploadCloud, X } from "lucide-react";
+import { AudioLines, Copy, Download, ExternalLink, Share2, Trash2, UploadCloud, X } from "lucide-react";
 import { useState } from "react";
 import { getSafeMediaUrl } from "@/lib/media/urls";
 import { AssetCommentsPanel } from "./asset-comments-panel";
@@ -33,7 +33,7 @@ type AssetDetailModalProps = {
     prompt?: string | null;
     title?: string | null;
     createdAt: string;
-    mediaType?: "image" | "video";
+    mediaType?: "image" | "video" | "audio";
     isPublic?: boolean;
     sourceAssetId?: string | null;
     creator?: {
@@ -98,7 +98,20 @@ export function AssetDetailModal({
         </button>
 
         <div className="relative flex min-h-70 items-center justify-center bg-black xl:min-h-0">
-          {activeAsset.mediaType === "video" ? (
+          {activeAsset.mediaType === "audio" ? (
+            <div className="flex h-full min-h-96 w-full flex-col items-center justify-center gap-6 bg-[radial-gradient(circle_at_34%_20%,rgba(236,72,153,0.28),transparent_32%),radial-gradient(circle_at_72%_50%,rgba(16,185,129,0.18),transparent_34%),linear-gradient(145deg,#111827,#05070a)] p-6">
+              <div className="flex size-16 items-center justify-center rounded-3xl border border-white/10 bg-white/10 text-primary shadow-[0_0_50px_rgba(16,185,129,0.18)]">
+                <AudioLines className="size-8" />
+              </div>
+              <AssetAudioWaveform />
+              <audio
+                src={safeFileUrl ?? activeAsset.fileUrl}
+                controls
+                autoPlay
+                className="w-full max-w-2xl"
+              />
+            </div>
+          ) : activeAsset.mediaType === "video" ? (
             <video
               src={safeFileUrl ?? activeAsset.fileUrl}
               controls
@@ -107,7 +120,7 @@ export function AssetDetailModal({
             />
           ) : !safeFileUrl ? (
             <div className="flex h-full w-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
-              This asset has an invalid image URL and cannot be previewed here.
+              This asset has an invalid media URL and cannot be previewed here.
             </div>
           ) : (
             <Image
@@ -206,7 +219,7 @@ export function AssetDetailModal({
                 {shared ? "Link copied" : "Share"}
               </button>
 
-              {activeAsset.mediaType !== "video" && onAnimateImage ? (
+              {activeAsset.mediaType === "image" && onAnimateImage ? (
                 <button
                   type="button"
                   onClick={() =>
@@ -262,7 +275,11 @@ export function AssetDetailModal({
                 </span>
 
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                  {activeAsset.mediaType === "video" ? "Video" : "Image"}
+                  {activeAsset.mediaType === "video"
+                    ? "Video"
+                    : activeAsset.mediaType === "audio"
+                      ? "Audio"
+                      : "Image"}
                 </span>
 
                 {asset.mediaType === "video" && asset.sourceAssetId ? (
@@ -283,7 +300,7 @@ export function AssetDetailModal({
               </div>
             </div>
 
-            {asset.mediaType !== "video" ? (
+            {asset.mediaType === "image" ? (
               <RelatedGenerationsPanel assetId={asset.id} />
             ) : null}
 
@@ -299,6 +316,22 @@ export function AssetDetailModal({
         </div>
       </div>
       </div>
+    </div>
+  );
+}
+
+function AssetAudioWaveform() {
+  const bars = [34, 58, 88, 132, 170, 136, 94, 68, 44];
+
+  return (
+    <div className="flex h-44 items-center justify-center gap-3 opacity-85">
+      {bars.map((height, index) => (
+        <span
+          key={`${height}-${index}`}
+          className="w-5 rounded-full bg-gradient-to-b from-fuchsia-300 via-primary/70 to-slate-500/50 shadow-[0_0_38px_rgba(16,185,129,0.22)]"
+          style={{ height }}
+        />
+      ))}
     </div>
   );
 }

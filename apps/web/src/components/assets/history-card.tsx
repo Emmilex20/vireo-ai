@@ -4,7 +4,7 @@ import { resolveReplicateImageModel } from "@/lib/ai/providers/replicate-image-m
 
 type HistoryCardProps = {
   id: string;
-  mediaType?: "image" | "video";
+  mediaType?: "image" | "video" | "audio";
   modelId?: string | null;
   prompt?: string | null;
   negativePrompt?: string | null;
@@ -94,6 +94,8 @@ export function HistoryCard({
   onReuseImage,
   onReuseVideo,
 }: HistoryCardProps) {
+  const mediaLabel =
+    mediaType === "video" ? "Video" : mediaType === "audio" ? "Audio" : "Image";
   const statusClasses =
     status === "completed"
       ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
@@ -106,7 +108,7 @@ export function HistoryCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-heading text-base font-semibold text-white">
-            {mediaType === "video" ? "Video generation" : "Image generation"}
+            {mediaLabel} generation
           </h3>
           <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
             {prompt || "No prompt stored"}
@@ -153,7 +155,7 @@ export function HistoryCard({
         </span>
 
         <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
-          {mediaType === "video" ? "Video" : "Image"}
+          {mediaLabel}
         </span>
 
         {mediaType === "video" && sourceImageUrl ? (
@@ -211,7 +213,7 @@ export function HistoryCard({
               Boost {promptBoost ? "On" : "Off"}
             </span>
           </>
-        ) : (
+        ) : mediaType === "video" ? (
           <>
             {duration ? (
               <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
@@ -246,6 +248,19 @@ export function HistoryCard({
             {fps ? (
               <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
                 {fps} fps
+              </span>
+            ) : null}
+          </>
+        ) : (
+          <>
+            {modelId ? (
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-primary">
+                {modelId}
+              </span>
+            ) : null}
+            {duration ? (
+              <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                {duration}s
               </span>
             ) : null}
           </>
