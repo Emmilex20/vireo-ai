@@ -15,9 +15,6 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
   keywords: SEO_KEYWORDS,
   category: "AI image and video generation",
-  alternates: {
-    canonical: "/"
-  },
   manifest: "/site.webmanifest",
   icons: {
     icon: [
