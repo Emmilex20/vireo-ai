@@ -14,15 +14,19 @@ const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"];
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".opus"];
 
 export function inferMediaType(input: MediaTypeInput): InferredMediaType {
-  const normalizedMediaType = input.mediaType?.toLowerCase();
-  if (normalizedMediaType === "audio") return "audio";
-  if (normalizedMediaType === "video") return "video";
-  if (normalizedMediaType === "image") return "image";
-
   const normalizedMimeType = input.mimeType?.toLowerCase();
   if (normalizedMimeType?.startsWith("audio/")) return "audio";
   if (normalizedMimeType?.startsWith("video/")) return "video";
   if (normalizedMimeType?.startsWith("image/")) return "image";
+
+  const normalizedUrl = input.fileUrl?.toLowerCase() ?? "";
+  if (AUDIO_EXTENSIONS.some((extension) => normalizedUrl.endsWith(extension))) {
+    return "audio";
+  }
+
+  if (VIDEO_EXTENSIONS.some((extension) => normalizedUrl.endsWith(extension))) {
+    return "video";
+  }
 
   const normalizedJobType = input.generationJob?.type?.toLowerCase();
   if (normalizedJobType === "audio") return "audio";
@@ -34,14 +38,10 @@ export function inferMediaType(input: MediaTypeInput): InferredMediaType {
   if (normalizedType === "video") return "video";
   if (normalizedType === "image") return "image";
 
-  const normalizedUrl = input.fileUrl?.toLowerCase() ?? "";
-  if (AUDIO_EXTENSIONS.some((extension) => normalizedUrl.endsWith(extension))) {
-    return "audio";
-  }
-
-  if (VIDEO_EXTENSIONS.some((extension) => normalizedUrl.endsWith(extension))) {
-    return "video";
-  }
+  const normalizedMediaType = input.mediaType?.toLowerCase();
+  if (normalizedMediaType === "audio") return "audio";
+  if (normalizedMediaType === "video") return "video";
+  if (normalizedMediaType === "image") return "image";
 
   return "image";
 }

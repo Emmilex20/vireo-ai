@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import {
   ArrowUpRight,
   AudioLines,
@@ -21,6 +21,7 @@ type MobileHomeCard = {
   subtitle: string;
   href: string;
   mediaUrl?: string | null;
+  posterUrl?: string | null;
   mediaType: "image" | "video";
   creator?: string;
 };
@@ -61,8 +62,9 @@ const latestModels = [
 
 const OFFER_DISMISS_STORAGE_KEY = "vireon_home_offer_dismissed_until";
 const OFFER_DISMISS_COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+let hasHydratedOfferBanner = false;
 
-function shouldShowOfferBanner() {
+function readStoredOfferBannerVisibility() {
   if (typeof window === "undefined") {
     return true;
   }
@@ -71,13 +73,41 @@ function shouldShowOfferBanner() {
   return !dismissedUntil || Number(dismissedUntil) <= Date.now();
 }
 
+function getOfferBannerSnapshot() {
+  if (!hasHydratedOfferBanner) {
+    return true;
+  }
+
+  return readStoredOfferBannerVisibility();
+}
+
+function subscribeOfferBanner(listener: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  hasHydratedOfferBanner = true;
+  window.queueMicrotask(listener);
+  window.addEventListener("storage", listener);
+  window.addEventListener("vireon:offer-dismissed", listener);
+
+  return () => {
+    window.removeEventListener("storage", listener);
+    window.removeEventListener("vireon:offer-dismissed", listener);
+  };
+}
+
 export function MobileHomeExperienceClient({
   spotlightCards,
   suiteCards,
   inspirationImageCards,
   inspirationVideoCards,
 }: MobileHomeExperienceClientProps) {
-  const [showOffer, setShowOffer] = useState(shouldShowOfferBanner);
+  const showOffer = useSyncExternalStore(
+    subscribeOfferBanner,
+    getOfferBannerSnapshot,
+    () => true
+  );
   const [inspirationTab, setInspirationTab] = useState<"image" | "video">(
     "image"
   );
@@ -109,6 +139,7 @@ export function MobileHomeExperienceClient({
       badge: model.badge,
       href: "/studio",
       mediaUrl: source?.mediaUrl,
+      posterUrl: source?.posterUrl,
       mediaType: source?.mediaType ?? (model.badge === "Video" ? "video" : "image"),
     };
   });
@@ -156,7 +187,7 @@ export function MobileHomeExperienceClient({
       OFFER_DISMISS_STORAGE_KEY,
       String(Date.now() + OFFER_DISMISS_COOLDOWN_MS)
     );
-    setShowOffer(false);
+    window.dispatchEvent(new Event("vireon:offer-dismissed"));
   }
 
   return (
@@ -232,25 +263,13 @@ export function MobileHomeExperienceClient({
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-[#17181c] p-2 shadow-[0_12px_30px_rgba(0,0,0,0.24)]"
               >
                 <div className="relative aspect-[0.82] overflow-hidden rounded-2xl bg-white/6">
-                  {media?.mediaUrl ? (
-                    media.mediaType === "video" ? (
-                      <video
-                        src={media.mediaUrl}
-                        muted
-                        autoPlay
-                        loop
-                        playsInline
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Image
-                        src={media.mediaUrl}
-                        alt={card.label}
-                        fill
-                        sizes="50vw"
-                        className="object-cover transition duration-500 group-hover:scale-105"
-                      />
-                    )
+                  {media?.mediaUrl || media?.posterUrl ? (
+                    <MobileHomeVisual
+                      card={media}
+                      alt={card.label}
+                      sizes="50vw"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.28),transparent_42%),linear-gradient(145deg,#12201b,#15171d)] text-primary">
                       <Icon className="size-8" />
@@ -289,25 +308,13 @@ export function MobileHomeExperienceClient({
               href={card.href}
               className="group relative block aspect-[0.86] overflow-hidden rounded-2xl border border-white/10 bg-[#12161f]"
             >
-              {card.mediaUrl ? (
-                card.mediaType === "video" ? (
-                  <video
-                    src={card.mediaUrl}
-                    muted
-                    autoPlay
-                    loop
-                    playsInline
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={card.mediaUrl}
-                    alt={card.title}
-                    fill
-                    sizes="50vw"
-                    className="object-cover"
-                  />
-                )
+              {card.mediaUrl || card.posterUrl ? (
+                <MobileHomeVisual
+                  card={card}
+                  alt={card.title}
+                  sizes="50vw"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
               ) : (
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.2),transparent_30%),linear-gradient(140deg,#123c2f,#102033_55%,#14161c)]" />
               )}
@@ -357,25 +364,13 @@ export function MobileHomeExperienceClient({
               className="group flex items-center gap-3 rounded-2xl border border-primary/60 bg-[#0d1110] p-3 shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
             >
               <div className="relative size-18 shrink-0 overflow-hidden rounded-2xl bg-white/5">
-                {card.mediaUrl ? (
-                  card.mediaType === "video" ? (
-                    <video
-                      src={card.mediaUrl}
-                      muted
-                      autoPlay
-                      loop
-                      playsInline
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Image
-                      src={card.mediaUrl}
-                      alt={card.title}
-                      fill
-                      sizes="72px"
-                      className="object-cover"
-                    />
-                  )
+                {card.mediaUrl || card.posterUrl ? (
+                  <MobileHomeVisual
+                    card={card}
+                    alt={card.title}
+                    sizes="72px"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-white/6 text-primary">
                     <Sparkles className="size-6" />
@@ -412,25 +407,13 @@ export function MobileHomeExperienceClient({
 
           <article className="rounded-2xl border border-primary/60 bg-[#111316] p-2 shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
             <div className="relative h-36 overflow-hidden rounded-2xl border border-white/10">
-              {featuredModelCard.mediaUrl ? (
-                featuredModelCard.mediaType === "video" ? (
-                  <video
-                    src={featuredModelCard.mediaUrl}
-                    muted
-                    autoPlay
-                    loop
-                    playsInline
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={featuredModelCard.mediaUrl}
-                    alt={featuredModelCard.title}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                  />
-                )
+              {featuredModelCard.mediaUrl || featuredModelCard.posterUrl ? (
+                <MobileHomeVisual
+                  card={featuredModelCard}
+                  alt={featuredModelCard.title}
+                  sizes="100vw"
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="h-36 w-full bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.25),transparent_42%),linear-gradient(135deg,#123c2f,#0f1722)]" />
               )}
@@ -497,25 +480,13 @@ export function MobileHomeExperienceClient({
                   index % 5 === 4 ? "h-44" : "h-28"
                 }`}
               >
-                {card.mediaUrl ? (
-                  card.mediaType === "video" ? (
-                    <video
-                      src={card.mediaUrl}
-                      muted
-                      autoPlay
-                      loop
-                      playsInline
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Image
-                      src={card.mediaUrl}
-                      alt={card.title}
-                      fill
-                      sizes={index % 5 === 4 ? "100vw" : "50vw"}
-                      className="object-cover"
-                    />
-                  )
+                {card.mediaUrl || card.posterUrl ? (
+                  <MobileHomeVisual
+                    card={card}
+                    alt={card.title}
+                    sizes={index % 5 === 4 ? "100vw" : "50vw"}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="h-full w-full bg-[linear-gradient(160deg,#1e293b,#111827)]" />
                 )}
@@ -549,5 +520,51 @@ function accentLastWord(text: string) {
       {words.join(" ")}{" "}
       <span className="text-primary">{lastWord}</span>
     </>
+  );
+}
+
+function MobileHomeVisual({
+  card,
+  alt,
+  sizes,
+  className,
+}: {
+  card: MobileHomeCard;
+  alt: string;
+  sizes: string;
+  className: string;
+}) {
+  const imageSrc = card.posterUrl || card.mediaUrl;
+
+  if (card.mediaType === "video" && card.mediaUrl) {
+    return (
+      <>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(34,197,94,0.24),transparent_38%),linear-gradient(135deg,rgba(17,24,39,0.96),rgba(6,14,18,0.98))]" />
+        <video
+          src={card.mediaUrl}
+          poster={card.posterUrl || undefined}
+          muted
+          autoPlay
+          loop
+          playsInline
+          preload="auto"
+          className={`relative z-10 ${className}`}
+        />
+      </>
+    );
+  }
+
+  if (!imageSrc) {
+    return null;
+  }
+
+  return (
+    <Image
+      src={imageSrc}
+      alt={alt}
+      fill
+      sizes={sizes}
+      className={className}
+    />
   );
 }

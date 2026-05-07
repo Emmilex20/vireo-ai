@@ -131,6 +131,11 @@ export function AdminDashboardClient() {
             description="Curate completed generations into reusable public image and video templates."
           />
           <AdminLink
+            href="/admin/homepage"
+            title="Homepage media"
+            description="Choose the images and videos displayed in hero cards, suite cards, models, and inspirations."
+          />
+          <AdminLink
             href="/admin/stuck-jobs"
             title="Stuck jobs"
             description="Review processing jobs and manually retry provider status checks."

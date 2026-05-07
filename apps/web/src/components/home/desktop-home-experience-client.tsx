@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   AudioLines,
   ChevronLeft,
@@ -112,14 +112,39 @@ const characterDropdownLabels = [
 
 const OFFER_DISMISS_STORAGE_KEY = "vireon_home_offer_dismissed_until";
 const OFFER_DISMISS_COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+let hasHydratedOfferBanner = false;
 
-function shouldShowOfferBanner() {
+function readStoredOfferBannerVisibility() {
   if (typeof window === "undefined") {
     return true;
   }
 
   const dismissedUntil = window.localStorage.getItem(OFFER_DISMISS_STORAGE_KEY);
   return !dismissedUntil || Number(dismissedUntil) <= Date.now();
+}
+
+function getOfferBannerSnapshot() {
+  if (!hasHydratedOfferBanner) {
+    return true;
+  }
+
+  return readStoredOfferBannerVisibility();
+}
+
+function subscribeOfferBanner(listener: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  hasHydratedOfferBanner = true;
+  window.queueMicrotask(listener);
+  window.addEventListener("storage", listener);
+  window.addEventListener("vireon:offer-dismissed", listener);
+
+  return () => {
+    window.removeEventListener("storage", listener);
+    window.removeEventListener("vireon:offer-dismissed", listener);
+  };
 }
 
 export function DesktopHomeExperienceClient({
@@ -136,7 +161,11 @@ export function DesktopHomeExperienceClient({
   const [isVideoDropdownOpen, setIsVideoDropdownOpen] = useState(false);
   const [isImageDropdownOpen, setIsImageDropdownOpen] = useState(false);
   const [isCharacterDropdownOpen, setIsCharacterDropdownOpen] = useState(false);
-  const [showOffer, setShowOffer] = useState(shouldShowOfferBanner);
+  const showOffer = useSyncExternalStore(
+    subscribeOfferBanner,
+    getOfferBannerSnapshot,
+    () => true
+  );
   const videoDropdownCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
@@ -155,11 +184,19 @@ export function DesktopHomeExperienceClient({
   );
   const showcaseCards = useMemo(
     () =>
-      spotlightCards.slice(0, 3).map((card, index) => ({
-        ...card,
-        title: showcaseMeta[index]?.title ?? card.title,
-        subtitle: showcaseMeta[index]?.subtitle ?? card.subtitle,
-      })),
+      spotlightCards.slice(0, 3).map((card, index) => {
+        const isCuratedHomepageCard = card.id.startsWith("home_");
+
+        return {
+          ...card,
+          title: isCuratedHomepageCard
+            ? card.title
+            : showcaseMeta[index]?.title ?? card.title,
+          subtitle: isCuratedHomepageCard
+            ? card.subtitle
+            : showcaseMeta[index]?.subtitle ?? card.subtitle,
+        };
+      }),
     [spotlightCards]
   );
   const videoDropdownItems = useMemo<VideoDropdownItem[]>(() => {
@@ -285,7 +322,7 @@ export function DesktopHomeExperienceClient({
       OFFER_DISMISS_STORAGE_KEY,
       String(Date.now() + OFFER_DISMISS_COOLDOWN_MS)
     );
-    setShowOffer(false);
+    window.dispatchEvent(new Event("vireon:offer-dismissed"));
   }
 
   return (
@@ -556,25 +593,13 @@ export function DesktopHomeExperienceClient({
                     className="group relative overflow-hidden rounded-[1.45rem] border border-white/10 bg-[#14181e] shadow-[0_18px_36px_rgba(0,0,0,0.22)]"
                   >
                     <div className="relative h-58 overflow-hidden">
-                      {card.mediaUrl ? (
-                        card.mediaType === "video" ? (
-                          <video
-                            src={card.mediaUrl}
-                            muted
-                            autoPlay
-                            loop
-                            playsInline
-                            className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
-                          />
-                        ) : (
-                          <Image
-                            src={card.mediaUrl}
-                            alt={card.title}
-                            fill
-                            sizes="(min-width: 1280px) 30vw, 50vw"
-                            className="object-cover transition duration-700 group-hover:scale-[1.04]"
-                          />
-                        )
+                      {card.mediaUrl || card.posterUrl ? (
+                        <HomeVisual
+                          card={card}
+                          alt={card.title}
+                          sizes="(min-width: 1280px) 30vw, 50vw"
+                          className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                        />
                       ) : (
                         <div className="absolute inset-0 bg-[linear-gradient(140deg,#123c2f,#102033_55%,#14161c)]" />
                       )}
@@ -627,25 +652,13 @@ export function DesktopHomeExperienceClient({
                     </div>
 
                     <div className="relative size-24 shrink-0 overflow-hidden rounded-[1.1rem] border border-white/10 bg-white/5">
-                      {card.mediaUrl ? (
-                        card.mediaType === "video" ? (
-                          <video
-                            src={card.mediaUrl}
-                            muted
-                            autoPlay
-                            loop
-                            playsInline
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <Image
-                            src={card.mediaUrl}
-                            alt={card.title}
-                            fill
-                            sizes="112px"
-                            className="object-cover"
-                          />
-                        )
+                      {card.mediaUrl || card.posterUrl ? (
+                        <HomeVisual
+                          card={card}
+                          alt={card.title}
+                          sizes="112px"
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-white/6 text-primary">
                           <Sparkles className="size-8" />
@@ -674,25 +687,13 @@ export function DesktopHomeExperienceClient({
                 {latestModelCards.map((card) => (
                   <Link key={card.id} href={card.href} className="group space-y-3">
                     <div className="relative aspect-[1.65/1] overflow-hidden rounded-[1.4rem] border border-white/10 bg-[#15191d] shadow-[0_16px_34px_rgba(0,0,0,0.2)]">
-                      {card.mediaUrl ? (
-                        card.mediaType === "video" ? (
-                          <video
-                            src={card.mediaUrl}
-                            muted
-                            autoPlay
-                            loop
-                            playsInline
-                            className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
-                          />
-                        ) : (
-                          <Image
-                            src={card.mediaUrl}
-                            alt={card.title}
-                            fill
-                            sizes="(min-width: 1280px) 25vw, 50vw"
-                            className="object-cover transition duration-700 group-hover:scale-[1.04]"
-                          />
-                        )
+                      {card.mediaUrl || card.posterUrl ? (
+                        <HomeVisual
+                          card={card}
+                          alt={card.title}
+                          sizes="(min-width: 1280px) 25vw, 50vw"
+                          className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                        />
                       ) : (
                         <div className="absolute inset-0 bg-[linear-gradient(140deg,#123c2f,#102033_55%,#14161c)]" />
                       )}
@@ -752,25 +753,13 @@ export function DesktopHomeExperienceClient({
                         index % 7 === 5 || index % 7 === 6 ? "h-64" : "h-32"
                       }`}
                     >
-                      {card.mediaUrl ? (
-                        card.mediaType === "video" ? (
-                          <video
-                            src={card.mediaUrl}
-                            muted
-                            autoPlay
-                            loop
-                            playsInline
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <Image
-                            src={card.mediaUrl}
-                            alt={card.title}
-                            fill
-                            sizes="(min-width: 1280px) 20vw, 50vw"
-                            className="object-cover"
-                          />
-                        )
+                      {card.mediaUrl || card.posterUrl ? (
+                        <HomeVisual
+                          card={card}
+                          alt={card.title}
+                          sizes="(min-width: 1280px) 20vw, 50vw"
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="h-full w-full bg-[linear-gradient(160deg,#1e293b,#111827)]" />
                       )}
@@ -802,26 +791,14 @@ function VideoDropdownThumb({
 
   return (
     <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/8">
-      {card?.mediaUrl ? (
-        card.mediaType === "video" ? (
-          <video
-            src={card.mediaUrl}
-            muted
-            autoPlay
-            loop
-            playsInline
-            className="size-full object-cover"
-          />
-        ) : (
-          <Image
-            src={card.mediaUrl}
-            alt={item.label}
-            fill
-            sizes="36px"
-            priority={priority}
-            className="object-cover"
-          />
-        )
+      {card?.mediaUrl || card?.posterUrl ? (
+        <HomeVisual
+          card={card}
+          alt={item.label}
+          sizes="36px"
+          priority={priority}
+          className="size-full object-cover"
+        />
       ) : (
         <Clapperboard className="size-4 text-primary" />
       )}
@@ -840,26 +817,14 @@ function ImageDropdownThumb({
 
   return (
     <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/8">
-      {card?.mediaUrl ? (
-        card.mediaType === "video" ? (
-          <video
-            src={card.mediaUrl}
-            muted
-            autoPlay
-            loop
-            playsInline
-            className="size-full object-cover"
-          />
-        ) : (
-          <Image
-            src={card.mediaUrl}
-            alt={item.label}
-            fill
-            sizes="36px"
-            priority={priority}
-            className="object-cover"
-          />
-        )
+      {card?.mediaUrl || card?.posterUrl ? (
+        <HomeVisual
+          card={card}
+          alt={item.label}
+          sizes="36px"
+          priority={priority}
+          className="size-full object-cover"
+        />
       ) : (
         <ImageIcon className="size-4 text-primary" />
       )}
@@ -881,26 +846,14 @@ function CharacterDropdownThumb({
     <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/8">
       {Icon ? (
         <Icon className="size-4 text-slate-200" />
-      ) : card?.mediaUrl ? (
-        card.mediaType === "video" ? (
-          <video
-            src={card.mediaUrl}
-            muted
-            autoPlay
-            loop
-            playsInline
-            className="size-full object-cover"
-          />
-        ) : (
-          <Image
-            src={card.mediaUrl}
-            alt={item.label}
-            fill
-            sizes="36px"
-            priority={priority}
-            className="object-cover"
-          />
-        )
+      ) : card?.mediaUrl || card?.posterUrl ? (
+        <HomeVisual
+          card={card}
+          alt={item.label}
+          sizes="36px"
+          priority={priority}
+          className="size-full object-cover"
+        />
       ) : (
         <Users className="size-4 text-primary" />
       )}
@@ -919,5 +872,54 @@ function accentLastWord(text: string) {
     <>
       {words.join(" ")} <span className="text-primary">{lastWord}</span>
     </>
+  );
+}
+
+function HomeVisual({
+  card,
+  alt,
+  sizes,
+  className,
+  priority,
+}: {
+  card: HomeExperienceCard;
+  alt: string;
+  sizes: string;
+  className: string;
+  priority?: boolean;
+}) {
+  const imageSrc = card.posterUrl || card.mediaUrl;
+
+  if (card.mediaType === "video" && card.mediaUrl) {
+    return (
+      <>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(34,197,94,0.24),transparent_38%),linear-gradient(135deg,rgba(17,24,39,0.96),rgba(6,14,18,0.98))]" />
+        <video
+          src={card.mediaUrl}
+          poster={card.posterUrl || undefined}
+          muted
+          autoPlay
+          loop
+          playsInline
+          preload="auto"
+          className={`relative z-10 ${className}`}
+        />
+      </>
+    );
+  }
+
+  if (!imageSrc) {
+    return null;
+  }
+
+  return (
+    <Image
+      src={imageSrc}
+      alt={alt}
+      fill
+      sizes={sizes}
+      priority={priority}
+      className={className}
+    />
   );
 }

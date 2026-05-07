@@ -1,4 +1,9 @@
-import { getPublicExploreFeed } from "@vireon/db";
+import {
+  getPublishedHomepageItems,
+  getPublicExploreFeed,
+  type HomepageItemRow,
+  type HomepageSection,
+} from "@vireon/db";
 import { inferMediaType } from "@/lib/media/infer-media-type";
 
 type PublicPost = Awaited<ReturnType<typeof getPublicExploreFeed>>[number];
@@ -9,12 +14,15 @@ export type HomeExperienceCard = {
   subtitle: string;
   href: string;
   mediaUrl?: string | null;
+  posterUrl?: string | null;
   mediaType: "image" | "video";
   creator?: string;
 };
 
 function normalizePost(post: PublicPost): HomeExperienceCard {
   const mediaType = inferMediaType(post.asset);
+  const isVideo = mediaType === "video";
+  const imageUrl = post.asset.thumbnailUrl || post.asset.fileUrl;
 
   return {
     id: post.id,
@@ -27,9 +35,32 @@ function normalizePost(post: PublicPost): HomeExperienceCard {
       post.asset.prompt?.slice(0, 96) ||
       "See what creators are making with prompts, motion, and scene-driven ideas.",
     href: `/a/${post.asset.id}`,
-    mediaUrl: post.asset.thumbnailUrl || post.asset.fileUrl,
-    mediaType: mediaType === "video" ? "video" : "image",
+    mediaUrl: isVideo ? post.asset.fileUrl : imageUrl,
+    posterUrl: isVideo ? post.asset.thumbnailUrl : imageUrl,
+    mediaType: isVideo ? "video" : "image",
     creator: post.user?.username || post.user?.displayName || "creator",
+  };
+}
+
+function normalizeHomepageItem(item: HomepageItemRow): HomeExperienceCard {
+  const mediaType =
+    item.mediaType === "video"
+      ? "video"
+      : item.mediaType === "image"
+        ? "image"
+        : inferMediaType({ mediaType: item.mediaType, fileUrl: item.mediaUrl });
+
+  return {
+    id: item.id,
+    title: item.title,
+    subtitle:
+      item.subtitle ||
+      "Create something sharp, cinematic, and ready to share.",
+    href: item.href || "/studio",
+    mediaUrl: item.mediaUrl,
+    posterUrl: item.posterUrl,
+    mediaType: mediaType === "video" ? "video" : "image",
+    creator: "vireon",
   };
 }
 
@@ -40,9 +71,37 @@ function fallbackCard(id: string, title: string): HomeExperienceCard {
     subtitle: "Create something sharp, cinematic, and ready to share.",
     href: "/studio",
     mediaUrl: null,
+    posterUrl: null,
     mediaType: "image",
     creator: "vireon",
   };
+}
+
+function homepageSectionCards(
+  items: HomepageItemRow[],
+  section: HomepageSection
+) {
+  return items
+    .filter((item) => item.section === section)
+    .map(normalizeHomepageItem);
+}
+
+function mergeWithFallback(
+  customCards: HomeExperienceCard[],
+  fallbackCards: HomeExperienceCard[],
+  count: number
+) {
+  const merged = [...customCards];
+  const seen = new Set(merged.map((card) => card.id));
+
+  for (const card of fallbackCards) {
+    if (seen.has(card.id)) continue;
+    seen.add(card.id);
+    merged.push(card);
+    if (merged.length >= count) break;
+  }
+
+  return merged.slice(0, count);
 }
 
 function uniqueByCreator(posts: PublicPost[], count: number) {
@@ -86,14 +145,24 @@ function decorateCard(
 }
 
 export async function getHomeExperienceData() {
-  const posts = await getPublicExploreFeed();
-  const normalized = posts.map(normalizePost);
+  const [posts, homepageItems] = await Promise.all([
+    getPublicExploreFeed(),
+    getPublishedHomepageItems().catch((error) => {
+      console.error("[home] Failed to load curated homepage items", error);
+      return [] as HomepageItemRow[];
+    }),
+  ]);
+  const visualPosts = posts.filter((post) => {
+    const mediaType = inferMediaType(post.asset);
+    return mediaType === "image" || mediaType === "video";
+  });
+  const normalized = visualPosts.map(normalizePost);
   const imageCards = normalized.filter((post) => post.mediaType === "image");
   const videoCards = normalized.filter((post) => post.mediaType === "video");
 
-  const spotlightCards = uniqueByCreator(posts, 4);
+  const spotlightFallbackCards = uniqueByCreator(visualPosts, 4);
 
-  const suiteCards = [
+  const suiteFallbackCards = [
     decorateCard(
       pickCard(normalized, 0, "suite-smart", "Smart Shot"),
       "suite-smart",
@@ -132,7 +201,7 @@ export async function getHomeExperienceData() {
     ),
   ];
 
-  const latestModelCards = [
+  const latestModelFallbackCards = [
     decorateCard(
       pickCard(imageCards, 0, "model-imagen", "Imagen 4 Ultra"),
       "model-imagen",
@@ -158,12 +227,37 @@ export async function getHomeExperienceData() {
       "Enhanced multimodal references"
     ),
   ];
+  const spotlightCards = mergeWithFallback(
+    homepageSectionCards(homepageItems, "spotlight"),
+    spotlightFallbackCards,
+    4
+  );
+  const suiteCards = mergeWithFallback(
+    homepageSectionCards(homepageItems, "suite"),
+    suiteFallbackCards,
+    6
+  );
+  const latestModelCards = mergeWithFallback(
+    homepageSectionCards(homepageItems, "latest_models"),
+    latestModelFallbackCards,
+    4
+  );
+  const inspirationImageCards = mergeWithFallback(
+    homepageSectionCards(homepageItems, "inspiration_image"),
+    imageCards,
+    12
+  );
+  const inspirationVideoCards = mergeWithFallback(
+    homepageSectionCards(homepageItems, "inspiration_video"),
+    videoCards,
+    12
+  );
 
   return {
     spotlightCards,
     suiteCards,
     latestModelCards,
-    inspirationImageCards: imageCards.slice(0, 12),
-    inspirationVideoCards: videoCards.slice(0, 12),
+    inspirationImageCards,
+    inspirationVideoCards,
   };
 }

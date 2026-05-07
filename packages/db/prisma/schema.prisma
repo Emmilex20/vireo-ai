@@ -43,6 +43,7 @@ model User {
   subscriptionRenewals SubscriptionRenewal[]
   subscriptionCancelFeedback SubscriptionCancelFeedback[]
   curatedTemplates Template[] @relation("TemplateAdmin")
+  curatedHomepageItems HomepageItem[] @relation("HomepageItemAdmin")
   referredBy User? @relation("UserReferral", fields: [referredById], references: [id])
   referrals  User[] @relation("UserReferral")
 }
@@ -140,6 +141,7 @@ model GenerationJob {
   character         Character?
   creditLedger      CreditLedger[]
   templates         Template[]
+  homepageItems     HomepageItem[]
 }
 
 model Character {
@@ -303,6 +305,7 @@ model Asset {
   notifications Notification[]
   moderationLogs ModerationAuditLog[]
   templates      Template[]
+  homepageItems  HomepageItem[]
 }
 
 model Template {
@@ -330,6 +333,32 @@ model Template {
 
   @@index([status, sortOrder, createdAt])
   @@index([type, status])
+  @@index([sourceAssetId])
+  @@index([sourceGenerationJobId])
+}
+
+model HomepageItem {
+  id                    String   @id @default(cuid())
+  section               String
+  title                 String
+  subtitle              String?
+  href                  String?
+  mediaType             String
+  mediaUrl              String
+  posterUrl             String?
+  sourceAssetId         String?
+  sourceGenerationJobId String?
+  sortOrder             Int      @default(0)
+  isActive              Boolean  @default(true)
+  createdByAdminId      String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  createdByAdmin      User?          @relation("HomepageItemAdmin", fields: [createdByAdminId], references: [id], onDelete: SetNull)
+  sourceAsset         Asset?         @relation(fields: [sourceAssetId], references: [id], onDelete: SetNull)
+  sourceGenerationJob GenerationJob? @relation(fields: [sourceGenerationJobId], references: [id], onDelete: SetNull)
+
+  @@index([section, isActive, sortOrder, createdAt])
   @@index([sourceAssetId])
   @@index([sourceGenerationJobId])
 }
