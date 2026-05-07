@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 import { LegalPage, LegalSection } from "@/components/marketing/legal-page";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Terms of Use | Vireon AI",
   description:
     "Read the platform terms covering acceptable use, creator content, billing, and public publishing on Vireon AI.",
+  alternates: {
+    canonical: absoluteUrl("/terms-of-use")
+  },
 };
 
 export default function TermsOfUsePage() {

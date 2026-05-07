@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { getPublicCreatorProfile } from "@vireon/db";
 import { CreatorProfileClient } from "@/components/creators/creator-profile-client";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
+import { SEO_KEYWORDS } from "@/lib/constants";
+import { absoluteUrl, seoDescription } from "@/lib/seo";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.com";
 type PublicCreator = Awaited<ReturnType<typeof getPublicCreatorProfile>>;
 
 type Props = {
@@ -13,34 +14,42 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
 
-  const res = await fetch(`${APP_URL}/api/public/creator/${username}`, {
-    cache: "no-store"
-  });
-
   let creator: PublicCreator | null = null;
 
-  if (res.ok) {
-    const data = await res.json();
-    creator = data.creator;
+  try {
+    creator = await getPublicCreatorProfile(username);
+  } catch {
+    creator = null;
   }
 
   const displayName = creator?.displayName || username;
   const description =
-    creator?.bio ||
-    `Explore AI-generated images and videos by @${username} on Vireon AI.`;
+    seoDescription(
+      creator?.bio,
+      `Explore AI-generated images, videos, characters, prompts, and creator projects by @${username} on Vireon AI.`
+    );
 
-  const image = creator?.avatarUrl || `${APP_URL}/default-avatar.png`;
+  const image = creator?.avatarUrl || absoluteUrl("/logo.png");
+  const canonicalUrl = absoluteUrl(`/u/${username}`);
 
   return {
     title: `${displayName} (@${username}) | Vireon AI`,
     description,
+    keywords: [
+      ...SEO_KEYWORDS,
+      `${displayName} AI creator`,
+      `@${username}`,
+      "AI creator portfolio",
+      "AI artist profile"
+    ],
     alternates: {
-      canonical: `${APP_URL}/u/${username}`
+      canonical: canonicalUrl
     },
     openGraph: {
       title: `${displayName} (@${username})`,
       description,
       type: "profile",
+      url: canonicalUrl,
       images: [image]
     },
     twitter: {
@@ -54,15 +63,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CreatorPage({ params }: Props) {
   const { username } = await params;
-  const res = await fetch(`${APP_URL}/api/public/creator/${username}`, {
-    cache: "no-store"
-  });
-
   let creator: PublicCreator | null = null;
 
-  if (res.ok) {
-    const data = await res.json();
-    creator = data.creator;
+  try {
+    creator = await getPublicCreatorProfile(username);
+  } catch {
+    creator = null;
   }
 
   return (
@@ -76,7 +82,7 @@ export default async function CreatorPage({ params }: Props) {
               "@type": "Person",
               name: creator?.displayName || username,
               alternateName: `@${username}`,
-              url: `${APP_URL}/u/${username}`,
+              url: absoluteUrl(`/u/${username}`),
               image: creator?.avatarUrl,
               description:
                 creator?.bio ||

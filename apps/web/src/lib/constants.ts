@@ -1,12 +1,15 @@
 export const APP_NAME = "Vireon AI";
 export const APP_TAGLINE = "Create stunning AI visuals, motion, video, and sound.";
 export const APP_DESCRIPTION =
-  "Vireon AI is a next-generation AI creation platform for images, video, motion, and creator publishing.";
+  "Vireon AI is an AI creator studio for generating images, videos, characters, voice-overs, prompt templates, and cinematic visual projects from one workspace.";
 
 export const SEO_KEYWORDS = [
   "Vireon AI",
   "AI image generator",
   "AI video generator",
+  "AI voice generator",
+  "AI voice over generator",
+  "AI audio generator",
   "AI image to video",
   "text to image AI",
   "text to video AI",
@@ -26,7 +29,10 @@ export const SEO_KEYWORDS = [
   "AI image editing",
   "AI video editing",
   "AI character generator",
+  "AI character studio",
   "AI world builder",
+  "AI prompt library",
+  "AI prompt templates",
   "AI short video generator",
   "AI cinematic video",
   "AI product video",
@@ -82,7 +88,11 @@ export const SEO_KEYWORDS = [
   "generate images from prompts",
   "AI creator tools",
   "AI media library",
-  "AI prompt templates",
+  "AI audio narration",
+  "text to speech AI",
+  "AI commercial generator",
+  "AI ad generator",
+  "AI content studio",
   "multi scene AI video",
   "AI video projects",
   "AI visual storytelling"

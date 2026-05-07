@@ -5,8 +5,8 @@ import { getPublicAssetDetail, getPublicAssets } from "@vireon/db";
 import { PublicAssetShareActions } from "@/components/assets/public-asset-share-actions";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 import { inferMediaType } from "@/lib/media/infer-media-type";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.com";
+import { SEO_KEYWORDS } from "@/lib/constants";
+import { absoluteUrl, seoDescription } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ assetId: string }>;
@@ -44,6 +44,7 @@ async function loadRelatedPublicAssets(
         ...asset,
         resolvedMediaType: inferMediaType(asset),
       }))
+      .filter((asset) => asset.resolvedMediaType !== "audio")
       .sort((left, right) => {
         const leftSameCreator = left.userId === currentAsset.userId ? 1 : 0;
         const rightSameCreator = right.userId === currentAsset.userId ? 1 : 0;
@@ -84,21 +85,48 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = asset.title || "AI creation";
+  const mediaType = inferMediaType(asset);
   const description =
-    asset.prompt?.slice(0, 155) ||
-    "View this AI-generated image or video on Vireon AI.";
+    seoDescription(
+      asset.prompt,
+      `View this AI-generated ${mediaType} made with Vireon AI.`
+    );
+  const canonicalUrl = absoluteUrl(`/a/${asset.id}`);
+  const previewImage = asset.thumbnailUrl || (mediaType === "audio" ? "/logo.png" : asset.fileUrl);
+  const mediaLabel =
+    mediaType === "video" ? "AI video" : mediaType === "audio" ? "AI voice-over" : "AI image";
 
   return {
-    title: `${title} | Vireon AI`,
+    title: `${title} - ${mediaLabel} | Vireon AI`,
     description,
+    keywords: [
+      ...SEO_KEYWORDS,
+      mediaLabel,
+      "AI creation",
+      "AI creator portfolio",
+      "AI prompt example"
+    ],
+    alternates: {
+      canonical: canonicalUrl
+    },
+    robots:
+      mediaType === "audio"
+        ? {
+            index: false,
+            follow: true
+          }
+        : {
+            index: true,
+            follow: true
+          },
     openGraph: {
-      title: `${title} | Vireon AI`,
+      title: `${title} - ${mediaLabel} | Vireon AI`,
       description,
-      url: `${APP_URL}/a/${asset.id}`,
+      url: canonicalUrl,
       type: "article",
       images: [
         {
-          url: asset.fileUrl,
+          url: previewImage,
           width: 1200,
           height: 630,
           alt: title
@@ -107,9 +135,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | Vireon AI`,
+      title: `${title} - ${mediaLabel} | Vireon AI`,
       description,
-      images: [asset.fileUrl]
+      images: [previewImage]
     }
   };
 }
@@ -120,8 +148,11 @@ export default async function PublicAssetPage({ params }: Props) {
 
   if (!asset) notFound();
 
-  const isVideo = inferMediaType(asset) === "video";
+  const mediaType = inferMediaType(asset);
+  const isVideo = mediaType === "video";
+  const isAudio = mediaType === "audio";
   const relatedAssets = await loadRelatedPublicAssets(asset);
+  const canonicalUrl = absoluteUrl(`/a/${asset.id}`);
 
   return (
     <PublicSiteFrame>
@@ -131,18 +162,18 @@ export default async function PublicAssetPage({ params }: Props) {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": isVideo ? "VideoObject" : "ImageObject",
+              "@type": isVideo ? "VideoObject" : isAudio ? "AudioObject" : "ImageObject",
               name: asset.title || "AI creation",
               description:
                 asset.prompt || "AI-generated creation made with Vireon AI.",
               contentUrl: asset.fileUrl,
-              thumbnailUrl: asset.fileUrl,
+              thumbnailUrl: asset.thumbnailUrl || (isAudio ? absoluteUrl("/logo.png") : asset.fileUrl),
               uploadDate: asset.createdAt,
               creator: asset.user?.username
                 ? {
                     "@type": "Person",
                     name: asset.user.displayName || asset.user.username,
-                    url: `${APP_URL}/u/${asset.user.username}`
+                    url: absoluteUrl(`/u/${asset.user.username}`)
                   }
                 : undefined
             })
@@ -156,7 +187,20 @@ export default async function PublicAssetPage({ params }: Props) {
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
             <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/30">
-              {isVideo ? (
+              {isAudio ? (
+                <div className="flex min-h-96 flex-col items-center justify-center gap-6 p-6 text-center">
+                  <div className="flex h-28 w-48 items-end justify-center gap-2 rounded-[1.75rem] bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.22),rgba(236,72,153,0.14),rgba(255,255,255,0.04))] p-6">
+                    {[42, 68, 96, 126, 92, 64, 44].map((height, index) => (
+                      <span
+                        key={index}
+                        className="w-3 rounded-full bg-white/60"
+                        style={{ height }}
+                      />
+                    ))}
+                  </div>
+                  <audio src={asset.fileUrl} controls className="w-full max-w-xl" />
+                </div>
+              ) : isVideo ? (
                 <video
                   src={asset.fileUrl}
                   controls
@@ -236,12 +280,12 @@ export default async function PublicAssetPage({ params }: Props) {
                   {asset._count.comments} comments
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                  {isVideo ? "Video" : "Image"}
+                  {isVideo ? "Video" : isAudio ? "Audio" : "Image"}
                 </span>
               </div>
 
               <PublicAssetShareActions
-                url={`${APP_URL}/a/${asset.id}`}
+                url={canonicalUrl}
                 title={asset.title || "AI creation made with Vireon AI"}
               />
 

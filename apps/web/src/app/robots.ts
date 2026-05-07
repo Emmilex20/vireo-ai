@@ -1,12 +1,22 @@
 import type { MetadataRoute } from "next";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://getvireonai.com";
+import { absoluteUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/explore", "/creators", "/u/", "/pricing", "/templates", "/privacy-policy", "/terms-of-use", "/cookie-policy"],
+      allow: [
+        "/",
+        "/a/",
+        "/explore",
+        "/creators",
+        "/u/",
+        "/pricing",
+        "/templates",
+        "/privacy-policy",
+        "/terms-of-use",
+        "/cookie-policy"
+      ],
       disallow: [
         "/admin/",
         "/api/",
@@ -18,6 +28,6 @@ export default function robots(): MetadataRoute.Robots {
         "/notifications/"
       ]
     },
-    sitemap: `${APP_URL}/sitemap.xml`
+    sitemap: absoluteUrl("/sitemap.xml")
   };
 }

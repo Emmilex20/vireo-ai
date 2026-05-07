@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 import { LegalPage, LegalSection } from "@/components/marketing/legal-page";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Vireon AI",
   description:
     "Read how Vireon AI collects, uses, and protects account, billing, and creator content data.",
+  alternates: {
+    canonical: absoluteUrl("/privacy-policy")
+  },
 };
 
 export default function PrivacyPolicyPage() {

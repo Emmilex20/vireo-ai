@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 import { LegalPage, LegalSection } from "@/components/marketing/legal-page";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Cookie Policy | Vireon AI",
   description:
     "Learn how Vireon AI uses cookies and similar technologies for sessions, preferences, analytics, and product security.",
+  alternates: {
+    canonical: absoluteUrl("/cookie-policy")
+  },
 };
 
 export default function CookiePolicyPage() {

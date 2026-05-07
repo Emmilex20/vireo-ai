@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
 import { GalleryPageClient } from "@/components/gallery/gallery-page-client";
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
+import { SEO_KEYWORDS } from "@/lib/constants";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Explore | Vireon AI",
+  title: "Explore AI Images, Videos & Creator Prompts | Vireon AI",
   description:
-    "Explore public AI-generated images and videos created by Vireon AI creators.",
+    "Explore public AI-generated images, videos, cinematic prompts, character concepts, and creator projects made with Vireon AI.",
+  keywords: SEO_KEYWORDS,
+  alternates: {
+    canonical: absoluteUrl("/explore")
+  },
   openGraph: {
-    title: "Explore | Vireon AI",
+    title: "Explore AI Images, Videos & Creator Prompts | Vireon AI",
     description:
-      "Discover public AI-generated images and videos from creators on Vireon AI.",
-    type: "website"
+      "Discover public AI-generated images, videos, prompts, and visual projects from creators on Vireon AI.",
+    type: "website",
+    url: absoluteUrl("/explore")
   },
   twitter: {
     card: "summary_large_image",
-    title: "Explore | Vireon AI",
+    title: "Explore AI Images & Videos | Vireon AI",
     description:
-      "Explore public AI-generated images and videos created with Vireon AI."
+      "Browse public AI images, AI videos, prompts, and creator projects made with Vireon AI."
   }
 };
 

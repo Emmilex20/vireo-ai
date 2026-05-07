@@ -4,9 +4,10 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
 import { inter, jakarta } from "@/lib/fonts";
 import { APP_DESCRIPTION, APP_NAME, SEO_KEYWORDS } from "@/lib/constants";
+import { SITE_URL } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://getvireonai.com"),
+  metadataBase: new URL(SITE_URL),
   applicationName: APP_NAME,
   title: {
     default: APP_NAME,
