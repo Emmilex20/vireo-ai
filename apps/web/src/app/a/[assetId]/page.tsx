@@ -6,6 +6,7 @@ import { PublicAssetShareActions } from "@/components/assets/public-asset-share-
 import { PublicSiteFrame } from "@/components/layout/public-site-frame";
 import { inferMediaType } from "@/lib/media/infer-media-type";
 import { SEO_KEYWORDS } from "@/lib/constants";
+import { getImageLicenseMetadata } from "@/lib/image-license-metadata";
 import { absoluteUrl, seoDescription } from "@/lib/seo";
 
 type Props = {
@@ -153,6 +154,26 @@ export default async function PublicAssetPage({ params }: Props) {
   const isAudio = mediaType === "audio";
   const relatedAssets = await loadRelatedPublicAssets(asset);
   const canonicalUrl = absoluteUrl(`/a/${asset.id}`);
+  const creatorName = asset.user?.displayName || asset.user?.username;
+  const assetStructuredData = {
+    "@context": "https://schema.org",
+    "@type": isVideo ? "VideoObject" : isAudio ? "AudioObject" : "ImageObject",
+    name: asset.title || "AI creation",
+    description:
+      asset.prompt || "AI-generated creation made with Vireon AI.",
+    contentUrl: asset.fileUrl,
+    thumbnailUrl:
+      asset.thumbnailUrl || (isAudio ? absoluteUrl("/logo.png") : asset.fileUrl),
+    uploadDate: asset.createdAt,
+    creator: asset.user?.username
+      ? {
+          "@type": "Person",
+          name: creatorName,
+          url: absoluteUrl(`/u/${asset.user.username}`)
+        }
+      : undefined,
+    ...(!isVideo && !isAudio ? getImageLicenseMetadata(creatorName) : {})
+  };
 
   return (
     <PublicSiteFrame>
@@ -160,23 +181,7 @@ export default async function PublicAssetPage({ params }: Props) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": isVideo ? "VideoObject" : isAudio ? "AudioObject" : "ImageObject",
-              name: asset.title || "AI creation",
-              description:
-                asset.prompt || "AI-generated creation made with Vireon AI.",
-              contentUrl: asset.fileUrl,
-              thumbnailUrl: asset.thumbnailUrl || (isAudio ? absoluteUrl("/logo.png") : asset.fileUrl),
-              uploadDate: asset.createdAt,
-              creator: asset.user?.username
-                ? {
-                    "@type": "Person",
-                    name: asset.user.displayName || asset.user.username,
-                    url: absoluteUrl(`/u/${asset.user.username}`)
-                  }
-                : undefined
-            })
+            __html: JSON.stringify(assetStructuredData)
           }}
         />
 

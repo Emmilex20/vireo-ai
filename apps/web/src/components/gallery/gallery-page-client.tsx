@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AssetCard } from "@/components/assets/asset-card";
 import { VideoAssetCard } from "@/components/assets/video-asset-card";
 import { inferMediaType } from "@/lib/media/infer-media-type";
+import { absoluteUrl } from "@/lib/seo";
 
 type MediaFilter = "all" | "image" | "video";
 
@@ -141,7 +142,7 @@ export function GalleryPageClient() {
             name: "Vireon AI Explore",
             description:
               "A public gallery of AI-generated images and videos created with Vireon AI.",
-            url: "https://your-domain.com/explore"
+            url: absoluteUrl("/explore")
           })
         }}
       />
