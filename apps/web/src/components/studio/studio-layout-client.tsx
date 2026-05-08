@@ -16,25 +16,28 @@ export function ClientStudioLayout({
   initialMode = "image",
   initialVideoModelSlug,
 }: ClientStudioLayoutProps = {}) {
-  const [mode, setMode] = useState<StudioMode>(() => {
-    if (typeof window === "undefined" || initialMode === "video") {
-      return initialMode;
-    }
-
-    const requestedMode = window.sessionStorage.getItem(
-      "vireon_studio_open_mode"
-    );
-
-    if (requestedMode === "image" || requestedMode === "video") {
-      return requestedMode;
-    }
-
-    return initialMode;
-  });
+  const [mode, setMode] = useState<StudioMode>(initialMode);
 
   useEffect(() => {
-    sessionStorage.removeItem("vireon_studio_open_mode");
-  }, []);
+    const timeout = window.setTimeout(() => {
+      const requestedMode = window.sessionStorage.getItem(
+        "vireon_studio_open_mode"
+      );
+
+      window.sessionStorage.removeItem("vireon_studio_open_mode");
+
+      if (
+        initialMode !== "video" &&
+        (requestedMode === "image" || requestedMode === "video")
+      ) {
+        setMode(requestedMode);
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [initialMode]);
 
   useEffect(() => {
     function handleModeChange(event: Event) {
