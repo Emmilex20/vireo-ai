@@ -28,6 +28,7 @@ export default function robots(): MetadataRoute.Robots {
         "/notifications/"
       ]
     },
+    host: absoluteUrl("/"),
     sitemap: absoluteUrl("/sitemap.xml")
   };
 }

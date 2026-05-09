@@ -155,25 +155,52 @@ export default async function PublicAssetPage({ params }: Props) {
   const relatedAssets = await loadRelatedPublicAssets(asset);
   const canonicalUrl = absoluteUrl(`/a/${asset.id}`);
   const creatorName = asset.user?.displayName || asset.user?.username;
+  const creatorStructuredData = asset.user?.username
+    ? {
+        "@type": "Person",
+        name: creatorName,
+        url: absoluteUrl(`/u/${asset.user.username}`)
+      }
+    : undefined;
+  const imageLicenseMetadata = getImageLicenseMetadata(creatorName);
+  const imageStructuredDataUrl = isVideo ? asset.thumbnailUrl : isAudio ? null : asset.fileUrl;
   const assetStructuredData = {
     "@context": "https://schema.org",
     "@type": isVideo ? "VideoObject" : isAudio ? "AudioObject" : "ImageObject",
     name: asset.title || "AI creation",
     description:
       asset.prompt || "AI-generated creation made with Vireon AI.",
+    url: canonicalUrl,
     contentUrl: asset.fileUrl,
     thumbnailUrl:
       asset.thumbnailUrl || (isAudio ? absoluteUrl("/logo.png") : asset.fileUrl),
     uploadDate: asset.createdAt,
-    creator: asset.user?.username
+    creator: creatorStructuredData,
+    ...(!isVideo && !isAudio
       ? {
-          "@type": "Person",
-          name: creatorName,
-          url: absoluteUrl(`/u/${asset.user.username}`)
+          representativeOfPage: true,
+          ...imageLicenseMetadata
         }
-      : undefined,
-    ...(!isVideo && !isAudio ? getImageLicenseMetadata(creatorName) : {})
+      : {})
   };
+  const thumbnailStructuredData =
+    imageStructuredDataUrl && isVideo
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ImageObject",
+          name: `${asset.title || "AI video"} preview`,
+          description:
+            asset.prompt || "AI-generated video preview made with Vireon AI.",
+          url: imageStructuredDataUrl,
+          contentUrl: imageStructuredDataUrl,
+          uploadDate: asset.createdAt,
+          creator: creatorStructuredData,
+          ...imageLicenseMetadata
+        }
+      : null;
+  const pageStructuredData = thumbnailStructuredData
+    ? [assetStructuredData, thumbnailStructuredData]
+    : assetStructuredData;
 
   return (
     <PublicSiteFrame>
@@ -181,7 +208,7 @@ export default async function PublicAssetPage({ params }: Props) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(assetStructuredData)
+            __html: JSON.stringify(pageStructuredData)
           }}
         />
 
