@@ -7,7 +7,10 @@ import {
   failVideoJob,
   markGenerationFailover
 } from "@vireon/db";
-import { getFallbackProviderName } from "@/lib/ai/providers/failover";
+import {
+  getFallbackProviderName,
+  shouldFallbackProviderFailure
+} from "@/lib/ai/providers/failover";
 import {
   getAudioProviderByName,
   getImageProviderByName,
@@ -219,7 +222,11 @@ export async function processGenerationJob(
         currentProviderName: job.providerName
       });
 
-      if (fallbackName && fallbackName !== job.providerName) {
+      if (
+        shouldFallbackProviderFailure({ reason: status.error }) &&
+        fallbackName &&
+        fallbackName !== job.providerName
+      ) {
         const fallbackProvider = getVideoProviderByName(fallbackName);
         const settings = readStoredVideoSettings(job.settings);
         const fallbackJob = await fallbackProvider.createVideoJob({

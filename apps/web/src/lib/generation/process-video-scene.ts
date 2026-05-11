@@ -8,7 +8,10 @@ import {
   getVideoProvider,
   getVideoProviderByName
 } from "@/lib/ai/providers/registry";
-import { getFallbackProviderName } from "@/lib/ai/providers/failover";
+import {
+  getFallbackProviderName,
+  shouldFallbackProviderFailure
+} from "@/lib/ai/providers/failover";
 import type { ProviderJobResult } from "@/lib/ai/providers/types";
 import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { uploadRemoteAssetToCloudinary } from "@/lib/storage/cloudinary";
@@ -151,6 +154,10 @@ export async function processVideoScene(params: {
     try {
       providerJob = await provider.createVideoJob(providerInput);
     } catch (error) {
+      if (!shouldFallbackProviderFailure({ error })) {
+        throw error;
+      }
+
       const fallbackName = getFallbackProviderName({
         type: "video",
         currentProviderName: provider.name
@@ -193,7 +200,12 @@ export async function processVideoScene(params: {
           currentProviderName: provider.name
         });
 
-        if (!usedFallback && fallbackName && fallbackName !== provider.name) {
+        if (
+          !usedFallback &&
+          shouldFallbackProviderFailure({ reason: status.error }) &&
+          fallbackName &&
+          fallbackName !== provider.name
+        ) {
           provider = getVideoProviderByName(fallbackName);
           providerJob = await provider.createVideoJob(providerInput);
           usedFallback = true;

@@ -11,7 +11,11 @@ import {
   getVideoProvider,
   getVideoProviderByName,
 } from "@/lib/ai/providers/registry";
-import { getFallbackProviderName } from "@/lib/ai/providers/failover";
+import {
+  getFallbackProviderName,
+  getProviderErrorMessage,
+  shouldFallbackProviderFailure,
+} from "@/lib/ai/providers/failover";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
 import {
@@ -328,6 +332,10 @@ export async function POST(req: Request) {
           providerJobId: providerJob.providerJobId,
         });
       } catch (primaryError) {
+        if (!shouldFallbackProviderFailure({ error: primaryError })) {
+          throw primaryError;
+        }
+
         const fallbackName = getFallbackProviderName({
           type: "video",
           currentProviderName: provider.name,
@@ -338,16 +346,25 @@ export async function POST(req: Request) {
         }
 
         const fallbackProvider = getVideoProviderByName(fallbackName);
-        const fallbackJob = await fallbackProvider.createVideoJob(videoProviderInput);
+        let fallbackJob;
+
+        try {
+          fallbackJob = await fallbackProvider.createVideoJob(videoProviderInput);
+        } catch (fallbackError) {
+          throw new Error(
+            `${provider.name} failed to queue: ${getProviderErrorMessage(
+              primaryError
+            )}. ${fallbackProvider.name} fallback failed: ${getProviderErrorMessage(
+              fallbackError
+            )}`
+          );
+        }
 
         queuedJob = await markGenerationFailover({
           jobId: job.id,
           fallbackProviderName: fallbackProvider.name,
           fallbackProviderJobId: fallbackJob.providerJobId,
-          reason:
-            primaryError instanceof Error
-              ? primaryError.message
-              : "Primary video provider failed to create job",
+          reason: getProviderErrorMessage(primaryError),
         });
       }
 
@@ -433,7 +450,7 @@ export async function POST(req: Request) {
         job.id,
         error instanceof Error && error.message === "INSUFFICIENT_CREDITS"
           ? "Insufficient credits for video generation"
-          : "Failed to queue video generation"
+          : getProviderErrorMessage(error)
       );
       throw error;
     }

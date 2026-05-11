@@ -46,10 +46,23 @@ function createKlingToken() {
 }
 
 function getKlingBaseUrl() {
-  return (process.env.KLING_API_BASE_URL || "https://api.klingapi.com").replace(
-    /\/$/,
-    ""
-  );
+  const configuredUrl = process.env.KLING_API_BASE_URL || "https://api.klingai.com";
+  let url: URL;
+
+  try {
+    url = new URL(configuredUrl);
+  } catch {
+    return "https://api.klingai.com";
+  }
+
+  if (url.hostname === "api.klingapi.com") {
+    return "https://api.klingai.com";
+  }
+
+  return url
+    .toString()
+    .replace(/\/$/, "")
+    .replace(/\/v1$/, "");
 }
 
 function resolveKlingVideoModel(modelId?: string | null) {
@@ -62,6 +75,16 @@ function resolveKlingVideoModel(modelId?: string | null) {
   if (modelId?.includes("kling-v2.6")) return "kling-v2.6-pro";
 
   return "kling-v2.6-pro";
+}
+
+function resolveKlingVideoMode() {
+  const mode = process.env.KLING_VIDEO_MODE?.trim().toLowerCase();
+
+  if (mode === "standard") return "std";
+  if (mode === "professional") return "pro";
+  if (mode === "std" || mode === "pro" || mode === "4k") return mode;
+
+  return "pro";
 }
 
 function readString(value: unknown): string | undefined {
@@ -180,14 +203,25 @@ function readError(response: unknown) {
 }
 
 async function requestKling(path: string, init?: RequestInit) {
-  const response = await fetch(`${getKlingBaseUrl()}${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${createKlingToken()}`,
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-  });
+  const baseUrl = getKlingBaseUrl();
+  let response: Response;
+
+  try {
+    response = await fetch(`${baseUrl}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${createKlingToken()}`,
+        "Content-Type": "application/json",
+        ...init?.headers,
+      },
+    });
+  } catch (error) {
+    throw new KlingApiError(
+      `Unable to reach Kling API at ${baseUrl}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
 
   const text = await response.text();
   let body: unknown = {};
@@ -212,7 +246,7 @@ function buildKlingPayload(input: VideoGenerationInput) {
     negative_prompt: input.negativePrompt || undefined,
     duration: input.duration ?? 5,
     aspect_ratio: input.aspectRatio ?? "16:9",
-    mode: process.env.KLING_VIDEO_MODE || "professional",
+    mode: resolveKlingVideoMode(),
     image: input.imageUrl || undefined,
   };
 }

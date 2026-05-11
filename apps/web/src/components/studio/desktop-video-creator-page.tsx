@@ -4,30 +4,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 import {
-  BookOpen,
-  ChevronLeft,
   ChevronRight,
   Clapperboard,
   Film,
   FolderOpen,
-  Gift,
-  Globe2,
-  Grid2x2,
   HelpCircle,
   History,
-  Home,
-  ImageIcon,
   Layers3,
   Lightbulb,
   Loader2,
-  Move3d,
   RotateCcw,
   Save,
   Search,
   Settings2,
   Sparkles,
   Upload,
-  Users,
   Wand2,
   X,
   type LucideIcon,
@@ -168,28 +159,8 @@ type DesktopVideoCreatorPageProps = {
   onResetSession: () => void;
 };
 
-type SidebarItem = {
-  key: string;
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  active?: boolean;
-};
 
-const primaryNav: SidebarItem[] = [
-  { key: "home", label: "Home", href: "/", icon: Home },
-  { key: "image", label: "Image Studio", href: "/studio", icon: ImageIcon },
-  { key: "video", label: "Video Studio", href: "/studio", icon: Clapperboard, active: true },
-  { key: "assets", label: "Assets", href: "/assets", icon: FolderOpen },
-  { key: "explore", label: "Explore", href: "/explore", icon: Globe2 },
-  { key: "creators", label: "Creators", href: "/creators", icon: Users },
-];
 
-const quickTools: SidebarItem[] = [
-  { key: "templates", label: "Templates", href: "/templates", icon: Grid2x2 },
-  { key: "inspiration", label: "Inspiration", href: "/explore", icon: Lightbulb },
-  { key: "guides", label: "Guides", href: "/pricing", icon: BookOpen },
-];
 
 export function DesktopVideoCreatorPage({
   onChangeMode,
@@ -468,8 +439,14 @@ export function DesktopVideoCreatorPage({
                         {referenceImageUrls.length ? (
                           <div className="mt-3 grid grid-cols-2 gap-2">
                             {referenceImageUrls.map((url, index) => (
-                              <div key={`${url}-${index}`} className="group relative overflow-hidden rounded-lg border border-white/10 bg-white/5">
-                                <img src={url} alt={referenceImageNames[index] || `Reference ${index + 1}`} className="h-20 w-full object-cover" />
+                              <div key={`${url}-${index}`} className="group relative h-20 overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                                <Image
+                                  src={url}
+                                  alt={referenceImageNames[index] || `Reference ${index + 1}`}
+                                  fill
+                                  sizes="(min-width: 1024px) 120px, 50vw"
+                                  className="object-cover"
+                                />
                                 <button
                                   type="button"
                                   onClick={() => onRemoveReferenceImage(index)}
@@ -702,62 +679,6 @@ export function DesktopVideoCreatorPage({
   );
 }
 
-function SidebarGroup({
-  title,
-  items,
-  open,
-  onChangeMode,
-}: {
-  title?: string;
-  items: SidebarItem[];
-  open: boolean;
-  onChangeMode?: (mode: StudioMode) => void;
-}) {
-  return (
-    <div>
-      {title && open ? (
-        <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-white/30">
-          {title}
-        </p>
-      ) : null}
-      <div className="space-y-1.5">
-        {items.map((item) => {
-          const Icon = item.icon;
-          const mode = item.key === "image" || item.key === "video" ? item.key : null;
-          const className = cn(
-            "flex h-11 items-center rounded-xl border transition",
-            open ? "gap-3 px-3" : "justify-center px-0",
-            item.active
-              ? "border-[#2dd4bf]/30 bg-[#2dd4bf]/10 text-white"
-              : "border-transparent text-white/55 hover:border-white/10 hover:bg-white/5 hover:text-white"
-          );
-
-          if (mode && onChangeMode) {
-            return (
-              <button
-                key={item.key}
-                type="button"
-                title={open ? undefined : item.label}
-                onClick={() => onChangeMode(mode)}
-                className={className}
-              >
-                <Icon className="size-4 shrink-0" />
-                {open ? <span className="truncate text-sm font-medium">{item.label}</span> : null}
-              </button>
-            );
-          }
-
-          return (
-            <Link key={item.key} href={item.href} title={open ? undefined : item.label} className={className}>
-              <Icon className="size-4 shrink-0" />
-              {open ? <span className="truncate text-sm font-medium">{item.label}</span> : null}
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 function AssistPanel({
   selectedSuggestion,
@@ -921,8 +842,6 @@ function SettingsPanel({
   onResolutionChange,
   draftMode,
   onDraftModeChange,
-  saveAudio,
-  onSaveAudioChange,
   promptUpsampling,
   onPromptUpsamplingChange,
   disableSafetyFilter,
@@ -1221,7 +1140,7 @@ function ModelGlyph({ model }: { model: ReplicateVideoModelConfig }) {
 
 function CostBadge({ cost }: { cost: number }) {
   return (
-    <div className="inline-flex h-10 min-w-[112px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-[#2dd4bf]/25 bg-[#061817] px-3 text-[#b7fff5] shadow-[0_0_24px_rgba(45,212,191,0.08)]">
+    <div className="inline-flex h-10 min-w-28 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-[#2dd4bf]/25 bg-[#061817] px-3 text-[#b7fff5] shadow-[0_0_24px_rgba(45,212,191,0.08)]">
       <span className="text-base font-semibold tabular-nums leading-none">{cost}</span>
       <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#b7fff5]/65">
         credits
@@ -1252,7 +1171,13 @@ function FrameUpload({
       <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/15 bg-[#0b0e10] p-3 transition hover:border-[#2dd4bf]/35 hover:bg-white/5">
         <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/8">
           {imageUrl ? (
-            <img src={imageUrl} alt={label} className="size-full object-cover" />
+            <Image
+              src={imageUrl}
+              alt={label}
+              fill
+              sizes="56px"
+              className="object-cover"
+            />
           ) : uploading ? (
             <Loader2 className="size-5 animate-spin text-white/70" />
           ) : (
@@ -1316,7 +1241,7 @@ function AudioUpload({
           type="button"
           onClick={() => onSaveAudioChange(!saveAudio)}
           className={cn(
-            "inline-flex h-9 w-[72px] shrink-0 items-center justify-center rounded-full border px-2 text-center text-[11px] font-semibold leading-none transition",
+            "inline-flex h-9 w-18 shrink-0 items-center justify-center rounded-full border px-2 text-center text-[11px] font-semibold leading-none transition",
             saveAudio
               ? "border-[#2dd4bf]/35 bg-[#2dd4bf]/10 text-[#b7fff5]"
               : "border-white/10 bg-white/5 text-white/55"
