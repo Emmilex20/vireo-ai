@@ -2,6 +2,7 @@ import { resolveReplicateVideoModel } from "@/lib/ai/providers/replicate-video-m
 
 export type VideoStudioMeaningfulState = {
   modelId: string;
+  providerName?: string;
   prompt: string;
   negativePrompt: string;
   resolution?: string;

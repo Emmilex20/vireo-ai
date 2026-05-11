@@ -3,7 +3,13 @@ import {
   refundSceneGeneration,
   updateVideoSceneMedia
 } from "@vireon/db";
-import { getImageProvider, getVideoProvider } from "@/lib/ai/providers/registry";
+import {
+  getImageProvider,
+  getVideoProvider,
+  getVideoProviderByName
+} from "@/lib/ai/providers/registry";
+import { getFallbackProviderName } from "@/lib/ai/providers/failover";
+import type { ProviderJobResult } from "@/lib/ai/providers/types";
 import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { uploadRemoteAssetToCloudinary } from "@/lib/storage/cloudinary";
 
@@ -128,9 +134,8 @@ export async function processVideoScene(params: {
       status: "generating_video"
     });
 
-    const provider = getVideoProvider();
-
-    const providerJob = await provider.createVideoJob({
+    let provider = getVideoProvider();
+    const providerInput = {
       prompt: scene.prompt,
       imageUrl: scene.imageUrl,
       duration: 5,
@@ -140,7 +145,26 @@ export async function processVideoScene(params: {
       styleStrength: "medium",
       shotType: "Wide Shot",
       fps: 24
-    });
+    };
+    let providerJob: ProviderJobResult;
+
+    try {
+      providerJob = await provider.createVideoJob(providerInput);
+    } catch (error) {
+      const fallbackName = getFallbackProviderName({
+        type: "video",
+        currentProviderName: provider.name
+      });
+
+      if (!fallbackName || fallbackName === provider.name) {
+        throw error;
+      }
+
+      provider = getVideoProviderByName(fallbackName);
+      providerJob = await provider.createVideoJob(providerInput);
+    }
+
+    let usedFallback = provider.name !== getVideoProvider().name;
 
     const deadline = Date.now() + SCENE_GENERATION_TIMEOUT_MS;
 
@@ -164,6 +188,18 @@ export async function processVideoScene(params: {
       }
 
       if (status.status === "failed") {
+        const fallbackName = getFallbackProviderName({
+          type: "video",
+          currentProviderName: provider.name
+        });
+
+        if (!usedFallback && fallbackName && fallbackName !== provider.name) {
+          provider = getVideoProviderByName(fallbackName);
+          providerJob = await provider.createVideoJob(providerInput);
+          usedFallback = true;
+          continue;
+        }
+
         return refundAndFailScene({
           userId: params.userId,
           sceneId: params.sceneId,

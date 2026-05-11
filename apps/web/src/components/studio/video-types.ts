@@ -1,5 +1,6 @@
 export type VideoReusePayload = {
   modelId?: string;
+  providerName?: string;
   prompt: string;
   negativePrompt: string;
   resolution?: string;
@@ -24,6 +25,7 @@ export type VideoReusePayload = {
 
 export type VideoGenerationSetup = {
   modelId: string;
+  providerName?: string;
   prompt: string;
   negativePrompt: string;
   resolution?: string;

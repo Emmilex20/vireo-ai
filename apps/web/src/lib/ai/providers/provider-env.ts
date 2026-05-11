@@ -10,6 +10,11 @@ export const PROVIDER_ENV_CHECKS = [
     required: ["REPLICATE_API_TOKEN", "REPLICATE_VIDEO_MODEL"],
   },
   {
+    key: "kling-video",
+    name: "Kling Video",
+    required: ["KLING_ACCESS_KEY", "KLING_SECRET_KEY", "KLING_API_BASE_URL"],
+  },
+  {
     key: "fal",
     name: "Fal AI",
     required: ["FAL_KEY"],

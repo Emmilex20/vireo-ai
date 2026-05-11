@@ -22,6 +22,7 @@ export type ProcessableGenerationJob = {
   userId: string;
   type: string;
   status: string;
+  modelId?: string | null;
   providerName?: string | null;
   providerJobId?: string | null;
   prompt?: string | null;
@@ -44,6 +45,28 @@ export type ProcessableGenerationJob = {
   sourceAssetId?: string | null;
   settings?: unknown;
 };
+
+type StoredVideoSettings = {
+  modelId?: string;
+  resolution?: string;
+  draft?: boolean;
+  saveAudio?: boolean;
+  promptUpsampling?: boolean;
+  disableSafetyFilter?: boolean;
+  noOp?: boolean;
+  seed?: number | null;
+  endImageUrl?: string;
+  referenceImageUrls?: string[];
+  audioUrl?: string;
+};
+
+function readStoredVideoSettings(settings: unknown): StoredVideoSettings {
+  if (!settings || typeof settings !== "object") {
+    return {};
+  }
+
+  return settings as StoredVideoSettings;
+}
 
 type ProcessedGenerationJob =
   | ProcessableGenerationJob
@@ -191,6 +214,52 @@ export async function processGenerationJob(
     }
 
     if (status.status === "failed") {
+      const fallbackName = getFallbackProviderName({
+        type: "video",
+        currentProviderName: job.providerName
+      });
+
+      if (fallbackName && fallbackName !== job.providerName) {
+        const fallbackProvider = getVideoProviderByName(fallbackName);
+        const settings = readStoredVideoSettings(job.settings);
+        const fallbackJob = await fallbackProvider.createVideoJob({
+          prompt: job.prompt ?? "",
+          negativePrompt: job.negativePrompt ?? undefined,
+          modelId: settings.modelId ?? job.modelId ?? undefined,
+          resolution: settings.resolution,
+          draft: settings.draft,
+          saveAudio: settings.saveAudio,
+          promptUpsampling: settings.promptUpsampling,
+          disableSafetyFilter: settings.disableSafetyFilter,
+          noOp: settings.noOp,
+          seed: settings.seed,
+          duration: job.duration ?? undefined,
+          aspectRatio: job.aspectRatio ?? undefined,
+          motionIntensity: job.motionIntensity ?? undefined,
+          cameraMove: job.cameraMove ?? undefined,
+          styleStrength: job.styleStrength ?? undefined,
+          motionGuidance: job.motionGuidance ?? undefined,
+          shotType: job.shotType ?? undefined,
+          fps: job.fps ?? undefined,
+          imageUrl: job.sourceImageUrl ?? undefined,
+          endImageUrl: settings.endImageUrl,
+          referenceImageUrls: settings.referenceImageUrls,
+          audioUrl: settings.audioUrl
+        });
+
+        const updatedJob = await markGenerationFailover({
+          jobId: job.id,
+          fallbackProviderName: fallbackProvider.name,
+          fallbackProviderJobId: fallbackJob.providerJobId,
+          reason: status.error || "Primary video provider failed"
+        });
+
+        return {
+          status: "processing",
+          job: updatedJob
+        };
+      }
+
       const failedJob = await failVideoJob(
         job.id,
         status.error || "Video provider generation failed"

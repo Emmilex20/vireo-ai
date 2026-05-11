@@ -4,9 +4,14 @@ import {
   createVideoJob,
   failVideoJob,
   logBlockedPrompt,
+  markGenerationFailover,
   updateGenerationJobProvider
 } from "@vireon/db";
-import { getVideoProvider } from "@/lib/ai/providers/registry";
+import {
+  getVideoProvider,
+  getVideoProviderByName,
+} from "@/lib/ai/providers/registry";
+import { getFallbackProviderName } from "@/lib/ai/providers/failover";
 import { sendLowCreditsEmailIfNeeded } from "@/lib/email/notifications";
 import { runGenerationJobInline } from "@/lib/generation/run-inline-generation";
 import {
@@ -58,6 +63,7 @@ export async function POST(req: Request) {
       prompt,
       negativePrompt,
       modelId,
+      providerName,
       resolution,
       draft,
       saveAudio,
@@ -82,6 +88,7 @@ export async function POST(req: Request) {
       prompt?: string;
       negativePrompt?: string;
       modelId?: string;
+      providerName?: string;
       resolution?: string;
       draft?: boolean;
       saveAudio?: boolean;
@@ -197,7 +204,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const provider = getVideoProvider();
+    const provider =
+      providerName === "kling-video" || providerName === "replicate-video"
+        ? getVideoProviderByName(providerName)
+        : getVideoProvider();
     const workersMode = await isWorkersMode();
     const supportsEndFrame = selectedModel.features.includes("Start/End");
     const supportsReferences =
@@ -249,6 +259,19 @@ export async function POST(req: Request) {
       motionGuidance,
       shotType,
       fps,
+      settings: {
+        modelId: selectedModel.id,
+        resolution: resolution ?? null,
+        draft: draft ?? null,
+        saveAudio: saveAudio ?? null,
+        promptUpsampling: promptUpsampling ?? null,
+        disableSafetyFilter: disableSafetyFilter ?? null,
+        noOp: noOp ?? null,
+        seed: seed ?? null,
+        endImageUrl: supportsEndFrame ? endImageUrl ?? null : null,
+        referenceImageUrls: supportsReferences ? referenceImageUrls ?? [] : [],
+        audioUrl: selectedModel.supports.audioGeneration ? audioUrl ?? null : null,
+      },
     });
 
     try {
@@ -269,7 +292,7 @@ export async function POST(req: Request) {
         balance: wallet.balance
       });
 
-      const providerJob = await provider.createVideoJob({
+      const videoProviderInput = {
         prompt,
         negativePrompt,
         modelId: selectedModel.id,
@@ -292,13 +315,41 @@ export async function POST(req: Request) {
         endImageUrl: supportsEndFrame ? endImageUrl : undefined,
         referenceImageUrls: supportsReferences ? referenceImageUrls : undefined,
         audioUrl: selectedModel.supports.audioGeneration ? audioUrl : undefined
-      });
+      };
 
-      const queuedJob = await updateGenerationJobProvider({
-        jobId: job.id,
-        providerName: provider.name,
-        providerJobId: providerJob.providerJobId,
-      });
+      let queuedJob: Awaited<ReturnType<typeof updateGenerationJobProvider>>;
+
+      try {
+        const providerJob = await provider.createVideoJob(videoProviderInput);
+
+        queuedJob = await updateGenerationJobProvider({
+          jobId: job.id,
+          providerName: provider.name,
+          providerJobId: providerJob.providerJobId,
+        });
+      } catch (primaryError) {
+        const fallbackName = getFallbackProviderName({
+          type: "video",
+          currentProviderName: provider.name,
+        });
+
+        if (!fallbackName || fallbackName === provider.name) {
+          throw primaryError;
+        }
+
+        const fallbackProvider = getVideoProviderByName(fallbackName);
+        const fallbackJob = await fallbackProvider.createVideoJob(videoProviderInput);
+
+        queuedJob = await markGenerationFailover({
+          jobId: job.id,
+          fallbackProviderName: fallbackProvider.name,
+          fallbackProviderJobId: fallbackJob.providerJobId,
+          reason:
+            primaryError instanceof Error
+              ? primaryError.message
+              : "Primary video provider failed to create job",
+        });
+      }
 
       if (workersMode) {
         const { enqueueGenerationJob } = await import(
@@ -331,6 +382,7 @@ export async function POST(req: Request) {
         const finalJob = await runGenerationJobInline({
           id: job.id,
           userId: job.userId,
+          modelId: job.modelId,
           type: job.type,
           status: job.status,
           providerName: queuedJob.providerName,
@@ -340,6 +392,7 @@ export async function POST(req: Request) {
           aspectRatio: job.aspectRatio,
           sourceImageUrl: job.sourceImageUrl,
           sourceAssetId: job.sourceAssetId,
+          settings: job.settings,
           duration: job.duration,
           motionIntensity: job.motionIntensity,
           cameraMove: job.cameraMove,

@@ -164,6 +164,12 @@ export function VideoStudioComposer({
   );
   const displayVideoCost = quotedVideoCost ?? videoCost;
 
+  function resolveProviderForModel(modelId: string) {
+    const model = resolveReplicateVideoModel(modelId);
+
+    return model.provider === "Kling" ? "kling-video" : "replicate-video";
+  }
+
   async function fetchVideoQuote(setup: VideoGenerationSetup) {
     const res = await fetch("/api/credits/quote", {
       method: "POST",
@@ -427,6 +433,7 @@ export function VideoStudioComposer({
 
     const snapshot = {
       modelId: selectedModelId,
+      providerName: resolveProviderForModel(selectedModelId),
       prompt,
       negativePrompt,
       resolution,
@@ -487,6 +494,7 @@ export function VideoStudioComposer({
 
     return {
       modelId: selectedModelId,
+      providerName: resolveProviderForModel(selectedModelId),
       prompt,
       negativePrompt,
       resolution,
@@ -739,6 +747,7 @@ export function VideoStudioComposer({
         },
         body: JSON.stringify({
           modelId: setup.modelId,
+          providerName: setup.providerName ?? resolveProviderForModel(setup.modelId),
           prompt: setup.prompt,
           negativePrompt: setup.negativePrompt,
           resolution: setup.resolution,

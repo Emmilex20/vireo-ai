@@ -9,6 +9,7 @@ export type StudioSessionState = StudioGenerationSetup & {
 
 export type VideoStudioSessionState = {
   modelId: string;
+  providerName?: string;
   prompt: string;
   negativePrompt: string;
   resolution?: string;

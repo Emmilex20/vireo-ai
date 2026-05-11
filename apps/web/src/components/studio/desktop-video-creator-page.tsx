@@ -1072,6 +1072,8 @@ function VideoModelPickerModal({
       .toLowerCase()
       .includes(search);
   });
+  const providerLabel = (model: ReplicateVideoModelConfig) =>
+    model.provider === "Kling" ? "Kling API" : model.provider;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-5 py-6 backdrop-blur-sm">
@@ -1115,7 +1117,7 @@ function VideoModelPickerModal({
                     {model.label}
                   </h3>
                   <p className="mt-1 line-clamp-1 text-xs font-medium text-white/70">
-                    {model.description}
+                    {providerLabel(model)} · {model.description}
                   </p>
                 </div>
               </button>
@@ -1173,9 +1175,14 @@ function VideoModelPickerModal({
                           {model.badge}
                         </span>
                       ) : null}
+                      {model.provider === "Kling" ? (
+                        <span className="rounded bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-cyan-200">
+                          Native API
+                        </span>
+                      ) : null}
                     </span>
                     <span className="mt-0.5 block truncate text-xs text-white/42">
-                      {model.description}
+                      {providerLabel(model)} · {model.description}
                     </span>
                   </span>
                   <span className="hidden max-w-[46%] flex-wrap justify-end gap-1.5 lg:flex">

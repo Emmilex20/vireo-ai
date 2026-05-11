@@ -627,6 +627,8 @@ function VideoModelSheet({
       .toLowerCase()
       .includes(search);
   });
+  const providerLabel = (provider: string) =>
+    provider === "Kling" ? "Kling API" : provider;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70 px-2 pb-2 pt-10 backdrop-blur-sm">
@@ -684,7 +686,7 @@ function VideoModelSheet({
                     <div className="relative flex h-full flex-col justify-end">
                       <span className="text-sm font-semibold text-white">{model.label}</span>
                       <span className="mt-1 line-clamp-1 text-xs text-white/65">
-                        {model.description}
+                        {providerLabel(model.provider)} · {model.description}
                       </span>
                     </div>
                   </button>
@@ -752,7 +754,7 @@ function MobileModelOption({
           : "border-white/10 bg-white/5"
       )}
     >
-      <ModelGlyph label={provider} />
+      <ModelGlyph label={provider === "Kling" ? "Kling API" : provider} />
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
           <span className="truncate text-sm font-semibold text-white">{label}</span>
@@ -766,8 +768,15 @@ function MobileModelOption({
               {badge}
             </span>
           ) : null}
+          {provider === "Kling" ? (
+            <span className="rounded-md bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-cyan-100">
+              Native API
+            </span>
+          ) : null}
         </span>
-        <span className="mt-1 block truncate text-xs text-white/42">{description}</span>
+        <span className="mt-1 block truncate text-xs text-white/42">
+          {provider === "Kling" ? "Kling API" : provider} · {description}
+        </span>
         <span className="mt-2 flex flex-wrap gap-1.5">
           {features.slice(0, 3).map((feature) => (
             <span key={feature} className="rounded-md bg-white/8 px-2 py-0.5 text-[10px] text-white/45">

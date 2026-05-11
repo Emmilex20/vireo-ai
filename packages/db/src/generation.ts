@@ -80,6 +80,7 @@ export async function createVideoJob(params: {
   motionGuidance?: number
   shotType?: string
   fps?: number
+  settings?: Prisma.InputJsonValue | null
 }) {
   const data = {
     userId: params.userId,
@@ -101,6 +102,10 @@ export async function createVideoJob(params: {
     motionGuidance: params.motionGuidance ?? null,
     shotType: params.shotType ?? null,
     fps: params.fps ?? null,
+    settings:
+      params.settings === null
+        ? Prisma.JsonNull
+        : params.settings ?? undefined,
   }
 
   try {
