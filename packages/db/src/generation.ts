@@ -27,6 +27,7 @@ export async function createImageJob(params: {
   seed?: number | null
   steps?: number
   guidance?: number
+  settings?: Prisma.InputJsonValue | null
 }) {
   const data = {
     userId: params.userId,
@@ -46,6 +47,10 @@ export async function createImageJob(params: {
     seed: params.seed ?? null,
     steps: params.steps ?? null,
     guidance: params.guidance ?? null,
+    settings:
+      params.settings === null
+        ? Prisma.JsonNull
+        : params.settings ?? undefined,
   }
 
   try {

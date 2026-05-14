@@ -61,6 +61,12 @@ type StoredVideoSettings = {
   endImageUrl?: string;
   referenceImageUrls?: string[];
   audioUrl?: string;
+  generationContext?: StoredGenerationContext;
+};
+
+type StoredGenerationContext = {
+  finalPrompt?: unknown;
+  negativePrompt?: unknown;
 };
 
 function readStoredVideoSettings(settings: unknown): StoredVideoSettings {
@@ -69,6 +75,36 @@ function readStoredVideoSettings(settings: unknown): StoredVideoSettings {
   }
 
   return settings as StoredVideoSettings;
+}
+
+function readStoredGenerationContext(settings: unknown): StoredGenerationContext {
+  if (!settings || typeof settings !== "object") {
+    return {};
+  }
+
+  const generationContext = (settings as { generationContext?: unknown })
+    .generationContext;
+
+  if (!generationContext || typeof generationContext !== "object") {
+    return {};
+  }
+
+  return generationContext as StoredGenerationContext;
+}
+
+function cleanStoredText(value: unknown) {
+  return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
+}
+
+function getProviderPrompt(job: ProcessableGenerationJob) {
+  const generationContext = readStoredGenerationContext(job.settings);
+  const finalPrompt = cleanStoredText(generationContext.finalPrompt);
+  const negativePrompt = cleanStoredText(generationContext.negativePrompt);
+
+  return {
+    prompt: finalPrompt || job.prompt || "",
+    negativePrompt: negativePrompt || job.negativePrompt || undefined,
+  };
 }
 
 type ProcessedGenerationJob =
@@ -137,9 +173,10 @@ export async function processGenerationJob(
 
       if (fallbackName && fallbackName !== job.providerName) {
         const fallbackProvider = getImageProviderByName(fallbackName);
+        const providerPrompt = getProviderPrompt(job);
         const fallbackJob = await fallbackProvider.createImageJob({
-          prompt: job.prompt ?? "",
-          negativePrompt: job.negativePrompt ?? undefined,
+          prompt: providerPrompt.prompt,
+          negativePrompt: providerPrompt.negativePrompt,
           referenceImageUrl: job.sourceImageUrl ?? undefined,
           style: job.style ?? undefined,
           aspectRatio: job.aspectRatio ?? undefined,
@@ -229,9 +266,10 @@ export async function processGenerationJob(
       ) {
         const fallbackProvider = getVideoProviderByName(fallbackName);
         const settings = readStoredVideoSettings(job.settings);
+        const providerPrompt = getProviderPrompt(job);
         const fallbackJob = await fallbackProvider.createVideoJob({
-          prompt: job.prompt ?? "",
-          negativePrompt: job.negativePrompt ?? undefined,
+          prompt: providerPrompt.prompt,
+          negativePrompt: providerPrompt.negativePrompt,
           modelId: settings.modelId ?? job.modelId ?? undefined,
           resolution: settings.resolution,
           draft: settings.draft,

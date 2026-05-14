@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
 import {
+  safeBuildGenerationContext,
+  serializeGenerationContext,
+} from "@/lib/ai/generation-context";
+import {
   getImageModelUiOptions,
   isUnavailableReplicateImageModelId,
   isReplicateImageModelId,
@@ -151,6 +155,21 @@ export async function POST(req: Request) {
       );
     }
 
+    const generationContext = safeBuildGenerationContext(
+      {
+        rawPrompt: prompt,
+        generationMode: "image",
+        providerName: provider.name,
+        modelId: selectedModel.id,
+        negativePrompt,
+        style,
+        aspectRatio,
+      },
+      "api/generate/image"
+    );
+    const serializedGenerationContext =
+      serializeGenerationContext(generationContext);
+
     const imageQuote = calculateGenerationCredits({
       generationType: "image",
       modelId: selectedModel.id,
@@ -164,7 +183,7 @@ export async function POST(req: Request) {
     const job = await createImageJob({
       userId,
       prompt,
-      negativePrompt,
+      negativePrompt: generationContext.negativePrompt,
       modelId: selectedModel.id,
       sourceImageUrl: referenceImageUrl,
       credits: imageCost,
@@ -176,6 +195,9 @@ export async function POST(req: Request) {
       seed,
       steps,
       guidance,
+      settings: {
+        generationContext: serializedGenerationContext,
+      },
     });
 
     try {
@@ -197,8 +219,8 @@ export async function POST(req: Request) {
       });
 
       const providerJob = await provider.createImageJob({
-        prompt,
-        negativePrompt,
+        prompt: generationContext.finalPrompt,
+        negativePrompt: generationContext.negativePrompt,
         modelId: selectedModel.id,
         referenceImageUrl,
         style,
@@ -258,7 +280,8 @@ export async function POST(req: Request) {
           promptBoost: job.promptBoost,
           seed: job.seed,
           steps: job.steps,
-          guidance: job.guidance
+          guidance: job.guidance,
+          settings: job.settings
         });
 
         return NextResponse.json({

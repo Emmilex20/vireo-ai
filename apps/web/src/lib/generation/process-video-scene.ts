@@ -12,6 +12,7 @@ import {
   getFallbackProviderName,
   shouldFallbackProviderFailure
 } from "@/lib/ai/providers/failover";
+import { safeBuildGenerationContext } from "@/lib/ai/generation-context";
 import type { ProviderJobResult } from "@/lib/ai/providers/types";
 import { SCENE_GENERATION_COSTS } from "@/lib/billing/scene-costs";
 import { uploadRemoteAssetToCloudinary } from "@/lib/storage/cloudinary";
@@ -69,9 +70,20 @@ export async function processVideoScene(params: {
     });
 
     const provider = getImageProvider();
+    const generationContext = safeBuildGenerationContext(
+      {
+        rawPrompt: scene.prompt,
+        generationMode: "image",
+        providerName: provider.name,
+        aspectRatio: "16:9",
+        style: "Storyboard scene still",
+      },
+      "process-video-scene:image"
+    );
 
     const providerJob = await provider.createImageJob({
-      prompt: scene.prompt,
+      prompt: generationContext.finalPrompt,
+      negativePrompt: generationContext.negativePrompt,
       aspectRatio: "16:9",
       qualityMode: "high",
       promptBoost: true
@@ -138,8 +150,18 @@ export async function processVideoScene(params: {
     });
 
     let provider = getVideoProvider();
+    const generationContext = safeBuildGenerationContext(
+      {
+        rawPrompt: scene.prompt,
+        generationMode: "video",
+        providerName: provider.name,
+        aspectRatio: "16:9",
+      },
+      "process-video-scene:video"
+    );
     const providerInput = {
-      prompt: scene.prompt,
+      prompt: generationContext.finalPrompt,
+      negativePrompt: generationContext.negativePrompt,
       imageUrl: scene.imageUrl,
       duration: 5,
       aspectRatio: "16:9",

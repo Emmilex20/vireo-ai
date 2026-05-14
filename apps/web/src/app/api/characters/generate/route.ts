@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getImageProvider } from "@/lib/ai/providers/registry";
 import {
+  safeBuildGenerationContext,
+  serializeGenerationContext,
+} from "@/lib/ai/generation-context";
+import {
   buildCharacterPrompt,
   buildCharacterTitle,
   getCharacterGenerationCost,
@@ -169,11 +173,25 @@ export async function POST(req: Request) {
                 name: `${name} ${variantNumber}`,
                 count: 1,
               })} Create distinct option ${variantNumber} of ${count}: keep the same brief, but vary the face, styling details, color language, and silhouette enough that this is a separate selectable character.`;
+        const generationContext = safeBuildGenerationContext(
+          {
+            rawPrompt: variantPrompt,
+            generationMode: "character",
+            providerName: provider.name,
+            modelId,
+            negativePrompt,
+            style: body.style ?? "Photorealistic character reference",
+            aspectRatio: "1:1",
+          },
+          "api/characters/generate"
+        );
+        const serializedGenerationContext =
+          serializeGenerationContext(generationContext);
 
         const providerJob = await createProviderImageJobWithRateLimitRetry(() =>
           provider.createImageJob({
-            prompt: variantPrompt,
-            negativePrompt,
+            prompt: generationContext.finalPrompt,
+            negativePrompt: generationContext.negativePrompt,
             modelId,
             referenceImageUrl: body.sourceImageUrl,
             style: body.style ?? "Photorealistic character reference",
@@ -186,7 +204,7 @@ export async function POST(req: Request) {
         const job = await createImageJob({
           userId,
           prompt: variantPrompt,
-          negativePrompt,
+          negativePrompt: generationContext.negativePrompt,
           modelId,
           sourceImageUrl: body.sourceImageUrl,
           credits: creditsPerCharacter,
@@ -196,6 +214,9 @@ export async function POST(req: Request) {
           aspectRatio: "1:1",
           qualityMode: "ultra",
           promptBoost: true,
+          settings: {
+            generationContext: serializedGenerationContext,
+          },
         });
 
         const character = await createCharacter({
@@ -290,6 +311,7 @@ export async function POST(req: Request) {
               seed: job.seed,
               steps: job.steps,
               guidance: job.guidance,
+              settings: job.settings,
             });
 
             const updatedCharacter = await updateCharacterGenerationResult({

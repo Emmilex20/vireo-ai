@@ -12,6 +12,10 @@ import {
   getVideoProviderByName,
 } from "@/lib/ai/providers/registry";
 import {
+  safeBuildGenerationContext,
+  serializeGenerationContext,
+} from "@/lib/ai/generation-context";
+import {
   getFallbackProviderName,
   getProviderErrorMessage,
   shouldFallbackProviderFailure,
@@ -246,11 +250,25 @@ export async function POST(req: Request) {
       );
     }
 
+    const generationContext = safeBuildGenerationContext(
+      {
+        rawPrompt: prompt,
+        generationMode: "video",
+        providerName: provider.name,
+        modelId: selectedModel.id,
+        negativePrompt,
+        aspectRatio,
+      },
+      "api/generate/video"
+    );
+    const serializedGenerationContext =
+      serializeGenerationContext(generationContext);
+
     const job = await createVideoJob({
       userId,
       modelId: selectedModel.id,
       prompt,
-      negativePrompt,
+      negativePrompt: generationContext.negativePrompt,
       sourceImageUrl: imageUrl,
       sourceAssetId,
       credits: videoCost,
@@ -275,6 +293,7 @@ export async function POST(req: Request) {
         endImageUrl: supportsEndFrame ? endImageUrl ?? null : null,
         referenceImageUrls: supportsReferences ? referenceImageUrls ?? [] : [],
         audioUrl: selectedModel.supports.audioGeneration ? audioUrl ?? null : null,
+        generationContext: serializedGenerationContext,
       },
     });
 
@@ -297,8 +316,8 @@ export async function POST(req: Request) {
       });
 
       const videoProviderInput = {
-        prompt,
-        negativePrompt,
+        prompt: generationContext.finalPrompt,
+        negativePrompt: generationContext.negativePrompt,
         modelId: selectedModel.id,
         resolution,
         draft,
